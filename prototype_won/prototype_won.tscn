@@ -1,6 +1,7 @@
-[gd_scene load_steps=642 format=3 uid="uid://df6c8qq1wgbih"]
+[gd_scene load_steps=643 format=3 uid="uid://df6c8qq1wgbih"]
 
 [ext_resource type="Texture2D" uid="uid://du8qh11tlsap6" path="res://prototype_won/Space Background.png" id="1_55gsw"]
+[ext_resource type="Script" path="res://prototype_won/prototype_won.gd" id="1_yyjtb"]
 [ext_resource type="Texture2D" uid="uid://4ey3wq3jg54h" path="res://prototype_won/1743154828.png" id="2_e5g23"]
 [ext_resource type="Texture2D" uid="uid://g7smonk6qol5" path="res://prototype_won/2/1_0.png" id="3_l701c"]
 [ext_resource type="Texture2D" uid="uid://drj2poaki0x62" path="res://prototype_won/2/1_1.png" id="4_5ird1"]
@@ -4188,6 +4189,7 @@ animations = [{
 }]
 
 [node name="PrototypeWon" type="Node2D"]
+script = ExtResource("1_yyjtb")
 
 [node name="Background" type="TextureRect" parent="."]
 offset_right = 1288.0
