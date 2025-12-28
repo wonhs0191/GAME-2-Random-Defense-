@@ -1,0 +1,53 @@
+[gd_scene load_steps=9 format=3 uid="uid://g6pn5c0dqe8p"]
+
+[ext_resource type="Script" path="res://prototype_moon/01_MoonPrototype.gd" id="1_1t4aa"]
+[ext_resource type="Texture2D" uid="uid://3repgpdjfc7b" path="res://prototype_moon/background/02_Space Background.png" id="1_wkbg8"]
+[ext_resource type="PackedScene" uid="uid://b35dboovj15st" path="res://prototype_moon/enemy/01_enemy.tscn" id="2_1hihw"]
+[ext_resource type="PackedScene" uid="uid://wlcqjmxi6ebc" path="res://prototype_moon/unit/01_unit.tscn" id="3_pgxo0"]
+[ext_resource type="PackedScene" uid="uid://b0mwduv01uqog" path="res://prototype_moon/enemy/02_enemy.tscn" id="5_7vb27"]
+[ext_resource type="PackedScene" uid="uid://bgthe5ro31e7d" path="res://prototype_moon/enemy/03_enemy.tscn" id="6_pxw6b"]
+[ext_resource type="PackedScene" uid="uid://dddcxfo5xultw" path="res://prototype_moon/unit/02_unit.tscn" id="7_r7xj2"]
+[ext_resource type="PackedScene" uid="uid://cbrbh04ykonv7" path="res://prototype_moon/unit/03_unit.tscn" id="8_2hvlk"]
+
+[node name="01_Prototype" type="Node2D"]
+script = ExtResource("1_1t4aa")
+
+[node name="background" type="TextureRect" parent="."]
+offset_left = -20.9999
+offset_top = -9.0
+offset_right = 2979.0
+offset_bottom = 2991.0
+scale = Vector2(0.474, 0.4)
+texture = ExtResource("1_wkbg8")
+
+[node name="attack_test" type="Button" parent="."]
+offset_left = 542.0
+offset_top = 516.0
+offset_right = 646.0
+offset_bottom = 569.0
+text = "ATTACK"
+
+[node name="01Enemy" parent="." instance=ExtResource("2_1hihw")]
+position = Vector2(203, 143)
+
+[node name="02Enemy" parent="." instance=ExtResource("5_7vb27")]
+position = Vector2(459, 383)
+
+[node name="03Enemy" parent="." instance=ExtResource("6_pxw6b")]
+position = Vector2(712, 137)
+
+[node name="01Unit" parent="." instance=ExtResource("3_pgxo0")]
+position = Vector2(400, 147)
+frame_progress = 0.283527
+
+[node name="02Unit" parent="." instance=ExtResource("7_r7xj2")]
+position = Vector2(812, 141)
+
+[node name="03Unit" parent="." instance=ExtResource("8_2hvlk")]
+position = Vector2(686, 387)
+
+[connection signal="pressed" from="attack_test" to="." method="_on_attack_test_pressed"]
+
+[editable path="01Unit"]
+[editable path="02Unit"]
+[editable path="03Unit"]

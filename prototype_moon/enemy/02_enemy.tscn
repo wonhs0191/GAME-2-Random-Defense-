@@ -1,0 +1,84 @@
+[gd_scene load_steps=12 format=3 uid="uid://b0mwduv01uqog"]
+
+[ext_resource type="Texture2D" uid="uid://7u604k6g21oy" path="res://prototype_moon/enemy/Nautolan Ship - Dreadnought - Base.png" id="1_8f8iw"]
+[ext_resource type="Texture2D" uid="uid://bveikc7wcpnqw" path="res://prototype_moon/enemy/Nautolan Ship - Dreadnought - Engine Effect.png" id="1_71hjn"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_yojcc"]
+atlas = ExtResource("1_71hjn")
+region = Rect2(0, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_b7euk"]
+atlas = ExtResource("1_71hjn")
+region = Rect2(128, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_4ktgh"]
+atlas = ExtResource("1_71hjn")
+region = Rect2(256, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_aw4po"]
+atlas = ExtResource("1_71hjn")
+region = Rect2(384, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ti7gh"]
+atlas = ExtResource("1_71hjn")
+region = Rect2(512, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_4kea0"]
+atlas = ExtResource("1_71hjn")
+region = Rect2(640, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_mb8xu"]
+atlas = ExtResource("1_71hjn")
+region = Rect2(768, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_jrqx6"]
+atlas = ExtResource("1_71hjn")
+region = Rect2(896, 0, 128, 128)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_ryylw"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_yojcc")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_b7euk")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_4ktgh")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_aw4po")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ti7gh")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_4kea0")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_mb8xu")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_jrqx6")
+}],
+"loop": true,
+"name": &"Idle",
+"speed": 5.0
+}, {
+"frames": [],
+"loop": true,
+"name": &"default",
+"speed": 5.0
+}]
+
+[node name="02Enemy" type="Sprite2D"]
+texture_filter = 1
+texture = ExtResource("1_8f8iw")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+sprite_frames = SubResource("SpriteFrames_ryylw")
+animation = &"Idle"
+autoplay = "Idle"
+frame_progress = 0.0144116
+speed_scale = 4.0
