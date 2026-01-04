@@ -2,8 +2,6 @@ extends Node2D
 
 var is_dragging: bool = false
 var drag_offset: Vector2 = Vector2.ZERO
-var planet_id: int = -1  # 고유 ID (prototype_won에서 설정)
-var can_merge: bool = true  # 합성 가능 여부
 
 func _ready():
 	# PlanetArea의 input_event 시그널 연결
@@ -34,7 +32,7 @@ func _process(_delta):
 	if is_dragging:
 		# 드래그 중이면 마우스 위치로 이동
 		global_position = get_global_mouse_position() + drag_offset
-
+	
 	# 항상 애니메이션이 실행되게 재확인(애니메이션이 멈췄을 때 재시작)
 	var anim_player = $Planet
 	if anim_player and not anim_player.is_playing():
@@ -46,4 +44,3 @@ func _input(event):
 			if event.button_index == MOUSE_BUTTON_LEFT and not event.pressed:
 				# 마우스 버튼을 놓으면 드래그 종료
 				is_dragging = false
-
