@@ -3,3 +3,6 @@
 
 # import file ignores
 *.import
+
+# json file ignores
+*.json
