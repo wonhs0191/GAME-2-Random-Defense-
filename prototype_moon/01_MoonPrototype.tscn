@@ -1,22 +1,95 @@
-[gd_scene load_steps=9 format=3 uid="uid://g6pn5c0dqe8p"]
+[gd_scene load_steps=21 format=3 uid="uid://g6pn5c0dqe8p"]
 
 [ext_resource type="Script" path="res://prototype_moon/01_MoonPrototype.gd" id="1_1t4aa"]
-[ext_resource type="Texture2D" uid="uid://3repgpdjfc7b" path="res://prototype_moon/background/02_Space Background.png" id="1_wkbg8"]
+[ext_resource type="Texture2D" uid="uid://b6bwx5nlh60cr" path="res://prototype_moon/background/02_Space Background.png" id="1_wkbg8"]
 [ext_resource type="PackedScene" uid="uid://b35dboovj15st" path="res://prototype_moon/enemy/01_enemy.tscn" id="2_1hihw"]
 [ext_resource type="PackedScene" uid="uid://wlcqjmxi6ebc" path="res://prototype_moon/unit/01_unit.tscn" id="3_pgxo0"]
+[ext_resource type="Texture2D" uid="uid://y7xm14qya3bh" path="res://prototype_moon/background/portal.png" id="3_tyrrb"]
 [ext_resource type="PackedScene" uid="uid://b0mwduv01uqog" path="res://prototype_moon/enemy/02_enemy.tscn" id="5_7vb27"]
 [ext_resource type="PackedScene" uid="uid://bgthe5ro31e7d" path="res://prototype_moon/enemy/03_enemy.tscn" id="6_pxw6b"]
 [ext_resource type="PackedScene" uid="uid://dddcxfo5xultw" path="res://prototype_moon/unit/02_unit.tscn" id="7_r7xj2"]
 [ext_resource type="PackedScene" uid="uid://cbrbh04ykonv7" path="res://prototype_moon/unit/03_unit.tscn" id="8_2hvlk"]
+[ext_resource type="PackedScene" uid="uid://djkcbw3iv1fsn" path="res://prototype_moon/unit/04_C_Unit.tscn" id="9_la546"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_msrs2"]
+atlas = ExtResource("3_tyrrb")
+region = Rect2(0, 0, 426, 394)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_kluwp"]
+atlas = ExtResource("3_tyrrb")
+region = Rect2(426, 0, 426, 394)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_3bovh"]
+atlas = ExtResource("3_tyrrb")
+region = Rect2(852, 0, 426, 394)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_35220"]
+atlas = ExtResource("3_tyrrb")
+region = Rect2(0, 394, 426, 394)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ees3g"]
+atlas = ExtResource("3_tyrrb")
+region = Rect2(426, 394, 426, 394)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_wjki5"]
+atlas = ExtResource("3_tyrrb")
+region = Rect2(852, 394, 426, 394)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_sjupx"]
+atlas = ExtResource("3_tyrrb")
+region = Rect2(0, 788, 426, 394)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_drhx3"]
+atlas = ExtResource("3_tyrrb")
+region = Rect2(426, 788, 426, 394)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_uern2"]
+atlas = ExtResource("3_tyrrb")
+region = Rect2(852, 788, 426, 394)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_5lpwv"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_msrs2")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_kluwp")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_3bovh")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_35220")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ees3g")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_wjki5")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_sjupx")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_drhx3")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_uern2")
+}],
+"loop": true,
+"name": &"default",
+"speed": 5.0
+}]
 
 [node name="01_Prototype" type="Node2D"]
 script = ExtResource("1_1t4aa")
 
 [node name="background" type="TextureRect" parent="."]
-offset_left = -20.9999
-offset_top = -9.0
-offset_right = 2979.0
-offset_bottom = 2991.0
+offset_left = -55.0
+offset_top = -26.0
+offset_right = 2945.0
+offset_bottom = 2974.0
 scale = Vector2(0.474, 0.4)
 texture = ExtResource("1_wkbg8")
 
@@ -27,26 +100,47 @@ offset_right = 646.0
 offset_bottom = 569.0
 text = "ATTACK"
 
+[node name="upgrade_test" type="Button" parent="."]
+offset_left = 543.0
+offset_top = 448.0
+offset_right = 647.0
+offset_bottom = 501.0
+text = "UPGRADE
+"
+
+[node name="portal" type="AnimatedSprite2D" parent="."]
+position = Vector2(1067, 84)
+scale = Vector2(0.15, 0.15)
+sprite_frames = SubResource("SpriteFrames_5lpwv")
+autoplay = "default"
+frame = 6
+frame_progress = 0.400861
+speed_scale = 2.0
+
 [node name="01Enemy" parent="." instance=ExtResource("2_1hihw")]
-position = Vector2(203, 143)
+position = Vector2(91, 112)
 
 [node name="02Enemy" parent="." instance=ExtResource("5_7vb27")]
-position = Vector2(459, 383)
+position = Vector2(84, 277)
 
 [node name="03Enemy" parent="." instance=ExtResource("6_pxw6b")]
-position = Vector2(712, 137)
+position = Vector2(1065, 252)
 
 [node name="01Unit" parent="." instance=ExtResource("3_pgxo0")]
-position = Vector2(400, 147)
+position = Vector2(288, 116)
 frame_progress = 0.283527
 
 [node name="02Unit" parent="." instance=ExtResource("7_r7xj2")]
-position = Vector2(812, 141)
+position = Vector2(239, 428)
 
 [node name="03Unit" parent="." instance=ExtResource("8_2hvlk")]
-position = Vector2(686, 387)
+position = Vector2(311, 281)
+
+[node name="04CUnit" parent="." instance=ExtResource("9_la546")]
+position = Vector2(709, 213)
 
 [connection signal="pressed" from="attack_test" to="." method="_on_attack_test_pressed"]
+[connection signal="pressed" from="upgrade_test" to="." method="_on_upgrade_test_pressed"]
 
 [editable path="01Unit"]
 [editable path="02Unit"]

@@ -1,22 +1,20 @@
 extends Node2D
 
-# Attack 변수 선언
-@onready var attack01 = $"01Unit/Attack"
-@onready var attack02 = $"02Unit/Attack"
-@onready var attack03 = $"03Unit/Attack"
+@onready var unit_04c = $"04CUnit"
 
-# Called when the node enters the scene tree for the first time.
 func _ready():
-	print(2)
+	print("Unit: ", unit_04c)
+	print("적 그룹: ", get_tree().get_nodes_in_group("Enemy"))
 
-# Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
 	pass
 
-# attack 버튼 눌렀을 때
+# attack 버튼을 눌렀을 때 호출되는 함수
 func _on_attack_test_pressed():
-	print(1)
-	# 어택 재생
-	attack01.play()
-	attack02.play()
-	attack03.play()
+	if unit_04c:
+		unit_04c.attempt_attack()
+
+# upgrade 버튼을 눌렀을 때 호출되는 함수
+func _on_upgrade_test_pressed():
+	if unit_04c:
+		unit_04c.upgrade()

@@ -1,7 +1,8 @@
-[gd_scene load_steps=12 format=3 uid="uid://bgthe5ro31e7d"]
+[gd_scene load_steps=14 format=3 uid="uid://bgthe5ro31e7d"]
 
-[ext_resource type="Texture2D" uid="uid://x355ga487xsn" path="res://prototype_moon/enemy/Nautolan Ship - Bomber - Base.png" id="1_nt8vo"]
-[ext_resource type="Texture2D" uid="uid://dfrb8egpjopoj" path="res://prototype_moon/enemy/Nautolan Ship - Bomber - Engine Effect.png" id="2_fnhaw"]
+[ext_resource type="Texture2D" uid="uid://b6stn53qr5bnc" path="res://prototype_moon/enemy/Nautolan Ship - Bomber - Base.png" id="1_nt8vo"]
+[ext_resource type="Texture2D" uid="uid://nwpoc6shtqub" path="res://prototype_moon/enemy/Nautolan Ship - Bomber - Engine Effect.png" id="2_fnhaw"]
+[ext_resource type="Script" path="res://prototype_moon/enemy/03_enemy.gd" id="2_judn1"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_5uh0l"]
 atlas = ExtResource("2_fnhaw")
@@ -72,13 +73,23 @@ animations = [{
 "speed": 5.0
 }]
 
-[node name="03Enemy" type="Sprite2D"]
+[sub_resource type="CircleShape2D" id="CircleShape2D_r1mw1"]
+
+[node name="03Enemy" type="CharacterBody2D" groups=["Enemy"]]
 texture_filter = 1
+platform_floor_layers = 4294967042
+platform_wall_layers = 4
+script = ExtResource("2_judn1")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
 texture = ExtResource("1_nt8vo")
 
-[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Sprite2D"]
 sprite_frames = SubResource("SpriteFrames_pxmy3")
 animation = &"Idle"
 autoplay = "Idle"
 frame_progress = 0.668906
 speed_scale = 4.0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_r1mw1")
