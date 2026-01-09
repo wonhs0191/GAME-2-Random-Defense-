@@ -140,6 +140,7 @@ position = Vector2(311, 281)
 position = Vector2(709, 213)
 
 [connection signal="pressed" from="attack_test" to="." method="_on_attack_test_pressed"]
+[connection signal="pressed" from="upgrade_test" to="." method="_on_upgrade_test_pressed"]
 
 [editable path="01Unit"]
 [editable path="02Unit"]

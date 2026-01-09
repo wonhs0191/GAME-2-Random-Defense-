@@ -4,8 +4,8 @@ extends AnimatedSprite2D
 @export var projectile_scene: PackedScene 
 @export var range_radius = 3000.0
 
-# 쿨타임 체크용 변수
-var can_attack = true
+# 업그레이드 상태
+var is_upgraded = false
 
 func _ready():
 	pass
@@ -38,9 +38,12 @@ func fire(target):
 	projectile.target = target
 	projectile.damage = 20
 	get_parent().add_child(projectile)
+	if is_upgraded:
+		projectile.animation_sprite.play("Idle_Cp")
 	print("투사체 발사! 타겟: ", target.name)
 
 # 강화
-func enhance():
-	var current_anim = animation
-	var state_name = current_anim.split("_")[0]
+func upgrade():
+	# 본인 애니메이션 프레임 변경
+	play("Idle_Cp")
+	is_upgraded = true

@@ -5,6 +5,8 @@ var speed = 400
 var damage = 10
 var target = null
 
+@onready var animation_sprite = $AnimatedSprite2D
+
 func _ready():
 	pass
 
