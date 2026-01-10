@@ -17,16 +17,6 @@ config/features=PackedStringArray("4.2", "GL Compatibility")
 
 window/stretch/mode="canvas_items"
 
-[file_customization]
-
-folder_colors={
-"res://resources/": "yellow",
-"res://src/": "yellow",
-"res://src/enemy/": "red",
-"res://src/screen/": "purple",
-"res://src/unit/": "blue"
-}
-
 [layer_names]
 
 2d_physics/layer_1="unit"
