@@ -1,0 +1,30 @@
+[gd_scene load_steps=4 format=3 uid="uid://co1p62exjtuqb"]
+
+[ext_resource type="Texture2D" uid="uid://c4eq0rx6tud5x" path="res://title_screen/title_screen_background.png" id="1_qeulw"]
+[ext_resource type="FontFile" uid="uid://bnlbs7kfxky73" path="res://title_screen/DNFBitBitTTF.ttf" id="2_y83uj"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_yg0ek"]
+font_size = 80
+shadow_size = 5
+shadow_color = Color(0, 1, 0, 1)
+shadow_offset = Vector2(5, 5)
+
+[node name="TitleScreen" type="Node2D"]
+texture_filter = 1
+
+[node name="background" type="TextureRect" parent="."]
+offset_right = 40.0
+offset_bottom = 40.0
+texture = ExtResource("1_qeulw")
+
+[node name="title" type="Label" parent="."]
+offset_left = 183.0
+offset_top = 68.0
+offset_right = 1095.0
+offset_bottom = 245.0
+theme_override_fonts/font = ExtResource("2_y83uj")
+text = "Planet
+Random Defense"
+label_settings = SubResource("LabelSettings_yg0ek")
+horizontal_alignment = 1
+vertical_alignment = 1
