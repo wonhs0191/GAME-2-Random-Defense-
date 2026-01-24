@@ -1,9 +1,11 @@
 extends Node2D
 
-@export var switch_duration: float = 5.0  # 애니메이션 전환 시간 (초)
-@export var fade_duration: float = 0.5  # Fade 효과 지속 시간 (초)
+@export var switch_duration: float = 7.0  # 애니메이션 전환 시간 (초)
+@export var fade_duration: float = 1.0  # Fade 효과 지속 시간 (초)
+@export var screen_fade_duration_multiplier: float = 2.0  # Screen fade in 속도 배율 (행성보다 느리게)
 
 @onready var animated_sprite: AnimatedSprite2D = $AnimatedSprite2D
+@onready var screen: Control = $Screen
 @onready var switch_timer: Timer = Timer.new()
 
 var animations = ["planet1", "planet2", "planet3", "planet4", "planet5"]
@@ -21,6 +23,9 @@ func _ready():
 	animated_sprite.play()
 	animated_sprite.modulate.a = 1.0
 	
+	# Screen 노드 초기 상태 설정
+	screen.modulate.a = 1.0
+	
 	# 설정된 시간 후 다음 애니메이션으로 전환
 	switch_timer.wait_time = switch_duration
 	switch_timer.start()
@@ -37,6 +42,9 @@ func start_animation():
 
 
 func _on_switch_timer_timeout():
+	# Screen 노드를 invisible로 설정
+	screen.visible = false
+	
 	# Fade out 시작
 	var tween = create_tween()
 	tween.tween_property(animated_sprite, "modulate:a", 0.0, fade_duration)
@@ -54,7 +62,19 @@ func _switch_to_next_animation():
 	# Fade in 시작
 	var tween = create_tween()
 	tween.tween_property(animated_sprite, "modulate:a", 1.0, fade_duration)
+	tween.tween_callback(_on_fade_in_complete)
 	
 	# 다음 전환을 위한 타이머 재시작
 	switch_timer.wait_time = switch_duration
 	switch_timer.start()
+
+
+func _on_fade_in_complete():
+	# Screen 노드를 visible로 설정하고 fade in 시작
+	screen.visible = true
+	screen.modulate.a = 0.0  # 투명하게 시작
+	
+	# Screen fade in (행성보다 느리게)
+	var screen_fade_duration = fade_duration * screen_fade_duration_multiplier
+	var screen_tween = create_tween()
+	screen_tween.tween_property(screen, "modulate:a", 1.0, screen_fade_duration)

@@ -110,6 +110,7 @@ rotation = -0.304511
 [node name="Support" parent="Enemys/support/Path2D/PathFollow2D" instance=ExtResource("5_eu0x5")]
 
 [node name="Planet" parent="." instance=ExtResource("3_0urkd")]
+z_index = 1
 
 [node name="Buttons" type="Control" parent="."]
 layout_mode = 3
@@ -119,9 +120,9 @@ offset_bottom = 40.0
 
 [node name="start_button" type="Button" parent="Buttons"]
 layout_mode = 0
-offset_left = 700.0
+offset_left = 750.0
 offset_top = 350.0
-offset_right = 1100.0
+offset_right = 1150.0
 offset_bottom = 400.0
 theme_override_fonts/font = ExtResource("2_y83uj")
 theme_override_font_sizes/font_size = 35
@@ -132,9 +133,9 @@ text = "S T A R T"
 
 [node name="setting_button" type="Button" parent="Buttons"]
 layout_mode = 0
-offset_left = 700.0
+offset_left = 750.0
 offset_top = 450.0
-offset_right = 1100.0
+offset_right = 1150.0
 offset_bottom = 500.0
 theme_override_fonts/font = ExtResource("2_y83uj")
 theme_override_font_sizes/font_size = 35
@@ -145,9 +146,9 @@ text = "S E T T I N G"
 
 [node name="quit_button" type="Button" parent="Buttons"]
 layout_mode = 0
-offset_left = 700.0
+offset_left = 750.0
 offset_top = 550.0
-offset_right = 1100.0
+offset_right = 1150.0
 offset_bottom = 600.0
 theme_override_fonts/font = ExtResource("2_y83uj")
 theme_override_font_sizes/font_size = 35

@@ -1,11 +1,25 @@
-[gd_scene load_steps=1133 format=3 uid="uid://m34ipr7mtbcr"]
+[gd_scene load_steps=1135 format=3 uid="uid://m34ipr7mtbcr"]
 
 [ext_resource type="Script" path="res://title_screen/unit/planet.gd" id="1_gejpw"]
+[ext_resource type="FontFile" uid="uid://bnlbs7kfxky73" path="res://title_screen/DNFBitBitTTF.ttf" id="2_2yts6"]
 [ext_resource type="Texture2D" uid="uid://ccgove6livswc" path="res://title_screen/unit/3089137573.png" id="2_xw3q7"]
 [ext_resource type="Texture2D" uid="uid://cocb5sdq22fuh" path="res://title_screen/unit/2947888694.png" id="3_k1e7m"]
 [ext_resource type="Texture2D" uid="uid://bdar6q0qsor2p" path="res://title_screen/unit/2841340472.png" id="4_i3vs4"]
 [ext_resource type="Texture2D" uid="uid://d00of2p401bf7" path="res://title_screen/unit/2599008541.png" id="5_d5sro"]
 [ext_resource type="Texture2D" uid="uid://dfnnftcghqeg2" path="res://title_screen/unit/2628889477.png" id="6_5qwff"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tm55u"]
+bg_color = Color(0.247059, 0.6, 0.6, 0.686275)
+border_width_left = 7
+border_width_top = 5
+border_width_right = 7
+border_width_bottom = 5
+border_color = Color(0, 0.8, 0.8, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 20
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 20
+corner_detail = 10
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_wqdo6"]
 atlas = ExtResource("2_xw3q7")
@@ -7913,6 +7927,38 @@ animations = [{
 [node name="Planet" type="Node2D"]
 texture_filter = 1
 script = ExtResource("1_gejpw")
+
+[node name="Screen" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 0
+
+[node name="Label" type="Label" parent="Screen"]
+layout_mode = 0
+offset_left = 505.0
+offset_top = 385.0
+offset_right = 705.0
+offset_bottom = 532.0
+theme_override_colors/font_color = Color(0, 0.8, 0.8, 1)
+theme_override_fonts/font = ExtResource("2_2yts6")
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxFlat_tm55u")
+text = "  ID :  308913
+  TYPE1 : TERRAN
+  TYPE2 : DRY
+  ROTATION : 10
+"
+vertical_alignment = 1
+metadata/_edit_use_anchors_ = true
+
+[node name="Line2D" type="Line2D" parent="Screen"]
+points = PackedVector2Array(500, 440, 500, 480)
+width = 5.0
+default_color = Color(0, 0.8, 0.8, 1)
+
+[node name="Line2D2" type="Line2D" parent="Screen"]
+points = PackedVector2Array(500, 460, 400, 500)
+width = 5.0
+default_color = Color(0, 0.8, 0.8, 1)
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
 position = Vector2(314, 479)
