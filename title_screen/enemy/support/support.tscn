@@ -1,0 +1,83 @@
+[gd_scene load_steps=13 format=3 uid="uid://kj8v0armkcrd"]
+
+[ext_resource type="Script" path="res://title_screen/enemy/support/support.gd" id="1_e0w1d"]
+[ext_resource type="Texture2D" uid="uid://cy7obtngso1pc" path="res://title_screen/enemy/support/Nautolan Ship - Support - Base.png" id="2_6ehf3"]
+[ext_resource type="Texture2D" uid="uid://bhuqw0bgw5l68" path="res://title_screen/enemy/support/Nautolan Ship - Support - Engine Effect.png" id="3_kcbvr"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_0wtuk"]
+atlas = ExtResource("3_kcbvr")
+region = Rect2(0, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_y4is3"]
+atlas = ExtResource("3_kcbvr")
+region = Rect2(64, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_rtob0"]
+atlas = ExtResource("3_kcbvr")
+region = Rect2(128, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_8csaa"]
+atlas = ExtResource("3_kcbvr")
+region = Rect2(192, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_p63xt"]
+atlas = ExtResource("3_kcbvr")
+region = Rect2(256, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_er8q2"]
+atlas = ExtResource("3_kcbvr")
+region = Rect2(320, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_y83u3"]
+atlas = ExtResource("3_kcbvr")
+region = Rect2(384, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_hn0bb"]
+atlas = ExtResource("3_kcbvr")
+region = Rect2(448, 0, 64, 64)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_huyom"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_0wtuk")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_y4is3")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_rtob0")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_8csaa")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_p63xt")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_er8q2")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_y83u3")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_hn0bb")
+}],
+"loop": true,
+"name": &"Engine",
+"speed": 5.0
+}]
+
+[node name="Support" type="CharacterBody2D"]
+texture_filter = 1
+rotation = 1.5708
+scale = Vector2(1.5, 1.5)
+script = ExtResource("1_e0w1d")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("2_6ehf3")
+
+[node name="Engine" type="AnimatedSprite2D" parent="."]
+sprite_frames = SubResource("SpriteFrames_huyom")
+animation = &"Engine"
+speed_scale = 2.0
