@@ -1,10 +1,11 @@
-[gd_scene load_steps=13 format=3 uid="uid://co1p62exjtuqb"]
+[gd_scene load_steps=14 format=3 uid="uid://co1p62exjtuqb"]
 
 [ext_resource type="Texture2D" uid="uid://c4eq0rx6tud5x" path="res://title_screen/title_screen_background.png" id="1_qeulw"]
 [ext_resource type="FontFile" uid="uid://bnlbs7kfxky73" path="res://title_screen/DNFBitBitTTF.ttf" id="2_y83uj"]
 [ext_resource type="PackedScene" uid="uid://m34ipr7mtbcr" path="res://title_screen/unit/planet.tscn" id="3_0urkd"]
+[ext_resource type="PackedScene" uid="uid://kj8v0armkcrd" path="res://title_screen/enemy/scout/scout.tscn" id="3_b3la6"]
 [ext_resource type="PackedScene" uid="uid://bex0tqbsamppq" path="res://title_screen/enemy/dreadnought/dreadnought.tscn" id="4_4vnwu"]
-[ext_resource type="PackedScene" uid="uid://kj8v0armkcrd" path="res://title_screen/enemy/support/support.tscn" id="5_eu0x5"]
+[ext_resource type="PackedScene" uid="uid://dqpfbokg2ciki" path="res://title_screen/enemy/support/support.tscn" id="5_eu0x5"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_yg0ek"]
 font_size = 80
@@ -84,7 +85,7 @@ curve = SubResource("Curve2D_ecn7f")
 [node name="PathFollow2D" type="PathFollow2D" parent="Enemys/scout/Path2D"]
 position = Vector2(0, 300)
 
-[node name="Scout" parent="Enemys/scout/Path2D/PathFollow2D" instance=ExtResource("5_eu0x5")]
+[node name="Scout" parent="Enemys/scout/Path2D/PathFollow2D" instance=ExtResource("3_b3la6")]
 
 [node name="dreadnought" type="Node2D" parent="Enemys"]
 
