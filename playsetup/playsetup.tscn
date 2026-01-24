@@ -1,0 +1,229 @@
+[gd_scene load_steps=12 format=3 uid="uid://bo7ub4mbjkkil"]
+
+[ext_resource type="PackedScene" uid="uid://bhmihx0i5aiyp" path="res://playsetup/degree/degree.tscn" id="1_qrm8s"]
+[ext_resource type="Script" path="res://playsetup/playsetup.gd" id="1_ti0js"]
+[ext_resource type="PackedScene" uid="uid://bgthe5ro31e7d" path="res://prototype_moon/enemy/03_enemy.tscn" id="2_1tlua"]
+[ext_resource type="PackedScene" uid="uid://b0mwduv01uqog" path="res://prototype_moon/enemy/02_enemy.tscn" id="3_xb6jg"]
+[ext_resource type="PackedScene" uid="uid://cktr1nlpwyif4" path="res://prototype_moon/enemy/04_enemy.tscn" id="4_1hbyh"]
+[ext_resource type="Texture2D" uid="uid://dwh7qdrms47cc" path="res://playsetup/backgrund_img/Space Background (1).png" id="6_6e8aw"]
+[ext_resource type="Texture2D" uid="uid://cb7thrmnvompg" path="res://playsetup/backgrund_img/Space Background (2).png" id="7_lsefu"]
+[ext_resource type="Texture2D" uid="uid://dbcclb3xv487s" path="res://playsetup/backgrund_img/Space Background (3).png" id="8_04bpf"]
+[ext_resource type="Texture2D" uid="uid://bfbcllbohrvkj" path="res://playsetup/backgrund_img/Space Background (4).png" id="9_6care"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_3bnx0"]
+font_size = 45
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ud4rl"]
+
+[node name="Playsetup" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_ti0js")
+
+[node name="background" type="TextureRect" parent="."]
+custom_minimum_size = Vector2(1280, 720)
+layout_mode = 0
+offset_right = 1280.0
+offset_bottom = 720.0
+texture = ExtResource("6_6e8aw")
+
+[node name="BGM" type="AudioStreamPlayer" parent="."]
+
+[node name="Label" type="Label" parent="."]
+layout_mode = 0
+offset_left = 1.0
+offset_top = 16.0
+offset_right = 1281.0
+offset_bottom = 66.0
+text = "SELECT DIFFICULT"
+label_settings = SubResource("LabelSettings_3bnx0")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+layout_mode = 0
+offset_top = 100.0
+offset_right = 1280.0
+offset_bottom = 500.0
+theme_override_constants/separation = 100
+alignment = 1
+
+[node name="Degree" parent="HBoxContainer" instance=ExtResource("1_qrm8s")]
+layout_mode = 2
+
+[node name="Label" parent="HBoxContainer/Degree" index="0"]
+text = "EASY
+"
+
+[node name="01Enemy" parent="HBoxContainer/Degree" index="1"]
+scale = Vector2(2, 2)
+
+[node name="Degree2" parent="HBoxContainer" instance=ExtResource("1_qrm8s")]
+layout_mode = 2
+
+[node name="Label" parent="HBoxContainer/Degree2" index="0"]
+text = "NORMAL"
+
+[node name="01Enemy" parent="HBoxContainer/Degree2" index="1"]
+position = Vector2(127, 238)
+scale = Vector2(2, 2)
+
+[node name="03Enemy" parent="HBoxContainer/Degree2" instance=ExtResource("2_1tlua")]
+position = Vector2(88, 286)
+scale = Vector2(2, 2)
+
+[node name="Degree3" parent="HBoxContainer" instance=ExtResource("1_qrm8s")]
+layout_mode = 2
+
+[node name="Label" parent="HBoxContainer/Degree3" index="0"]
+text = "DIFFICULTY"
+
+[node name="01Enemy" parent="HBoxContainer/Degree3" index="1"]
+position = Vector2(143, 249)
+scale = Vector2(2, 2)
+
+[node name="03Enemy" parent="HBoxContainer/Degree3" instance=ExtResource("2_1tlua")]
+position = Vector2(101, 289)
+scale = Vector2(2, 2)
+
+[node name="04Enemy" parent="HBoxContainer/Degree3" instance=ExtResource("4_1hbyh")]
+position = Vector2(74, 208)
+scale = Vector2(2, 2)
+
+[node name="Degree4" parent="HBoxContainer" instance=ExtResource("1_qrm8s")]
+layout_mode = 2
+
+[node name="Label" parent="HBoxContainer/Degree4" index="0"]
+text = "VILLAINY"
+
+[node name="01Enemy" parent="HBoxContainer/Degree4" index="1"]
+position = Vector2(156, 296)
+scale = Vector2(2, 2)
+
+[node name="04Enemy" parent="HBoxContainer/Degree4" instance=ExtResource("4_1hbyh")]
+position = Vector2(65, 229)
+scale = Vector2(2, 2)
+
+[node name="02Enemy" parent="HBoxContainer/Degree4" instance=ExtResource("3_xb6jg")]
+position = Vector2(141, 151)
+scale = Vector2(2, 2)
+
+[node name="03Enemy" parent="HBoxContainer/Degree4" instance=ExtResource("2_1tlua")]
+position = Vector2(90, 336)
+scale = Vector2(2.02353, 2.03964)
+
+[node name="GridContainer" type="GridContainer" parent="."]
+layout_mode = 0
+offset_left = 83.0
+offset_top = 534.0
+offset_right = 483.0
+offset_bottom = 694.0
+columns = 5
+
+[node name="Theme1" type="Button" parent="GridContainer"]
+layout_mode = 2
+size_flags_horizontal = 7
+size_flags_vertical = 7
+size_flags_stretch_ratio = 4.44
+theme_override_styles/hover = SubResource("StyleBoxFlat_ud4rl")
+icon = ExtResource("6_6e8aw")
+icon_alignment = 1
+expand_icon = true
+
+[node name="Theme2" type="Button" parent="GridContainer"]
+layout_mode = 2
+size_flags_horizontal = 7
+size_flags_vertical = 7
+size_flags_stretch_ratio = 4.44
+theme_override_styles/hover = SubResource("StyleBoxFlat_ud4rl")
+icon = ExtResource("7_lsefu")
+expand_icon = true
+
+[node name="Theme3" type="Button" parent="GridContainer"]
+layout_mode = 2
+size_flags_horizontal = 7
+size_flags_vertical = 7
+size_flags_stretch_ratio = 4.44
+theme_override_styles/hover = SubResource("StyleBoxFlat_ud4rl")
+icon = ExtResource("8_04bpf")
+expand_icon = true
+
+[node name="Theme4" type="Button" parent="GridContainer"]
+layout_mode = 2
+size_flags_horizontal = 7
+size_flags_vertical = 7
+size_flags_stretch_ratio = 4.44
+theme_override_styles/hover = SubResource("StyleBoxFlat_ud4rl")
+icon = ExtResource("9_6care")
+expand_icon = true
+
+[node name="Theme5" type="Button" parent="GridContainer"]
+layout_mode = 2
+size_flags_horizontal = 7
+size_flags_vertical = 7
+size_flags_stretch_ratio = 4.44
+theme_override_styles/hover = SubResource("StyleBoxFlat_ud4rl")
+expand_icon = true
+
+[node name="Theme6" type="Button" parent="GridContainer"]
+layout_mode = 2
+size_flags_horizontal = 7
+size_flags_vertical = 7
+size_flags_stretch_ratio = 4.44
+theme_override_styles/hover = SubResource("StyleBoxFlat_ud4rl")
+expand_icon = true
+
+[node name="Theme7" type="Button" parent="GridContainer"]
+layout_mode = 2
+size_flags_horizontal = 7
+size_flags_vertical = 7
+size_flags_stretch_ratio = 4.44
+theme_override_styles/hover = SubResource("StyleBoxFlat_ud4rl")
+expand_icon = true
+
+[node name="Theme8" type="Button" parent="GridContainer"]
+layout_mode = 2
+size_flags_horizontal = 7
+size_flags_vertical = 7
+size_flags_stretch_ratio = 4.44
+theme_override_styles/hover = SubResource("StyleBoxFlat_ud4rl")
+expand_icon = true
+
+[node name="Theme9" type="Button" parent="GridContainer"]
+layout_mode = 2
+size_flags_horizontal = 7
+size_flags_vertical = 7
+size_flags_stretch_ratio = 4.44
+theme_override_styles/hover = SubResource("StyleBoxFlat_ud4rl")
+expand_icon = true
+
+[node name="Theme10" type="Button" parent="GridContainer"]
+layout_mode = 2
+size_flags_horizontal = 7
+size_flags_vertical = 7
+size_flags_stretch_ratio = 4.44
+theme_override_styles/hover = SubResource("StyleBoxFlat_ud4rl")
+expand_icon = true
+
+[node name="Start" type="Button" parent="."]
+layout_mode = 0
+offset_left = 1045.0
+offset_top = 525.0
+offset_right = 1195.0
+offset_bottom = 675.0
+theme_override_font_sizes/font_size = 30
+text = "START"
+
+[connection signal="mouse_entered" from="GridContainer/Theme1" to="." method="_on_theme_1_mouse_entered"]
+[connection signal="mouse_entered" from="GridContainer/Theme2" to="." method="_on_theme_2_mouse_entered"]
+[connection signal="mouse_entered" from="GridContainer/Theme3" to="." method="_on_theme_3_mouse_entered"]
+[connection signal="mouse_entered" from="GridContainer/Theme4" to="." method="_on_theme_4_mouse_entered"]
+
+[editable path="HBoxContainer/Degree"]
+[editable path="HBoxContainer/Degree2"]
+[editable path="HBoxContainer/Degree3"]
+[editable path="HBoxContainer/Degree4"]
