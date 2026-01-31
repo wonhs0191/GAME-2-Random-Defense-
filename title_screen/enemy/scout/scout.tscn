@@ -1,0 +1,84 @@
+[gd_scene load_steps=13 format=3 uid="uid://kj8v0armkcrd"]
+
+[ext_resource type="Texture2D" uid="uid://mtsbcm80awkm" path="res://title_screen/enemy/scout/Nautolan Ship - Scout - Base.png" id="1_q2xys"]
+[ext_resource type="Script" path="res://title_screen/enemy/scout/scout.gd" id="1_wt4ko"]
+[ext_resource type="Texture2D" uid="uid://bqsp2o17ded0v" path="res://title_screen/enemy/scout/Nautolan Ship - Scout - Engine Effect.png" id="2_n3wwg"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_h6s28"]
+atlas = ExtResource("2_n3wwg")
+region = Rect2(0, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ucg8b"]
+atlas = ExtResource("2_n3wwg")
+region = Rect2(64, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_4y2va"]
+atlas = ExtResource("2_n3wwg")
+region = Rect2(128, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_kqcca"]
+atlas = ExtResource("2_n3wwg")
+region = Rect2(192, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_2d065"]
+atlas = ExtResource("2_n3wwg")
+region = Rect2(256, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_wu05x"]
+atlas = ExtResource("2_n3wwg")
+region = Rect2(320, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ou8iy"]
+atlas = ExtResource("2_n3wwg")
+region = Rect2(384, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_bxfoa"]
+atlas = ExtResource("2_n3wwg")
+region = Rect2(448, 0, 64, 64)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_huyom"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_h6s28")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ucg8b")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_4y2va")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_kqcca")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_2d065")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_wu05x")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ou8iy")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_bxfoa")
+}],
+"loop": true,
+"name": &"Engine",
+"speed": 5.0
+}]
+
+[node name="Scout" type="CharacterBody2D"]
+texture_filter = 1
+rotation = 1.5708
+scale = Vector2(1.5, 1.5)
+script = ExtResource("1_wt4ko")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("1_q2xys")
+
+[node name="Engine" type="AnimatedSprite2D" parent="."]
+sprite_frames = SubResource("SpriteFrames_huyom")
+animation = &"Engine"
+frame_progress = 0.605642
+speed_scale = 2.0
