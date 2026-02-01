@@ -1,19 +1,134 @@
-[gd_scene load_steps=12 format=3 uid="uid://bo7ub4mbjkkil"]
+[gd_scene load_steps=27 format=3 uid="uid://bo7ub4mbjkkil"]
 
 [ext_resource type="PackedScene" uid="uid://bhmihx0i5aiyp" path="res://playsetup/degree/degree.tscn" id="1_qrm8s"]
 [ext_resource type="Script" path="res://playsetup/playsetup.gd" id="1_ti0js"]
 [ext_resource type="PackedScene" uid="uid://bgthe5ro31e7d" path="res://prototype_moon/enemy/03_enemy.tscn" id="2_1tlua"]
+[ext_resource type="Texture2D" uid="uid://b1bw2ihthgldo" path="res://title_screen/title_screen_background.png" id="2_eyww5"]
 [ext_resource type="PackedScene" uid="uid://b0mwduv01uqog" path="res://prototype_moon/enemy/02_enemy.tscn" id="3_xb6jg"]
 [ext_resource type="PackedScene" uid="uid://cktr1nlpwyif4" path="res://prototype_moon/enemy/04_enemy.tscn" id="4_1hbyh"]
-[ext_resource type="Texture2D" uid="uid://dwh7qdrms47cc" path="res://playsetup/backgrund_img/Space Background (1).png" id="6_6e8aw"]
-[ext_resource type="Texture2D" uid="uid://cb7thrmnvompg" path="res://playsetup/backgrund_img/Space Background (2).png" id="7_lsefu"]
-[ext_resource type="Texture2D" uid="uid://dbcclb3xv487s" path="res://playsetup/backgrund_img/Space Background (3).png" id="8_04bpf"]
-[ext_resource type="Texture2D" uid="uid://bfbcllbohrvkj" path="res://playsetup/backgrund_img/Space Background (4).png" id="9_6care"]
+[ext_resource type="ButtonGroup" uid="uid://dqd14gp22by5b" path="res://playsetup/degree/difficult_group.tres" id="4_phy1l"]
+[ext_resource type="Texture2D" uid="uid://0mkc3pic2fsg" path="res://playsetup/background_img/oil_500.png" id="7_ol61y"]
+[ext_resource type="ButtonGroup" uid="uid://cryhbi2oqe75c" path="res://playsetup/degree/theme_group.tres" id="8_iwtou"]
+[ext_resource type="Texture2D" uid="uid://db86xu8hofkbu" path="res://playsetup/background_img/borkfest_500.png" id="8_yitv4"]
+[ext_resource type="Texture2D" uid="uid://ikwbmby7cs8v" path="res://playsetup/background_img/ammo_500.png" id="9_lr8kj"]
+[ext_resource type="Texture2D" uid="uid://catyc641451ac" path="res://playsetup/background_img/submerged_500.png" id="10_48w6s"]
+[ext_resource type="Texture2D" uid="uid://d3irkvdkny3di" path="res://playsetup/background_img/funky_500.png" id="11_i6be2"]
+[ext_resource type="Texture2D" uid="uid://cqqmgrvxwfvuk" path="res://playsetup/background_img/winter_500.png" id="12_3iukl"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_3bnx0"]
 font_size = 45
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_in5e1"]
+bg_color = Color(0.6, 0.6, 0.6, 0)
+draw_center = false
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+expand_margin_left = 3.0
+expand_margin_top = 3.0
+expand_margin_right = 3.0
+expand_margin_bottom = 3.0
+shadow_color = Color(1, 1, 1, 1)
+shadow_size = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ekwjy"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_i8ngv"]
+bg_color = Color(0.6, 0.6, 0.6, 0)
+draw_center = false
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+expand_margin_left = 3.0
+expand_margin_top = 3.0
+expand_margin_right = 3.0
+expand_margin_bottom = 3.0
+shadow_color = Color(1, 1, 1, 1)
+shadow_size = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_y3x1b"]
+bg_color = Color(0.6, 0.6, 0.6, 0)
+draw_center = false
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+shadow_color = Color(1, 1, 1, 1)
+shadow_size = 1
+
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ud4rl"]
+bg_color = Color(0, 0, 0, 0)
+draw_center = false
+expand_margin_left = 3.0
+expand_margin_top = 3.0
+expand_margin_right = 3.0
+expand_margin_bottom = 3.0
+shadow_color = Color(1, 1, 1, 0.6)
+shadow_size = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pmevc"]
+bg_color = Color(0.6, 0.6, 0.6, 0)
+draw_center = false
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+expand_margin_left = 3.0
+expand_margin_top = 3.0
+expand_margin_right = 3.0
+expand_margin_bottom = 3.0
+shadow_color = Color(1, 1, 1, 1)
+shadow_size = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_knfho"]
+bg_color = Color(0.6, 0.6, 0.6, 0)
+draw_center = false
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+expand_margin_left = 3.0
+expand_margin_top = 3.0
+expand_margin_right = 3.0
+expand_margin_bottom = 3.0
+shadow_color = Color(1, 1, 1, 1)
+shadow_size = 5
+
+[sub_resource type="LabelSettings" id="LabelSettings_jvilt"]
+font_size = 36
+
+[sub_resource type="LabelSettings" id="LabelSettings_2j76f"]
+font_size = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_rq8yf"]
+bg_color = Color(0, 0, 0, 0.705882)
+draw_center = false
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+shadow_color = Color(1, 1, 1, 1)
+shadow_size = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bdrka"]
+bg_color = Color(0.6, 0.6, 0.6, 0)
+draw_center = false
+expand_margin_left = 3.0
+expand_margin_top = 3.0
+expand_margin_right = 3.0
+expand_margin_bottom = 3.0
+shadow_color = Color(1, 1, 1, 1)
+shadow_size = 10
 
 [node name="Playsetup" type="Control"]
 layout_mode = 3
@@ -29,11 +144,11 @@ custom_minimum_size = Vector2(1280, 720)
 layout_mode = 0
 offset_right = 1280.0
 offset_bottom = 720.0
-texture = ExtResource("6_6e8aw")
+texture = ExtResource("2_eyww5")
 
 [node name="BGM" type="AudioStreamPlayer" parent="."]
 
-[node name="Label" type="Label" parent="."]
+[node name="difficult" type="Label" parent="."]
 layout_mode = 0
 offset_left = 1.0
 offset_top = 16.0
@@ -48,89 +163,113 @@ vertical_alignment = 1
 layout_mode = 0
 offset_top = 100.0
 offset_right = 1280.0
-offset_bottom = 500.0
+offset_bottom = 400.0
 theme_override_constants/separation = 100
 alignment = 1
 
-[node name="Degree" parent="HBoxContainer" instance=ExtResource("1_qrm8s")]
+[node name="Degree1" parent="HBoxContainer" instance=ExtResource("1_qrm8s")]
 layout_mode = 2
+focus_neighbor_right = NodePath("../Degree2")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_in5e1")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_ekwjy")
+toggle_mode = true
+button_group = ExtResource("4_phy1l")
 
-[node name="Label" parent="HBoxContainer/Degree" index="0"]
+[node name="Label" parent="HBoxContainer/Degree1" index="1"]
 text = "EASY
 "
 
-[node name="01Enemy" parent="HBoxContainer/Degree" index="1"]
-scale = Vector2(2, 2)
+[node name="01Enemy" parent="HBoxContainer/Degree1" index="2"]
+position = Vector2(100, 257)
+scale = Vector2(1.5, 1.5)
 
 [node name="Degree2" parent="HBoxContainer" instance=ExtResource("1_qrm8s")]
 layout_mode = 2
+theme_override_styles/pressed = SubResource("StyleBoxFlat_in5e1")
+toggle_mode = true
+button_group = ExtResource("4_phy1l")
 
-[node name="Label" parent="HBoxContainer/Degree2" index="0"]
+[node name="Label" parent="HBoxContainer/Degree2" index="1"]
 text = "NORMAL"
 
-[node name="01Enemy" parent="HBoxContainer/Degree2" index="1"]
-position = Vector2(127, 238)
-scale = Vector2(2, 2)
+[node name="01Enemy" parent="HBoxContainer/Degree2" index="2"]
+position = Vector2(124, 222)
+scale = Vector2(1.5, 1.5)
 
 [node name="03Enemy" parent="HBoxContainer/Degree2" instance=ExtResource("2_1tlua")]
-position = Vector2(88, 286)
-scale = Vector2(2, 2)
+position = Vector2(86, 276)
+scale = Vector2(1.5, 1.5)
 
 [node name="Degree3" parent="HBoxContainer" instance=ExtResource("1_qrm8s")]
 layout_mode = 2
+focus_neighbor_left = NodePath("../Degree2")
+focus_neighbor_right = NodePath("../Degree4")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_in5e1")
+toggle_mode = true
+button_group = ExtResource("4_phy1l")
 
-[node name="Label" parent="HBoxContainer/Degree3" index="0"]
-text = "DIFFICULTY"
+[node name="Label" parent="HBoxContainer/Degree3" index="1"]
+text = "HARD"
 
-[node name="01Enemy" parent="HBoxContainer/Degree3" index="1"]
-position = Vector2(143, 249)
-scale = Vector2(2, 2)
+[node name="01Enemy" parent="HBoxContainer/Degree3" index="2"]
+position = Vector2(139, 229)
+scale = Vector2(1.5, 1.5)
 
 [node name="03Enemy" parent="HBoxContainer/Degree3" instance=ExtResource("2_1tlua")]
-position = Vector2(101, 289)
-scale = Vector2(2, 2)
+position = Vector2(88, 277)
+scale = Vector2(1.5, 1.5)
 
 [node name="04Enemy" parent="HBoxContainer/Degree3" instance=ExtResource("4_1hbyh")]
-position = Vector2(74, 208)
-scale = Vector2(2, 2)
+position = Vector2(76, 189)
+scale = Vector2(1.5, 1.5)
 
 [node name="Degree4" parent="HBoxContainer" instance=ExtResource("1_qrm8s")]
 layout_mode = 2
+focus_neighbor_left = NodePath("../Degree3")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_i8ngv")
+toggle_mode = true
+button_group = ExtResource("4_phy1l")
 
-[node name="Label" parent="HBoxContainer/Degree4" index="0"]
-text = "VILLAINY"
+[node name="Label" parent="HBoxContainer/Degree4" index="1"]
+z_index = 1
+text = "EXTREME"
 
-[node name="01Enemy" parent="HBoxContainer/Degree4" index="1"]
-position = Vector2(156, 296)
-scale = Vector2(2, 2)
-
-[node name="04Enemy" parent="HBoxContainer/Degree4" instance=ExtResource("4_1hbyh")]
-position = Vector2(65, 229)
-scale = Vector2(2, 2)
+[node name="01Enemy" parent="HBoxContainer/Degree4" index="2"]
+position = Vector2(143, 218)
+scale = Vector2(1.5, 1.5)
 
 [node name="02Enemy" parent="HBoxContainer/Degree4" instance=ExtResource("3_xb6jg")]
-position = Vector2(141, 151)
-scale = Vector2(2, 2)
+position = Vector2(140, 107)
+scale = Vector2(1.5, 1.5)
+
+[node name="04Enemy" parent="HBoxContainer/Degree4" instance=ExtResource("4_1hbyh")]
+position = Vector2(75, 199)
+scale = Vector2(1.5, 1.5)
 
 [node name="03Enemy" parent="HBoxContainer/Degree4" instance=ExtResource("2_1tlua")]
-position = Vector2(90, 336)
-scale = Vector2(2.02353, 2.03964)
+position = Vector2(99, 276)
+scale = Vector2(1.5, 1.5)
 
 [node name="GridContainer" type="GridContainer" parent="."]
 layout_mode = 0
-offset_left = 83.0
-offset_top = 534.0
-offset_right = 483.0
-offset_bottom = 694.0
-columns = 5
+offset_left = 90.0
+offset_top = 530.0
+offset_right = 330.0
+offset_bottom = 690.0
+columns = 3
 
 [node name="Theme1" type="Button" parent="GridContainer"]
 layout_mode = 2
 size_flags_horizontal = 7
 size_flags_vertical = 7
 size_flags_stretch_ratio = 4.44
+theme_override_styles/normal = SubResource("StyleBoxFlat_y3x1b")
 theme_override_styles/hover = SubResource("StyleBoxFlat_ud4rl")
-icon = ExtResource("6_6e8aw")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_pmevc")
+theme_override_styles/focus = SubResource("StyleBoxFlat_knfho")
+toggle_mode = true
+button_group = ExtResource("8_iwtou")
+icon = ExtResource("7_ol61y")
 icon_alignment = 1
 expand_icon = true
 
@@ -139,8 +278,13 @@ layout_mode = 2
 size_flags_horizontal = 7
 size_flags_vertical = 7
 size_flags_stretch_ratio = 4.44
+theme_override_styles/normal = SubResource("StyleBoxFlat_y3x1b")
 theme_override_styles/hover = SubResource("StyleBoxFlat_ud4rl")
-icon = ExtResource("7_lsefu")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_pmevc")
+theme_override_styles/focus = SubResource("StyleBoxFlat_knfho")
+toggle_mode = true
+button_group = ExtResource("8_iwtou")
+icon = ExtResource("8_yitv4")
 expand_icon = true
 
 [node name="Theme3" type="Button" parent="GridContainer"]
@@ -148,8 +292,13 @@ layout_mode = 2
 size_flags_horizontal = 7
 size_flags_vertical = 7
 size_flags_stretch_ratio = 4.44
+theme_override_styles/normal = SubResource("StyleBoxFlat_y3x1b")
 theme_override_styles/hover = SubResource("StyleBoxFlat_ud4rl")
-icon = ExtResource("8_04bpf")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_pmevc")
+theme_override_styles/focus = SubResource("StyleBoxFlat_knfho")
+toggle_mode = true
+button_group = ExtResource("8_iwtou")
+icon = ExtResource("9_lr8kj")
 expand_icon = true
 
 [node name="Theme4" type="Button" parent="GridContainer"]
@@ -157,8 +306,13 @@ layout_mode = 2
 size_flags_horizontal = 7
 size_flags_vertical = 7
 size_flags_stretch_ratio = 4.44
+theme_override_styles/normal = SubResource("StyleBoxFlat_y3x1b")
 theme_override_styles/hover = SubResource("StyleBoxFlat_ud4rl")
-icon = ExtResource("9_6care")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_pmevc")
+theme_override_styles/focus = SubResource("StyleBoxFlat_knfho")
+toggle_mode = true
+button_group = ExtResource("8_iwtou")
+icon = ExtResource("10_48w6s")
 expand_icon = true
 
 [node name="Theme5" type="Button" parent="GridContainer"]
@@ -166,7 +320,13 @@ layout_mode = 2
 size_flags_horizontal = 7
 size_flags_vertical = 7
 size_flags_stretch_ratio = 4.44
+theme_override_styles/normal = SubResource("StyleBoxFlat_y3x1b")
 theme_override_styles/hover = SubResource("StyleBoxFlat_ud4rl")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_pmevc")
+theme_override_styles/focus = SubResource("StyleBoxFlat_knfho")
+toggle_mode = true
+button_group = ExtResource("8_iwtou")
+icon = ExtResource("11_i6be2")
 expand_icon = true
 
 [node name="Theme6" type="Button" parent="GridContainer"]
@@ -174,56 +334,57 @@ layout_mode = 2
 size_flags_horizontal = 7
 size_flags_vertical = 7
 size_flags_stretch_ratio = 4.44
+theme_override_styles/normal = SubResource("StyleBoxFlat_y3x1b")
 theme_override_styles/hover = SubResource("StyleBoxFlat_ud4rl")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_pmevc")
+theme_override_styles/focus = SubResource("StyleBoxFlat_knfho")
+toggle_mode = true
+button_group = ExtResource("8_iwtou")
+icon = ExtResource("12_3iukl")
 expand_icon = true
 
-[node name="Theme7" type="Button" parent="GridContainer"]
-layout_mode = 2
-size_flags_horizontal = 7
-size_flags_vertical = 7
-size_flags_stretch_ratio = 4.44
-theme_override_styles/hover = SubResource("StyleBoxFlat_ud4rl")
-expand_icon = true
+[node name="theme" type="Label" parent="."]
+layout_mode = 0
+offset_left = 90.0
+offset_top = 470.0
+offset_right = 344.0
+offset_bottom = 510.0
+text = "SELECT THEME"
+label_settings = SubResource("LabelSettings_jvilt")
 
-[node name="Theme8" type="Button" parent="GridContainer"]
-layout_mode = 2
-size_flags_horizontal = 7
-size_flags_vertical = 7
-size_flags_stretch_ratio = 4.44
-theme_override_styles/hover = SubResource("StyleBoxFlat_ud4rl")
-expand_icon = true
-
-[node name="Theme9" type="Button" parent="GridContainer"]
-layout_mode = 2
-size_flags_horizontal = 7
-size_flags_vertical = 7
-size_flags_stretch_ratio = 4.44
-theme_override_styles/hover = SubResource("StyleBoxFlat_ud4rl")
-expand_icon = true
-
-[node name="Theme10" type="Button" parent="GridContainer"]
-layout_mode = 2
-size_flags_horizontal = 7
-size_flags_vertical = 7
-size_flags_stretch_ratio = 4.44
-theme_override_styles/hover = SubResource("StyleBoxFlat_ud4rl")
-expand_icon = true
+[node name="theme_detail" type="Label" parent="."]
+layout_mode = 0
+offset_left = 400.0
+offset_top = 530.0
+offset_right = 825.0
+offset_bottom = 690.0
+text = "{THEME_DATAIL}"
+label_settings = SubResource("LabelSettings_2j76f")
+autowrap_mode = 2
 
 [node name="Start" type="Button" parent="."]
 layout_mode = 0
-offset_left = 1045.0
-offset_top = 525.0
-offset_right = 1195.0
-offset_bottom = 675.0
+offset_left = 985.0
+offset_top = 570.0
+offset_right = 1185.0
+offset_bottom = 650.0
 theme_override_font_sizes/font_size = 30
+theme_override_styles/normal = SubResource("StyleBoxFlat_rq8yf")
+theme_override_styles/hover = SubResource("StyleBoxFlat_bdrka")
 text = "START"
 
+[connection signal="pressed" from="HBoxContainer/Degree1" to="." method="_on_degree_1_pressed"]
+[connection signal="pressed" from="HBoxContainer/Degree2" to="." method="_on_degree_2_pressed"]
+[connection signal="pressed" from="HBoxContainer/Degree3" to="." method="_on_degree_3_pressed"]
+[connection signal="pressed" from="HBoxContainer/Degree4" to="." method="_on_degree_4_pressed"]
 [connection signal="mouse_entered" from="GridContainer/Theme1" to="." method="_on_theme_1_mouse_entered"]
 [connection signal="mouse_entered" from="GridContainer/Theme2" to="." method="_on_theme_2_mouse_entered"]
 [connection signal="mouse_entered" from="GridContainer/Theme3" to="." method="_on_theme_3_mouse_entered"]
 [connection signal="mouse_entered" from="GridContainer/Theme4" to="." method="_on_theme_4_mouse_entered"]
+[connection signal="mouse_entered" from="GridContainer/Theme5" to="." method="_on_theme_5_mouse_entered"]
+[connection signal="mouse_entered" from="GridContainer/Theme6" to="." method="_on_theme_6_mouse_entered"]
 
-[editable path="HBoxContainer/Degree"]
+[editable path="HBoxContainer/Degree1"]
 [editable path="HBoxContainer/Degree2"]
 [editable path="HBoxContainer/Degree3"]
 [editable path="HBoxContainer/Degree4"]
