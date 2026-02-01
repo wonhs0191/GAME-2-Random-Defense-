@@ -1,7 +1,6 @@
-[gd_scene load_steps=1813 format=3 uid="uid://m34ipr7mtbcr"]
+[gd_scene load_steps=1812 format=3 uid="uid://m34ipr7mtbcr"]
 
 [ext_resource type="Script" path="res://title_screen/unit/planet.gd" id="1_gejpw"]
-[ext_resource type="FontFile" uid="uid://bnlbs7kfxky73" path="res://title_screen/DNFBitBitTTF.ttf" id="2_2yts6"]
 [ext_resource type="Texture2D" uid="uid://ccgove6livswc" path="res://title_screen/unit/3089137573.png" id="2_xw3q7"]
 [ext_resource type="Texture2D" uid="uid://cocb5sdq22fuh" path="res://title_screen/unit/2947888694.png" id="3_k1e7m"]
 [ext_resource type="Texture2D" uid="uid://bdar6q0qsor2p" path="res://title_screen/unit/2841340472.png" id="4_i3vs4"]
@@ -12682,7 +12681,6 @@ offset_top = 385.0
 offset_right = 705.0
 offset_bottom = 532.0
 theme_override_colors/font_color = Color(0, 0.8, 0.8, 1)
-theme_override_fonts/font = ExtResource("2_2yts6")
 theme_override_font_sizes/font_size = 20
 theme_override_styles/normal = SubResource("StyleBoxFlat_tm55u")
 text = "  ID :  308913

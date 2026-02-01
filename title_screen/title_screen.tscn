@@ -1,8 +1,7 @@
-[gd_scene load_steps=17 format=3 uid="uid://co1p62exjtuqb"]
+[gd_scene load_steps=16 format=3 uid="uid://co1p62exjtuqb"]
 
 [ext_resource type="Script" path="res://title_screen/title_screen.gd" id="1_noj3s"]
 [ext_resource type="Texture2D" uid="uid://c4eq0rx6tud5x" path="res://title_screen/title_screen_background.png" id="1_qeulw"]
-[ext_resource type="FontFile" uid="uid://bnlbs7kfxky73" path="res://title_screen/DNFBitBitTTF.ttf" id="2_y83uj"]
 [ext_resource type="PackedScene" uid="uid://m34ipr7mtbcr" path="res://title_screen/unit/planet.tscn" id="3_0urkd"]
 [ext_resource type="PackedScene" uid="uid://kj8v0armkcrd" path="res://title_screen/enemy/scout/scout.tscn" id="3_b3la6"]
 [ext_resource type="PackedScene" uid="uid://bex0tqbsamppq" path="res://title_screen/enemy/dreadnought/dreadnought.tscn" id="4_4vnwu"]
@@ -92,7 +91,6 @@ offset_left = 183.0
 offset_top = 68.0
 offset_right = 1095.0
 offset_bottom = 245.0
-theme_override_fonts/font = ExtResource("2_y83uj")
 text = "Planet
 Random Defense"
 label_settings = SubResource("LabelSettings_yg0ek")
@@ -148,7 +146,6 @@ offset_left = 750.0
 offset_top = 350.0
 offset_right = 1150.0
 offset_bottom = 400.0
-theme_override_fonts/font = ExtResource("2_y83uj")
 theme_override_font_sizes/font_size = 35
 theme_override_styles/normal = SubResource("StyleBoxFlat_bc57t")
 theme_override_styles/hover = SubResource("StyleBoxFlat_y18e7")
@@ -162,7 +159,6 @@ offset_left = 750.0
 offset_top = 450.0
 offset_right = 1150.0
 offset_bottom = 500.0
-theme_override_fonts/font = ExtResource("2_y83uj")
 theme_override_font_sizes/font_size = 35
 theme_override_styles/normal = SubResource("StyleBoxFlat_bc57t")
 theme_override_styles/hover = SubResource("StyleBoxFlat_y18e7")
@@ -176,7 +172,6 @@ offset_left = 750.0
 offset_top = 550.0
 offset_right = 1150.0
 offset_bottom = 600.0
-theme_override_fonts/font = ExtResource("2_y83uj")
 theme_override_font_sizes/font_size = 35
 theme_override_styles/normal = SubResource("StyleBoxFlat_bc57t")
 theme_override_styles/hover = SubResource("StyleBoxFlat_y18e7")
