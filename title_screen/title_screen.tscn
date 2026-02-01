@@ -1,5 +1,6 @@
-[gd_scene load_steps=14 format=3 uid="uid://co1p62exjtuqb"]
+[gd_scene load_steps=17 format=3 uid="uid://co1p62exjtuqb"]
 
+[ext_resource type="Script" path="res://title_screen/title_screen.gd" id="1_noj3s"]
 [ext_resource type="Texture2D" uid="uid://c4eq0rx6tud5x" path="res://title_screen/title_screen_background.png" id="1_qeulw"]
 [ext_resource type="FontFile" uid="uid://bnlbs7kfxky73" path="res://title_screen/DNFBitBitTTF.ttf" id="2_y83uj"]
 [ext_resource type="PackedScene" uid="uid://m34ipr7mtbcr" path="res://title_screen/unit/planet.tscn" id="3_0urkd"]
@@ -33,6 +34,10 @@ point_count = 5
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bc57t"]
 bg_color = Color(0.0745098, 0.0745098, 0.0745098, 0.784314)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
 corner_radius_top_left = 10
 corner_radius_top_right = 10
 corner_radius_bottom_right = 10
@@ -40,23 +45,42 @@ corner_radius_bottom_left = 10
 corner_detail = 10
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_y18e7"]
-bg_color = Color(0.458824, 0.85098, 0.392157, 0.686275)
+bg_color = Color(0.341176, 0.678431, 0, 0)
+draw_center = false
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+corner_detail = 10
+shadow_color = Color(1, 1, 1, 0.588235)
+shadow_size = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_54dje"]
+bg_color = Color(0.682353, 0.823529, 0.678431, 0)
+draw_center = false
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
 corner_radius_top_left = 10
 corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
 corner_detail = 10
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_54dje"]
-bg_color = Color(0.682353, 0.823529, 0.678431, 1)
-corner_radius_top_left = 10
-corner_radius_top_right = 10
-corner_radius_bottom_right = 10
-corner_radius_bottom_left = 10
-corner_detail = 10
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1ofsv"]
+bg_color = Color(0.6, 0.6, 0.6, 0)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_2134j"]
+bg_color = Color(0.6, 0.6, 0.6, 0)
 
 [node name="TitleScreen" type="Node2D"]
 texture_filter = 1
+script = ExtResource("1_noj3s")
 
 [node name="background" type="TextureRect" parent="."]
 offset_right = 40.0
@@ -129,6 +153,7 @@ theme_override_font_sizes/font_size = 35
 theme_override_styles/normal = SubResource("StyleBoxFlat_bc57t")
 theme_override_styles/hover = SubResource("StyleBoxFlat_y18e7")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_54dje")
+theme_override_styles/focus = SubResource("StyleBoxFlat_1ofsv")
 text = "S T A R T"
 
 [node name="setting_button" type="Button" parent="Buttons"]
@@ -142,6 +167,7 @@ theme_override_font_sizes/font_size = 35
 theme_override_styles/normal = SubResource("StyleBoxFlat_bc57t")
 theme_override_styles/hover = SubResource("StyleBoxFlat_y18e7")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_54dje")
+theme_override_styles/focus = SubResource("StyleBoxFlat_2134j")
 text = "S E T T I N G"
 
 [node name="quit_button" type="Button" parent="Buttons"]
@@ -155,4 +181,7 @@ theme_override_font_sizes/font_size = 35
 theme_override_styles/normal = SubResource("StyleBoxFlat_bc57t")
 theme_override_styles/hover = SubResource("StyleBoxFlat_y18e7")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_54dje")
+theme_override_styles/focus = SubResource("StyleBoxFlat_2134j")
 text = "Q U I T"
+
+[connection signal="pressed" from="Buttons/start_button" to="." method="_on_start_button_pressed"]
