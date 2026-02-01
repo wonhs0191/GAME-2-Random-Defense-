@@ -20,14 +20,14 @@ func _ready():
 func _process(delta):
 	pass
 
-func _on_degree_2_pressed():
-	gamemanager.selected_difficulty = "Normal"
+# func _on_degree_2_pressed():
+# 	gamemanager.selected_difficulty = "Normal"
 
-func _on_degree_3_pressed():
-	gamemanager.selected_difficulty = "Hard"
+# func _on_degree_3_pressed():
+# 	gamemanager.selected_difficulty = "Hard"
 
-func _on_degree_4_pressed():
-	gamemanager.selected_difficulty = "Extreme"
+# func _on_degree_4_pressed():
+# 	gamemanager.selected_difficulty = "Extreme"
 
 func _on_theme_1_mouse_entered():
 	background.texture = theme01
