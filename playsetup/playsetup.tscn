@@ -1,19 +1,19 @@
-[gd_scene load_steps=27 format=3 uid="uid://bo7ub4mbjkkil"]
+[gd_scene load_steps=28 format=3 uid="uid://bo7ub4mbjkkil"]
 
 [ext_resource type="PackedScene" uid="uid://bhmihx0i5aiyp" path="res://playsetup/degree/degree.tscn" id="1_qrm8s"]
 [ext_resource type="Script" path="res://playsetup/playsetup.gd" id="1_ti0js"]
 [ext_resource type="PackedScene" uid="uid://bgthe5ro31e7d" path="res://prototype_moon/enemy/03_enemy.tscn" id="2_1tlua"]
-[ext_resource type="Texture2D" uid="uid://b1bw2ihthgldo" path="res://title_screen/title_screen_background.png" id="2_eyww5"]
+[ext_resource type="Texture2D" uid="uid://cxshxfr01k2a" path="res://title_screen/title_screen_background.png" id="2_eyww5"]
 [ext_resource type="PackedScene" uid="uid://b0mwduv01uqog" path="res://prototype_moon/enemy/02_enemy.tscn" id="3_xb6jg"]
 [ext_resource type="PackedScene" uid="uid://cktr1nlpwyif4" path="res://prototype_moon/enemy/04_enemy.tscn" id="4_1hbyh"]
 [ext_resource type="ButtonGroup" uid="uid://dqd14gp22by5b" path="res://playsetup/degree/difficult_group.tres" id="4_phy1l"]
-[ext_resource type="Texture2D" uid="uid://0mkc3pic2fsg" path="res://playsetup/background_img/oil_500.png" id="7_ol61y"]
+[ext_resource type="Texture2D" uid="uid://54bcgdtbfyfe" path="res://playsetup/background_img/oil_500.png" id="7_ol61y"]
 [ext_resource type="ButtonGroup" uid="uid://cryhbi2oqe75c" path="res://playsetup/degree/theme_group.tres" id="8_iwtou"]
-[ext_resource type="Texture2D" uid="uid://db86xu8hofkbu" path="res://playsetup/background_img/borkfest_500.png" id="8_yitv4"]
-[ext_resource type="Texture2D" uid="uid://ikwbmby7cs8v" path="res://playsetup/background_img/ammo_500.png" id="9_lr8kj"]
-[ext_resource type="Texture2D" uid="uid://catyc641451ac" path="res://playsetup/background_img/submerged_500.png" id="10_48w6s"]
-[ext_resource type="Texture2D" uid="uid://d3irkvdkny3di" path="res://playsetup/background_img/funky_500.png" id="11_i6be2"]
-[ext_resource type="Texture2D" uid="uid://cqqmgrvxwfvuk" path="res://playsetup/background_img/winter_500.png" id="12_3iukl"]
+[ext_resource type="Texture2D" uid="uid://bvfx8u2srndho" path="res://playsetup/background_img/borkfest_500.png" id="8_yitv4"]
+[ext_resource type="Texture2D" uid="uid://2xserpl2lhfp" path="res://playsetup/background_img/ammo_500.png" id="9_lr8kj"]
+[ext_resource type="Texture2D" uid="uid://y775i4aw1x53" path="res://playsetup/background_img/submerged_500.png" id="10_48w6s"]
+[ext_resource type="Texture2D" uid="uid://dum6lreunyqqj" path="res://playsetup/background_img/funky_500.png" id="11_i6be2"]
+[ext_resource type="Texture2D" uid="uid://b1u7xpcukmpaa" path="res://playsetup/background_img/winter_500.png" id="12_3iukl"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_3bnx0"]
 font_size = 45
@@ -59,7 +59,6 @@ corner_radius_top_left = 5
 corner_radius_top_right = 5
 corner_radius_bottom_right = 5
 corner_radius_bottom_left = 5
-shadow_color = Color(1, 1, 1, 1)
 shadow_size = 1
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ud4rl"]
@@ -97,14 +96,12 @@ expand_margin_left = 3.0
 expand_margin_top = 3.0
 expand_margin_right = 3.0
 expand_margin_bottom = 3.0
-shadow_color = Color(1, 1, 1, 1)
-shadow_size = 5
 
 [sub_resource type="LabelSettings" id="LabelSettings_jvilt"]
 font_size = 36
 
 [sub_resource type="LabelSettings" id="LabelSettings_2j76f"]
-font_size = 20
+font_size = 30
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_rq8yf"]
 bg_color = Color(0, 0, 0, 0.705882)
@@ -117,18 +114,24 @@ corner_radius_top_left = 5
 corner_radius_top_right = 5
 corner_radius_bottom_right = 5
 corner_radius_bottom_left = 5
-shadow_color = Color(1, 1, 1, 1)
 shadow_size = 5
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bdrka"]
 bg_color = Color(0.6, 0.6, 0.6, 0)
 draw_center = false
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
 expand_margin_left = 3.0
 expand_margin_top = 3.0
 expand_margin_right = 3.0
 expand_margin_bottom = 3.0
-shadow_color = Color(1, 1, 1, 1)
+shadow_color = Color(1, 1, 1, 0.886275)
 shadow_size = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_i61bx"]
+bg_color = Color(0.6, 0.6, 0.6, 0)
 
 [node name="Playsetup" type="Control"]
 layout_mode = 3
@@ -354,12 +357,13 @@ label_settings = SubResource("LabelSettings_jvilt")
 
 [node name="theme_detail" type="Label" parent="."]
 layout_mode = 0
-offset_left = 400.0
-offset_top = 530.0
-offset_right = 825.0
-offset_bottom = 690.0
+offset_left = 370.0
+offset_top = 640.0
+offset_right = 696.0
+offset_bottom = 682.0
 text = "{THEME_DATAIL}"
 label_settings = SubResource("LabelSettings_2j76f")
+horizontal_alignment = 3
 autowrap_mode = 2
 
 [node name="Start" type="Button" parent="."]
@@ -371,6 +375,8 @@ offset_bottom = 650.0
 theme_override_font_sizes/font_size = 30
 theme_override_styles/normal = SubResource("StyleBoxFlat_rq8yf")
 theme_override_styles/hover = SubResource("StyleBoxFlat_bdrka")
+theme_override_styles/focus = SubResource("StyleBoxFlat_i61bx")
+disabled = true
 text = "START"
 
 [connection signal="pressed" from="HBoxContainer/Degree1" to="." method="_on_degree_1_pressed"]
@@ -378,11 +384,23 @@ text = "START"
 [connection signal="pressed" from="HBoxContainer/Degree3" to="." method="_on_degree_3_pressed"]
 [connection signal="pressed" from="HBoxContainer/Degree4" to="." method="_on_degree_4_pressed"]
 [connection signal="mouse_entered" from="GridContainer/Theme1" to="." method="_on_theme_1_mouse_entered"]
+[connection signal="mouse_exited" from="GridContainer/Theme1" to="." method="_on_theme_1_mouse_exited"]
+[connection signal="pressed" from="GridContainer/Theme1" to="." method="_on_theme_1_pressed"]
 [connection signal="mouse_entered" from="GridContainer/Theme2" to="." method="_on_theme_2_mouse_entered"]
+[connection signal="mouse_exited" from="GridContainer/Theme2" to="." method="_on_theme_2_mouse_exited"]
+[connection signal="pressed" from="GridContainer/Theme2" to="." method="_on_theme_2_pressed"]
 [connection signal="mouse_entered" from="GridContainer/Theme3" to="." method="_on_theme_3_mouse_entered"]
+[connection signal="mouse_exited" from="GridContainer/Theme3" to="." method="_on_theme_3_mouse_exited"]
+[connection signal="pressed" from="GridContainer/Theme3" to="." method="_on_theme_3_pressed"]
 [connection signal="mouse_entered" from="GridContainer/Theme4" to="." method="_on_theme_4_mouse_entered"]
+[connection signal="mouse_exited" from="GridContainer/Theme4" to="." method="_on_theme_4_mouse_exited"]
+[connection signal="pressed" from="GridContainer/Theme4" to="." method="_on_theme_4_pressed"]
 [connection signal="mouse_entered" from="GridContainer/Theme5" to="." method="_on_theme_5_mouse_entered"]
+[connection signal="mouse_exited" from="GridContainer/Theme5" to="." method="_on_theme_5_mouse_exited"]
+[connection signal="pressed" from="GridContainer/Theme5" to="." method="_on_theme_5_pressed"]
 [connection signal="mouse_entered" from="GridContainer/Theme6" to="." method="_on_theme_6_mouse_entered"]
+[connection signal="mouse_exited" from="GridContainer/Theme6" to="." method="_on_theme_6_mouse_exited"]
+[connection signal="pressed" from="GridContainer/Theme6" to="." method="_on_theme_6_pressed"]
 
 [editable path="HBoxContainer/Degree1"]
 [editable path="HBoxContainer/Degree2"]
