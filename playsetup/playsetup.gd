@@ -1,7 +1,7 @@
 extends Control
 
 @onready var background   = $background
-@onready var theme_detail = $theme_detail
+@onready var theme_detail = $Theme/theme_detail
 @onready var start_button = $Start
 
 # 맵 선언(경로) 		#TODO : 경로 변경 시 수정 필요
@@ -72,7 +72,7 @@ func _on_theme_1_pressed():       # 클릭하면: 저장 (확정)
 func _on_theme_2_pressed():
 	background.texture = theme02
 	GameData.selected_theme_texture = theme02
-	theme_detail.text = "Borkfest"
+	theme_detail.text = "BORKFEST"
 	print("테마 2 : ", GameData.selected_theme_texture)
 
 # func _on_theme_2_mouse_exited():
