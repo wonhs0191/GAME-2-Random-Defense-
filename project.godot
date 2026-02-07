@@ -24,6 +24,7 @@ window/stretch/mode="canvas_items"
 
 folder_colors={
 "res://enemy/": "purple",
+"res://global/": "gray",
 "res://title_screen/": "yellow"
 }
 
