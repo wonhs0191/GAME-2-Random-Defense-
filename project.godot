@@ -23,7 +23,8 @@ window/stretch/mode="canvas_items"
 [file_customization]
 
 folder_colors={
-"res://enemy/": "purple"
+"res://enemy/": "purple",
+"res://title_screen/": "yellow"
 }
 
 [gui]
