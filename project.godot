@@ -11,6 +11,7 @@ config_version=5
 [application]
 
 config/name="Random-defense"
+run/main_scene="res://title_screen/title_screen.tscn"
 config/features=PackedStringArray("4.2", "GL Compatibility")
 
 [display]
@@ -19,9 +20,16 @@ window/size/viewport_width=1280
 window/size/viewport_height=720
 window/stretch/mode="canvas_items"
 
+[file_customization]
+
+folder_colors={
+"res://enemy/": "purple",
+"res://title_screen/": "yellow"
+}
+
 [gui]
 
-theme/custom_font="res://playsetup/DNFBitBitTTF.ttf"
+theme/custom_font="res://DNFBitBitTTF.ttf"
 theme/default_font_generate_mipmaps=true
 
 [layer_names]
