@@ -13,39 +13,39 @@ var theme05 = preload("res://playsetup/background_img/funky_1280.png")
 var theme06 = preload("res://playsetup/background_img/winter_1280.png")
 
 func _ready():
-	GameData.selected_theme_texture = preload("res://title_screen/title_screen_background.png")
-	background.texture = GameData.selected_theme_texture
+	GameSetting.selected_theme_texture = preload("res://title_screen/title_screen_background.png")
+	background.texture = GameSetting.selected_theme_texture
 	theme_detail.text = ""
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
-	GameData.selected_theme_texture
+	GameSetting.selected_theme_texture
 	# TODO : 경로 변경 시 수정 필요
 	if Input.is_action_just_pressed("ui_cancel"):
 		get_tree().change_scene_to_file("res://title_screen/title_screen.tscn")
 
 # 시작 버튼 활성화(난이도 선택 시)
 func activate_start_button():
-	if GameData.selected_difficulty != "":
+	if GameSetting.selected_difficulty != "":
 		start_button.disabled = false
 	else:
 		start_button.disabled = true
 
 ######### 난이도 저장 ###########
 func _on_degree_1_pressed():
-	GameData.selected_difficulty = "Easy"
+	GameSetting.selected_difficulty = "Easy"
 	activate_start_button()
 
 func _on_degree_2_pressed():
-	GameData.selected_difficulty = "Normal"
+	GameSetting.selected_difficulty = "Normal"
 	activate_start_button()
 
 func _on_degree_3_pressed():
-	GameData.selected_difficulty = "Hard"
+	GameSetting.selected_difficulty = "Hard"
 	activate_start_button()
 
 func _on_degree_4_pressed():
-	GameData.selected_difficulty = "Extreme"
+	GameSetting.selected_difficulty = "Extreme"
 	activate_start_button()
 
 # ========= [테마 1] =========
@@ -55,12 +55,12 @@ func _on_degree_4_pressed():
 
 func _on_theme_1_pressed():       # 클릭하면: 저장 (확정)
 	background.texture = theme01
-	GameData.selected_theme_texture = theme01
+	GameSetting.selected_theme_texture = theme01
 	theme_detail.text = "OIL6"
-	print("테마 1", GameData.selected_theme_texture)
+	print("테마 1", GameSetting.selected_theme_texture)
 
 # func _on_theme_1_mouse_exited():  # 마우스 나가면: 저장된 걸로 복구
-# 	background.texture = GameData.selected_theme_texture
+# 	background.texture = GameSetting.selected_theme_texture
 # 	theme_detail.text = ""
 
 
@@ -71,12 +71,12 @@ func _on_theme_1_pressed():       # 클릭하면: 저장 (확정)
 
 func _on_theme_2_pressed():
 	background.texture = theme02
-	GameData.selected_theme_texture = theme02
+	GameSetting.selected_theme_texture = theme02
 	theme_detail.text = "BORKFEST"
-	print("테마 2 : ", GameData.selected_theme_texture)
+	print("테마 2 : ", GameSetting.selected_theme_texture)
 
 # func _on_theme_2_mouse_exited():
-# 	background.texture = GameData.selected_theme_texture
+# 	background.texture = GameSetting.selected_theme_texture
 # 	theme_detail.text = ""
 
 
@@ -87,12 +87,12 @@ func _on_theme_2_pressed():
 	
 func _on_theme_3_pressed():
 	background.texture = theme03
-	GameData.selected_theme_texture = theme03
+	GameSetting.selected_theme_texture = theme03
 	theme_detail.text = "AMMO-8"
 	print("테마 3")
 
 # func _on_theme_3_mouse_exited():
-# 	background.texture = GameData.selected_theme_texture
+# 	background.texture = GameSetting.selected_theme_texture
 # 	theme_detail.text = ""
 
 
@@ -103,11 +103,11 @@ func _on_theme_3_pressed():
 
 func _on_theme_4_pressed():
 	background.texture = theme04
-	GameData.selected_theme_texture = theme04
+	GameSetting.selected_theme_texture = theme04
 	theme_detail.text = "SUBMERGED CHIMERA"
 
 # func _on_theme_4_mouse_exited():
-# 	background.texture = GameData.selected_theme_texture
+# 	background.texture = GameSetting.selected_theme_texture
 # 	theme_detail.text = ""
 
 
@@ -118,11 +118,11 @@ func _on_theme_4_pressed():
 
 func _on_theme_5_pressed():
 	background.texture = theme05
-	GameData.selected_theme_texture = theme05
+	GameSetting.selected_theme_texture = theme05
 	theme_detail.text = "FUNKYFUTURE8"
 
 # func _on_theme_5_mouse_exited():
-# 	background.texture = GameData.selected_theme_texture
+# 	background.texture = GameSetting.selected_theme_texture
 # 	theme_detail.text = ""
 
 
@@ -133,9 +133,9 @@ func _on_theme_5_pressed():
 
 func _on_theme_6_pressed():
 	background.texture = theme06
-	GameData.selected_theme_texture = theme06
+	GameSetting.selected_theme_texture = theme06
 	theme_detail.text = "WINTER WONDERLAND"
 
 # func _on_theme_6_mouse_exited():
-# 	background.texture = GameData.selected_theme_texture
+# 	background.texture = GameSetting.selected_theme_texture
 # 	theme_detail.text = ""
