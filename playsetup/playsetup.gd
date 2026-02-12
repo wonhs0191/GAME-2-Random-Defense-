@@ -57,7 +57,7 @@ func _on_theme_1_pressed():       # 클릭하면: 저장 (확정)
 	background.texture = theme01
 	GameSetting.selected_theme_texture = theme01
 	theme_detail.text = "OIL6"
-	print("테마 1", GameSetting.selected_theme_texture)
+	#print("테마 1", GameSetting.selected_theme_texture)
 
 # func _on_theme_1_mouse_exited():  # 마우스 나가면: 저장된 걸로 복구
 # 	background.texture = GameSetting.selected_theme_texture
@@ -73,7 +73,7 @@ func _on_theme_2_pressed():
 	background.texture = theme02
 	GameSetting.selected_theme_texture = theme02
 	theme_detail.text = "BORKFEST"
-	print("테마 2 : ", GameSetting.selected_theme_texture)
+	#print("테마 2 : ", GameSetting.selected_theme_texture)
 
 # func _on_theme_2_mouse_exited():
 # 	background.texture = GameSetting.selected_theme_texture
@@ -89,7 +89,7 @@ func _on_theme_3_pressed():
 	background.texture = theme03
 	GameSetting.selected_theme_texture = theme03
 	theme_detail.text = "AMMO-8"
-	print("테마 3")
+	#print("테마 3")
 
 # func _on_theme_3_mouse_exited():
 # 	background.texture = GameSetting.selected_theme_texture
