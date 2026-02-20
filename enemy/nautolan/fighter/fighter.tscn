@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3 uid="uid://vaeygyqgswys"]
+[gd_scene load_steps=14 format=3 uid="uid://vaeygyqgswys"]
 
 [ext_resource type="Script" path="res://enemy/nautolan/fighter/fighter.gd" id="1_7u18k"]
 [ext_resource type="Texture2D" uid="uid://deeya1l3v1bbx" path="res://enemy/nautolan/fighter/Nautolan Ship - Fighter - Base.png" id="1_uwcxh"]
@@ -68,13 +68,19 @@ animations = [{
 "speed": 5.0
 }]
 
+[sub_resource type="CircleShape2D" id="CircleShape2D_15a5s"]
+radius = 12.0
+
 [node name="Fighter" type="CharacterBody2D"]
 texture_filter = 1
 script = ExtResource("1_7u18k")
 
-[node name="Body" type="Sprite2D" parent="."]
-texture = ExtResource("1_uwcxh")
-
 [node name="Engine" type="AnimatedSprite2D" parent="."]
 sprite_frames = SubResource("SpriteFrames_bk253")
 speed_scale = 2.0
+
+[node name="Body" type="Sprite2D" parent="."]
+texture = ExtResource("1_uwcxh")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_15a5s")

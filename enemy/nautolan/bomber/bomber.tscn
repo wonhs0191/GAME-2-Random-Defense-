@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3 uid="uid://bam3bu6brfpk5"]
+[gd_scene load_steps=14 format=3 uid="uid://bam3bu6brfpk5"]
 
 [ext_resource type="Script" path="res://enemy/nautolan/bomber/bomber.gd" id="1_rqt5x"]
 [ext_resource type="Texture2D" uid="uid://vygsiqql5hks" path="res://enemy/nautolan/bomber/Nautolan Ship - Bomber - Base.png" id="1_ufrxm"]
@@ -68,13 +68,19 @@ animations = [{
 "speed": 5.0
 }]
 
+[sub_resource type="CircleShape2D" id="CircleShape2D_v7tt5"]
+radius = 12.0
+
 [node name="Bomber" type="CharacterBody2D"]
 texture_filter = 1
 script = ExtResource("1_rqt5x")
 
-[node name="Body" type="Sprite2D" parent="."]
-texture = ExtResource("1_ufrxm")
-
 [node name="Engine" type="AnimatedSprite2D" parent="."]
 sprite_frames = SubResource("SpriteFrames_sg2at")
 speed_scale = 2.0
+
+[node name="Body" type="Sprite2D" parent="."]
+texture = ExtResource("1_ufrxm")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_v7tt5")
