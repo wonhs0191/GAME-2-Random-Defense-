@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3 uid="uid://b3xflanh03pat"]
+[gd_scene load_steps=14 format=3 uid="uid://b3xflanh03pat"]
 
 [ext_resource type="Texture2D" uid="uid://dx0ydjd5f7bkg" path="res://enemy/nautolan/battlecruiser/Nautolan Ship - Battlecruiser - Base.png" id="1_3f43b"]
 [ext_resource type="Script" path="res://enemy/nautolan/battlecruiser/battlecruiser.gd" id="1_b0iiq"]
@@ -68,14 +68,22 @@ animations = [{
 "speed": 5.0
 }]
 
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_lh38s"]
+radius = 20.0
+height = 60.0
+
 [node name="Battlecruiser" type="CharacterBody2D"]
 texture_filter = 1
 script = ExtResource("1_b0iiq")
-
-[node name="Body" type="Sprite2D" parent="."]
-texture = ExtResource("1_3f43b")
 
 [node name="Engine" type="AnimatedSprite2D" parent="."]
 sprite_frames = SubResource("SpriteFrames_g8jst")
 frame_progress = 0.405419
 speed_scale = 2.0
+
+[node name="Body" type="Sprite2D" parent="."]
+texture = ExtResource("1_3f43b")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -10)
+shape = SubResource("CapsuleShape2D_lh38s")

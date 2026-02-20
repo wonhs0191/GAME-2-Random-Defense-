@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3 uid="uid://bwo7ae2v4wagr"]
+[gd_scene load_steps=14 format=3 uid="uid://bwo7ae2v4wagr"]
 
 [ext_resource type="Texture2D" uid="uid://c04ar0yfo3sy4" path="res://enemy/nautolan/torpedo/Nautolan Ship - Torpedo Ship.png" id="1_4ewpj"]
 [ext_resource type="Script" path="res://enemy/nautolan/torpedo/torpedo.gd" id="1_c1mch"]
@@ -68,13 +68,19 @@ animations = [{
 "speed": 5.0
 }]
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_ee8uk"]
+size = Vector2(50, 10)
+
 [node name="Torpedo" type="CharacterBody2D"]
 texture_filter = 1
 script = ExtResource("1_c1mch")
 
-[node name="Body" type="Sprite2D" parent="."]
-texture = ExtResource("1_4ewpj")
-
 [node name="Engine" type="AnimatedSprite2D" parent="."]
 sprite_frames = SubResource("SpriteFrames_cuwry")
 speed_scale = 2.0
+
+[node name="Body" type="Sprite2D" parent="."]
+texture = ExtResource("1_4ewpj")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_ee8uk")

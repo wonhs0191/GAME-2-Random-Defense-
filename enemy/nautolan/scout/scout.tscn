@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3 uid="uid://csp21qvs2ayrg"]
+[gd_scene load_steps=14 format=3 uid="uid://csp21qvs2ayrg"]
 
 [ext_resource type="Texture2D" uid="uid://cwmqa4ex7ug47" path="res://enemy/nautolan/scout/Nautolan Ship - Scout - Base.png" id="1_xc3kx"]
 [ext_resource type="Script" path="res://enemy/nautolan/scout/scout.gd" id="1_xcf7y"]
@@ -68,13 +68,19 @@ animations = [{
 "speed": 5.0
 }]
 
+[sub_resource type="CircleShape2D" id="CircleShape2D_b0e41"]
+radius = 11.0
+
 [node name="Scout" type="CharacterBody2D"]
 texture_filter = 1
 script = ExtResource("1_xcf7y")
 
-[node name="Body" type="Sprite2D" parent="."]
-texture = ExtResource("1_xc3kx")
-
 [node name="Engine" type="AnimatedSprite2D" parent="."]
 sprite_frames = SubResource("SpriteFrames_i8vdm")
 speed_scale = 2.0
+
+[node name="Body" type="Sprite2D" parent="."]
+texture = ExtResource("1_xc3kx")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_b0e41")
