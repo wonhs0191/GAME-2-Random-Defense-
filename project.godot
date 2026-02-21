@@ -26,7 +26,8 @@ folder_colors={
 "res://enemy/": "purple",
 "res://global/": "gray",
 "res://playsetup/": "yellow",
-"res://title_screen/": "yellow"
+"res://title_screen/": "yellow",
+"res://unit/": "pink"
 }
 
 [gui]
