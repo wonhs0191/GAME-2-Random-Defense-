@@ -1,7 +1,7 @@
 [gd_scene load_steps=229 format=3 uid="uid://b17i55lri6iav"]
 
-[ext_resource type="Texture2D" uid="uid://cig22gpwnfgto" path="res://unit/PRD-C-FR/PRD-C-FR-04/PRD-C-FR-04.png" id="1_e1x21"]
-[ext_resource type="Script" path="res://unit/PRD-C-FR/PRD-C-FR-04/prd_c_fr_04.gd" id="1_sjwcy"]
+[ext_resource type="Texture2D" uid="uid://di8hul106t1wu" path="res://unit/PRD-C-FR/04/PRD-C-FR-04.png" id="1_e1x21"]
+[ext_resource type="Script" path="res://unit/PRD-C-FR/04/prd_c_fr_04.gd" id="1_sjwcy"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_nuhco"]
 atlas = ExtResource("1_e1x21")
@@ -1592,4 +1592,5 @@ script = ExtResource("1_sjwcy")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
 sprite_frames = SubResource("SpriteFrames_dt6gl")
+autoplay = "default"
 speed_scale = 1.5
