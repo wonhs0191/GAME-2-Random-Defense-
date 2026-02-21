@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3 uid="uid://bracygxivqv23"]
+[gd_scene load_steps=14 format=3 uid="uid://bracygxivqv23"]
 
 [ext_resource type="Script" path="res://enemy/nautolan/dreadnought/dreadnought.gd" id="1_6es4p"]
 [ext_resource type="Texture2D" uid="uid://d3tqlpilcejbt" path="res://enemy/nautolan/dreadnought/Nautolan Ship - Dreadnought - Base.png" id="1_af0fy"]
@@ -68,13 +68,20 @@ animations = [{
 "speed": 5.0
 }]
 
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_7pvs1"]
+radius = 25.0
+height = 80.0
+
 [node name="Dreadnought" type="CharacterBody2D"]
 texture_filter = 1
 script = ExtResource("1_6es4p")
 
-[node name="Body" type="Sprite2D" parent="."]
-texture = ExtResource("1_af0fy")
-
 [node name="Engine" type="AnimatedSprite2D" parent="."]
 sprite_frames = SubResource("SpriteFrames_4dvnl")
 speed_scale = 2.0
+
+[node name="Body" type="Sprite2D" parent="."]
+texture = ExtResource("1_af0fy")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CapsuleShape2D_7pvs1")
