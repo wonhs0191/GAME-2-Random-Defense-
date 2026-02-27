@@ -1,7 +1,7 @@
 [gd_scene load_steps=229 format=3 uid="uid://3dno5vlq6gxn"]
 
-[ext_resource type="Script" path="res://unit/PRD-C-FS/06/prc_c_fs_06.gd" id="1_f5sc0"]
-[ext_resource type="Texture2D" uid="uid://cwcnawli5tdkj" path="res://unit/PRD-C-FS/06/PRD-C-FS-06.png" id="2_mmg78"]
+[ext_resource type="Script" path="res://unit/PRD-C-FS/06/prd_c_fs_06.gd" id="1_f5sc0"]
+[ext_resource type="Texture2D" uid="uid://cc3wijx2wegbw" path="res://unit/PRD-C-FS/06/PRD-C-FS-06.png" id="2_mmg78"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_58f14"]
 atlas = ExtResource("2_mmg78")
