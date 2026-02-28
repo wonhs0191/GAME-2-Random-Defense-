@@ -2,18 +2,18 @@
 
 [ext_resource type="PackedScene" uid="uid://bhmihx0i5aiyp" path="res://playsetup/degree/degree.tscn" id="1_qrm8s"]
 [ext_resource type="Script" path="res://playsetup/playsetup.gd" id="1_ti0js"]
-[ext_resource type="Texture2D" uid="uid://chjtjuvucgtvg" path="res://title_screen/title_screen_background.png" id="2_eyww5"]
+[ext_resource type="Texture2D" uid="uid://c4eq0rx6tud5x" path="res://title_screen/title_screen_background.png" id="2_eyww5"]
 [ext_resource type="ButtonGroup" uid="uid://dqd14gp22by5b" path="res://playsetup/degree/difficult_group.tres" id="4_phy1l"]
 [ext_resource type="PackedScene" uid="uid://bam3bu6brfpk5" path="res://enemy/nautolan/bomber/bomber.tscn" id="5_p45g4"]
 [ext_resource type="PackedScene" uid="uid://b3xflanh03pat" path="res://enemy/nautolan/battlecruiser/battlecruiser.tscn" id="6_eevhu"]
 [ext_resource type="PackedScene" uid="uid://bracygxivqv23" path="res://enemy/nautolan/dreadnought/dreadnought.tscn" id="7_cor45"]
-[ext_resource type="Texture2D" uid="uid://0mkc3pic2fsg" path="res://playsetup/background_img/oil_500.png" id="7_ol61y"]
+[ext_resource type="Texture2D" uid="uid://t0ryys34jsqq" path="res://playsetup/background_img/oil_500.png" id="7_ol61y"]
 [ext_resource type="ButtonGroup" uid="uid://cryhbi2oqe75c" path="res://playsetup/degree/theme_group.tres" id="8_iwtou"]
-[ext_resource type="Texture2D" uid="uid://db86xu8hofkbu" path="res://playsetup/background_img/borkfest_500.png" id="8_yitv4"]
-[ext_resource type="Texture2D" uid="uid://ikwbmby7cs8v" path="res://playsetup/background_img/ammo_500.png" id="9_lr8kj"]
-[ext_resource type="Texture2D" uid="uid://catyc641451ac" path="res://playsetup/background_img/submerged_500.png" id="10_48w6s"]
-[ext_resource type="Texture2D" uid="uid://d3irkvdkny3di" path="res://playsetup/background_img/funky_500.png" id="11_i6be2"]
-[ext_resource type="Texture2D" uid="uid://cqqmgrvxwfvuk" path="res://playsetup/background_img/winter_500.png" id="12_3iukl"]
+[ext_resource type="Texture2D" uid="uid://ditsnbw0ntg4" path="res://playsetup/background_img/borkfest_500.png" id="8_yitv4"]
+[ext_resource type="Texture2D" uid="uid://ljb1f0wowegj" path="res://playsetup/background_img/ammo_500.png" id="9_lr8kj"]
+[ext_resource type="Texture2D" uid="uid://bvlq55t1e746n" path="res://playsetup/background_img/submerged_500.png" id="10_48w6s"]
+[ext_resource type="Texture2D" uid="uid://dlu71w002t7l5" path="res://playsetup/background_img/funky_500.png" id="11_i6be2"]
+[ext_resource type="Texture2D" uid="uid://bcdedaf5gs2lv" path="res://playsetup/background_img/winter_500.png" id="12_3iukl"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_rq8yf"]
 bg_color = Color(0, 0, 0, 0.705882)
@@ -373,6 +373,7 @@ label_settings = SubResource("LabelSettings_2j76f")
 horizontal_alignment = 3
 autowrap_mode = 2
 
+[connection signal="pressed" from="Start" to="." method="_on_start_pressed"]
 [connection signal="pressed" from="Difficulty/HBoxContainer/Degree1" to="." method="_on_degree_1_pressed"]
 [connection signal="pressed" from="Difficulty/HBoxContainer/Degree2" to="." method="_on_degree_2_pressed"]
 [connection signal="pressed" from="Difficulty/HBoxContainer/Degree3" to="." method="_on_degree_3_pressed"]

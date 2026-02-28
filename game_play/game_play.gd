@@ -1,5 +1,7 @@
 extends Node2D
 
+signal wave_started
+
 func _ready():
     
 	# 하위 노드인 background를 찾아서 GameSetting에 저장된 텍스처를 적용
@@ -31,3 +33,6 @@ func _ready():
 				#! print("=== 노드 트리 구조 ===")
 				#! print_tree()
 				#! print("===================")
+
+func _on_wave_start_pressed():
+	wave_started.emit()

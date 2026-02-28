@@ -10,3 +10,13 @@ offset_right = 40.0
 offset_bottom = 40.0
 
 [node name="map" type="Node2D" parent="."]
+
+[node name="wave_start" type="Button" parent="."]
+offset_left = 100.0
+offset_top = 570.0
+offset_right = 300.0
+offset_bottom = 650.0
+theme_override_font_sizes/font_size = 25
+text = "WAVE START"
+
+[connection signal="pressed" from="wave_start" to="." method="_on_wave_start_pressed"]
