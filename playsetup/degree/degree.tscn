@@ -1,7 +1,7 @@
 [gd_scene load_steps=7 format=3 uid="uid://bhmihx0i5aiyp"]
 
-[ext_resource type="PackedScene" uid="uid://b35dboovj15st" path="res://prototype_moon/enemy/01_enemy.tscn" id="1_8h6le"]
 [ext_resource type="Texture2D" uid="uid://dyvfbfy4qjpxe" path="res://playsetup/background_img/select dificult img.png" id="1_vyp4x"]
+[ext_resource type="PackedScene" uid="uid://vaeygyqgswys" path="res://enemy/nautolan/fighter/fighter.tscn" id="2_vc3rf"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_k8n40"]
 bg_color = Color(0.247059, 0.207843, 0, 0.0117647)
@@ -76,5 +76,6 @@ text = "degree"
 label_settings = SubResource("LabelSettings_lc6ya")
 horizontal_alignment = 1
 
-[node name="01Enemy" parent="." instance=ExtResource("1_8h6le")]
-position = Vector2(100, 290)
+[node name="Fighter" parent="." instance=ExtResource("2_vc3rf")]
+position = Vector2(100.258, 290)
+scale = Vector2(1.5, 1.5)
