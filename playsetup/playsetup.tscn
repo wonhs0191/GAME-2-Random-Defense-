@@ -2,11 +2,11 @@
 
 [ext_resource type="PackedScene" uid="uid://bhmihx0i5aiyp" path="res://playsetup/degree/degree.tscn" id="1_qrm8s"]
 [ext_resource type="Script" path="res://playsetup/playsetup.gd" id="1_ti0js"]
-[ext_resource type="PackedScene" uid="uid://bgthe5ro31e7d" path="res://prototype_moon/enemy/03_enemy.tscn" id="2_1tlua"]
 [ext_resource type="Texture2D" uid="uid://chjtjuvucgtvg" path="res://title_screen/title_screen_background.png" id="2_eyww5"]
-[ext_resource type="PackedScene" uid="uid://b0mwduv01uqog" path="res://prototype_moon/enemy/02_enemy.tscn" id="3_xb6jg"]
-[ext_resource type="PackedScene" uid="uid://cktr1nlpwyif4" path="res://prototype_moon/enemy/04_enemy.tscn" id="4_1hbyh"]
 [ext_resource type="ButtonGroup" uid="uid://dqd14gp22by5b" path="res://playsetup/degree/difficult_group.tres" id="4_phy1l"]
+[ext_resource type="PackedScene" uid="uid://bam3bu6brfpk5" path="res://enemy/nautolan/bomber/bomber.tscn" id="5_p45g4"]
+[ext_resource type="PackedScene" uid="uid://b3xflanh03pat" path="res://enemy/nautolan/battlecruiser/battlecruiser.tscn" id="6_eevhu"]
+[ext_resource type="PackedScene" uid="uid://bracygxivqv23" path="res://enemy/nautolan/dreadnought/dreadnought.tscn" id="7_cor45"]
 [ext_resource type="Texture2D" uid="uid://0mkc3pic2fsg" path="res://playsetup/background_img/oil_500.png" id="7_ol61y"]
 [ext_resource type="ButtonGroup" uid="uid://cryhbi2oqe75c" path="res://playsetup/degree/theme_group.tres" id="8_iwtou"]
 [ext_resource type="Texture2D" uid="uid://db86xu8hofkbu" path="res://playsetup/background_img/borkfest_500.png" id="8_yitv4"]
@@ -200,10 +200,6 @@ button_group = ExtResource("4_phy1l")
 text = "EASY
 "
 
-[node name="01Enemy" parent="Difficulty/HBoxContainer/Degree1" index="2"]
-position = Vector2(100, 257)
-scale = Vector2(1.5, 1.5)
-
 [node name="Degree2" parent="Difficulty/HBoxContainer" instance=ExtResource("1_qrm8s")]
 layout_mode = 2
 theme_override_styles/pressed = SubResource("StyleBoxFlat_in5e1")
@@ -213,12 +209,8 @@ button_group = ExtResource("4_phy1l")
 [node name="Label" parent="Difficulty/HBoxContainer/Degree2" index="1"]
 text = "NORMAL"
 
-[node name="01Enemy" parent="Difficulty/HBoxContainer/Degree2" index="2"]
-position = Vector2(124, 222)
-scale = Vector2(1.5, 1.5)
-
-[node name="03Enemy" parent="Difficulty/HBoxContainer/Degree2" instance=ExtResource("2_1tlua")]
-position = Vector2(86, 276)
+[node name="Bomber" parent="Difficulty/HBoxContainer/Degree2" instance=ExtResource("5_p45g4")]
+position = Vector2(68, 244)
 scale = Vector2(1.5, 1.5)
 
 [node name="Degree3" parent="Difficulty/HBoxContainer" instance=ExtResource("1_qrm8s")]
@@ -232,16 +224,12 @@ button_group = ExtResource("4_phy1l")
 [node name="Label" parent="Difficulty/HBoxContainer/Degree3" index="1"]
 text = "HARD"
 
-[node name="01Enemy" parent="Difficulty/HBoxContainer/Degree3" index="2"]
-position = Vector2(139, 229)
+[node name="Bomber" parent="Difficulty/HBoxContainer/Degree3" instance=ExtResource("5_p45g4")]
+position = Vector2(62, 244)
 scale = Vector2(1.5, 1.5)
 
-[node name="03Enemy" parent="Difficulty/HBoxContainer/Degree3" instance=ExtResource("2_1tlua")]
-position = Vector2(88, 277)
-scale = Vector2(1.5, 1.5)
-
-[node name="04Enemy" parent="Difficulty/HBoxContainer/Degree3" instance=ExtResource("4_1hbyh")]
-position = Vector2(76, 189)
+[node name="Battlecruiser" parent="Difficulty/HBoxContainer/Degree3" instance=ExtResource("6_eevhu")]
+position = Vector2(133, 205)
 scale = Vector2(1.5, 1.5)
 
 [node name="Degree4" parent="Difficulty/HBoxContainer" instance=ExtResource("1_qrm8s")]
@@ -255,20 +243,16 @@ button_group = ExtResource("4_phy1l")
 z_index = 1
 text = "EXTREME"
 
-[node name="01Enemy" parent="Difficulty/HBoxContainer/Degree4" index="2"]
-position = Vector2(143, 218)
+[node name="Bomber" parent="Difficulty/HBoxContainer/Degree4" instance=ExtResource("5_p45g4")]
+position = Vector2(62, 244)
 scale = Vector2(1.5, 1.5)
 
-[node name="02Enemy" parent="Difficulty/HBoxContainer/Degree4" instance=ExtResource("3_xb6jg")]
-position = Vector2(140, 107)
+[node name="Battlecruiser" parent="Difficulty/HBoxContainer/Degree4" instance=ExtResource("6_eevhu")]
+position = Vector2(133, 205)
 scale = Vector2(1.5, 1.5)
 
-[node name="04Enemy" parent="Difficulty/HBoxContainer/Degree4" instance=ExtResource("4_1hbyh")]
-position = Vector2(75, 199)
-scale = Vector2(1.5, 1.5)
-
-[node name="03Enemy" parent="Difficulty/HBoxContainer/Degree4" instance=ExtResource("2_1tlua")]
-position = Vector2(99, 276)
+[node name="Dreadnought" parent="Difficulty/HBoxContainer/Degree4" instance=ExtResource("7_cor45")]
+position = Vector2(64, 95)
 scale = Vector2(1.5, 1.5)
 
 [node name="Theme" type="Control" parent="."]
