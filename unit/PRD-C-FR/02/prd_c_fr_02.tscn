@@ -1,7 +1,7 @@
-[gd_scene load_steps=229 format=3 uid="uid://vhq26utidh8e"]
+[gd_scene load_steps=230 format=3 uid="uid://vhq26utidh8e"]
 
 [ext_resource type="Script" path="res://unit/PRD-C-FR/02/prd_c_fr_02.gd" id="1_7m2qe"]
-[ext_resource type="Texture2D" uid="uid://cgrsya84ruam5" path="res://unit/PRD-C-FR/02/PRD-C-FR-02.png" id="1_l2e7y"]
+[ext_resource type="Texture2D" uid="uid://cyk1djwv642gj" path="res://unit/PRD-C-FR/02/PRD-C-FR-02.png" id="1_l2e7y"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_sp8hg"]
 atlas = ExtResource("1_l2e7y")
@@ -1586,6 +1586,9 @@ animations = [{
 "speed": 5.0
 }]
 
+[sub_resource type="CircleShape2D" id="CircleShape2D_gmxvn"]
+radius = 40.0
+
 [node name="PrdCFr02" type="Node2D"]
 texture_filter = 1
 script = ExtResource("1_7m2qe")
@@ -1594,3 +1597,8 @@ script = ExtResource("1_7m2qe")
 sprite_frames = SubResource("SpriteFrames_3c2ga")
 autoplay = "default"
 speed_scale = 1.5
+
+[node name="Area2D" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
+shape = SubResource("CircleShape2D_gmxvn")

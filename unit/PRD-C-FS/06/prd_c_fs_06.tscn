@@ -1,4 +1,4 @@
-[gd_scene load_steps=229 format=3 uid="uid://3dno5vlq6gxn"]
+[gd_scene load_steps=230 format=3 uid="uid://3dno5vlq6gxn"]
 
 [ext_resource type="Script" path="res://unit/PRD-C-FS/06/prd_c_fs_06.gd" id="1_f5sc0"]
 [ext_resource type="Texture2D" uid="uid://7shn7gajekbr" path="res://unit/PRD-C-FS/06/PRD-C-FS-06.png" id="2_i8flh"]
@@ -1586,6 +1586,9 @@ animations = [{
 "speed": 5.0
 }]
 
+[sub_resource type="CircleShape2D" id="CircleShape2D_aj7ig"]
+radius = 40.0
+
 [node name="PrcCFs06" type="Node2D"]
 texture_filter = 1
 script = ExtResource("1_f5sc0")
@@ -1594,3 +1597,8 @@ script = ExtResource("1_f5sc0")
 sprite_frames = SubResource("SpriteFrames_lqjj5")
 autoplay = "default"
 speed_scale = 1.5
+
+[node name="Area2D" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
+shape = SubResource("CircleShape2D_aj7ig")
