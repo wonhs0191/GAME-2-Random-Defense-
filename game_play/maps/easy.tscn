@@ -1,0 +1,20 @@
+[gd_scene load_steps=3 format=3 uid="uid://dqu0gciek7344"]
+
+[ext_resource type="Script" path="res://game_play/maps/easy.gd" id="1_k86kc"]
+
+[sub_resource type="Curve2D" id="Curve2D_o85aw"]
+_data = {
+"points": PackedVector2Array(0, 0, 0, 0, 0, 360, 0, 0, 0, 0, 100, 360, 0, 0, 0, 0, 100, 100, 0, 0, 0, 0, 300, 100, 0, 0, 0, 0, 300, 620, 0, 0, 0, 0, 500, 620, 0, 0, 0, 0, 500, 100, 0, 0, 0, 0, 700, 100, 0, 0, 0, 0, 700, 620, 0, 0, 0, 0, 900, 620, 0, 0, 0, 0, 900, 100, 0, 0, 0, 0, 1100, 100, 0, 0, 0, 0, 1100, 600, 0, 0, 0, 0, 1300, 600)
+}
+point_count = 14
+
+[node name="Easy" type="Node2D"]
+script = ExtResource("1_k86kc")
+
+[node name="Path2D" type="Path2D" parent="."]
+curve = SubResource("Curve2D_o85aw")
+
+[node name="fighter_timer" type="Timer" parent="."]
+wait_time = 3.0
+
+[connection signal="timeout" from="fighter_timer" to="." method="_on_fighter_timer_timeout"]

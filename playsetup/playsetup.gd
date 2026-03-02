@@ -139,3 +139,7 @@ func _on_theme_6_pressed():
 # func _on_theme_6_mouse_exited():
 # 	background.texture = GameSetting.selected_theme_texture
 # 	theme_detail.text = ""
+
+
+func _on_start_pressed():
+	get_tree().change_scene_to_file("res://game_play/game_play.tscn")

@@ -1,0 +1,22 @@
+[gd_scene load_steps=2 format=3 uid="uid://xq7du1eim4pl"]
+
+[ext_resource type="Script" path="res://game_play/game_play.gd" id="1_mfwg7"]
+
+[node name="GamePlay" type="Node2D"]
+script = ExtResource("1_mfwg7")
+
+[node name="background" type="TextureRect" parent="."]
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="map" type="Node2D" parent="."]
+
+[node name="wave_start" type="Button" parent="."]
+offset_left = 100.0
+offset_top = 570.0
+offset_right = 300.0
+offset_bottom = 650.0
+theme_override_font_sizes/font_size = 25
+text = "WAVE START"
+
+[connection signal="pressed" from="wave_start" to="." method="_on_wave_start_pressed"]
