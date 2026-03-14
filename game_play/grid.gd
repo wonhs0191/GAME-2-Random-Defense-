@@ -175,3 +175,16 @@ func _tween_unit(unit: Node2D, target_pos: Vector2) -> void:
 	var tween = create_tween()
 	tween.tween_property(unit, "global_position", target_pos, snap_duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 
+# =========================================================================
+# 외부(GamePlay 버튼 등)에서 새 유닛을 생성했을 때 직접 넘겨받는 함수
+# =========================================================================
+func add_new_unit(unit: Node2D, spawn_world_pos: Vector2) -> void:
+	var target_cell = world_to_grid(spawn_world_pos)
+	
+	# 자리가 꽉 차있으면 주변(가까운 빈 곳) 탐색
+	if not is_cell_empty(target_cell):
+		target_cell = get_closest_empty_cell(target_cell)
+		
+	# 찾은 안전한 위치로 유닛을 보내고 딕셔너리에 점유 상태 등록
+	unit.global_position = grid_to_world(target_cell) + Vector2(tile_size.x/2.0, tile_size.y/2.0)
+	register_unit(target_cell, unit)

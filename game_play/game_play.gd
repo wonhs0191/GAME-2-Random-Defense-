@@ -80,4 +80,11 @@ func _on_button_pressed():
 		
 		# 화면(Viewport)의 크기를 가져와 정중앙 좌표 계산
 		var viewport_size = get_viewport_rect().size
-		new_unit.global_position = viewport_size / 2
+		var center_pos = viewport_size / 2
+		
+		# (핵심) GridManager에게 새로 생성된 유닛을 던져주어 알아서 배치하게 만듦
+		var grid = $Grid
+		if grid and grid.has_method("add_new_unit"):
+			grid.add_new_unit(new_unit, center_pos)
+		else:
+			new_unit.global_position = center_pos
