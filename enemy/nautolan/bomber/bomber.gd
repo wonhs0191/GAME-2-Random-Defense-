@@ -1,15 +1,14 @@
-extends CharacterBody2D
+extends EnemyBase
 
-var move_speed: float          = 50.0          # 이동 속도
 var path_2d: Path2D            = null          # Path2D 참조
 var progress: float            = 0.0           # 각 bomber만의 progress 값 (0.0 ~ 1.0)
 var previous_position: Vector2 = Vector2.ZERO  # 이전 프레임의 위치 (방향 계산용)
 
+func _init():
+	move_speed = 50.0
+
 func _ready():
-	# 씬 실행 시 default 애니메이션 자동 재생
-	var engine = $Engine
-	if engine:
-		engine.play("default")
+	super._ready()
 	
 	# 부모 노드가 Path2D인지 확인
 	if get_parent() is Path2D:
