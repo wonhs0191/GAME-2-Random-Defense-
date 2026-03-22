@@ -1,10 +1,11 @@
-extends Node2D
+extends UnitBase
 
 var is_dragging: bool = false
 var drag_offset: Vector2 = Vector2.ZERO
 
 # ready에서 Area2D의 input_event 시그널을 연결
 func _ready():
+	super._ready()
 	var area_2d = $Area2D
 	if area_2d:
 		area_2d.input_event.connect(_on_area_2d_input_event)
