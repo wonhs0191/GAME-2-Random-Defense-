@@ -8,7 +8,7 @@ class_name GridManager
 
 # 디버깅 및 사용자 확인을 위해 기본적으로는 보이게 설정합니다.
 # 추후 드래그 앤 드롭 시에만 보이게 하려면 _ready 등에서 hide() 처리 후 시그널로 켭니다.
-var show_grid: bool = true:
+var show_grid: bool = false:
 	set(value):
 		show_grid = value
 		queue_redraw() # visible 상태가 바뀔 때마다 _draw() 함수를 다시 호출하도록 예약
