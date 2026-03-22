@@ -1,0 +1,86 @@
+[gd_scene load_steps=14 format=3 uid="uid://vaeygyqgswys"]
+
+[ext_resource type="Script" path="res://entities/enemies/nautolan/fighter/fighter.gd" id="1_7u18k"]
+[ext_resource type="Texture2D" uid="uid://deeya1l3v1bbx" path="res://entities/enemies/nautolan/fighter/Nautolan Ship - Fighter - Base.png" id="1_uwcxh"]
+[ext_resource type="Texture2D" uid="uid://bd2m8kp7tovgq" path="res://entities/enemies/nautolan/fighter/Nautolan Ship - Fighter - Engine Effect.png" id="2_253g7"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_sivo8"]
+atlas = ExtResource("2_253g7")
+region = Rect2(0, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_khv5y"]
+atlas = ExtResource("2_253g7")
+region = Rect2(64, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_saxwk"]
+atlas = ExtResource("2_253g7")
+region = Rect2(128, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ya3du"]
+atlas = ExtResource("2_253g7")
+region = Rect2(192, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_c7v4s"]
+atlas = ExtResource("2_253g7")
+region = Rect2(256, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_2ddum"]
+atlas = ExtResource("2_253g7")
+region = Rect2(320, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_yolji"]
+atlas = ExtResource("2_253g7")
+region = Rect2(384, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_qejpy"]
+atlas = ExtResource("2_253g7")
+region = Rect2(448, 0, 64, 64)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_bk253"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_sivo8")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_khv5y")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_saxwk")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ya3du")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_c7v4s")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_2ddum")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_yolji")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_qejpy")
+}],
+"loop": true,
+"name": &"default",
+"speed": 5.0
+}]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_15a5s"]
+radius = 12.0
+
+[node name="Fighter" type="CharacterBody2D"]
+texture_filter = 1
+script = ExtResource("1_7u18k")
+
+[node name="Engine" type="AnimatedSprite2D" parent="."]
+sprite_frames = SubResource("SpriteFrames_bk253")
+speed_scale = 2.0
+
+[node name="Body" type="Sprite2D" parent="."]
+texture = ExtResource("1_uwcxh")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_15a5s")

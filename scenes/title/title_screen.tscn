@@ -1,0 +1,182 @@
+[gd_scene load_steps=16 format=3 uid="uid://co1p62exjtuqb"]
+
+[ext_resource type="Script" path="res://scenes/title/title_screen.gd" id="1_noj3s"]
+[ext_resource type="Texture2D" uid="uid://c4eq0rx6tud5x" path="res://scenes/title/title_screen_background.png" id="1_qeulw"]
+[ext_resource type="PackedScene" uid="uid://m34ipr7mtbcr" path="res://scenes/title/unit/planet.tscn" id="3_0urkd"]
+[ext_resource type="PackedScene" uid="uid://kj8v0armkcrd" path="res://scenes/title/enemy/scout/scout.tscn" id="3_b3la6"]
+[ext_resource type="PackedScene" uid="uid://bex0tqbsamppq" path="res://scenes/title/enemy/dreadnought/dreadnought.tscn" id="4_4vnwu"]
+[ext_resource type="PackedScene" uid="uid://dqpfbokg2ciki" path="res://scenes/title/enemy/support/support.tscn" id="5_eu0x5"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_yg0ek"]
+font_size = 80
+shadow_size = 5
+shadow_color = Color(0, 1, 0, 1)
+shadow_offset = Vector2(5, 5)
+
+[sub_resource type="Curve2D" id="Curve2D_ecn7f"]
+_data = {
+"points": PackedVector2Array(0, 0, 0, 0, 0, 300, 0, 0, 0, 0, 1350, 300, 0, 0, 0, 0, 1350, 600, 0, 0, 0, 0, -50, 600)
+}
+point_count = 4
+
+[sub_resource type="Curve2D" id="Curve2D_savbc"]
+_data = {
+"points": PackedVector2Array(0, 0, 0, 0, 1300, 400, 0, 0, 0, 0, -100, 400, 0, 0, 0, 0, 1400, 400)
+}
+point_count = 3
+
+[sub_resource type="Curve2D" id="Curve2D_wnk7r"]
+_data = {
+"points": PackedVector2Array(0, 0, 0, 0, 600, 720, 0, 0, 0, 0, 1300, 500, 0, 0, 0, 0, 1300, 200, 0, 0, 0, 0, -100, 0, 0, 0, 0, 0, 600, 800)
+}
+point_count = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bc57t"]
+bg_color = Color(0.0745098, 0.0745098, 0.0745098, 0.784314)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+corner_detail = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_y18e7"]
+bg_color = Color(0.341176, 0.678431, 0, 0)
+draw_center = false
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+corner_detail = 10
+shadow_color = Color(1, 1, 1, 0.588235)
+shadow_size = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_54dje"]
+bg_color = Color(0.682353, 0.823529, 0.678431, 0)
+draw_center = false
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+corner_detail = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1ofsv"]
+bg_color = Color(0.6, 0.6, 0.6, 0)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_2134j"]
+bg_color = Color(0.6, 0.6, 0.6, 0)
+
+[node name="TitleScreen" type="Node2D"]
+texture_filter = 1
+script = ExtResource("1_noj3s")
+
+[node name="background" type="TextureRect" parent="."]
+offset_right = 40.0
+offset_bottom = 40.0
+texture = ExtResource("1_qeulw")
+
+[node name="title" type="Label" parent="."]
+offset_left = 183.0
+offset_top = 68.0
+offset_right = 1095.0
+offset_bottom = 245.0
+text = "Planet
+Random Defense"
+label_settings = SubResource("LabelSettings_yg0ek")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Enemys" type="Node2D" parent="."]
+
+[node name="scout" type="Node2D" parent="Enemys"]
+
+[node name="Path2D" type="Path2D" parent="Enemys/scout"]
+curve = SubResource("Curve2D_ecn7f")
+
+[node name="PathFollow2D" type="PathFollow2D" parent="Enemys/scout/Path2D"]
+position = Vector2(0, 300)
+
+[node name="Scout" parent="Enemys/scout/Path2D/PathFollow2D" instance=ExtResource("3_b3la6")]
+
+[node name="dreadnought" type="Node2D" parent="Enemys"]
+
+[node name="Path2D" type="Path2D" parent="Enemys/dreadnought"]
+curve = SubResource("Curve2D_savbc")
+
+[node name="PathFollow2D" type="PathFollow2D" parent="Enemys/dreadnought/Path2D"]
+position = Vector2(1300, 400)
+rotation = 3.14159
+
+[node name="Dreadnought" parent="Enemys/dreadnought/Path2D/PathFollow2D" instance=ExtResource("4_4vnwu")]
+
+[node name="support" type="Node2D" parent="Enemys"]
+
+[node name="Path2D" type="Path2D" parent="Enemys/support"]
+curve = SubResource("Curve2D_wnk7r")
+
+[node name="PathFollow2D" type="PathFollow2D" parent="Enemys/support/Path2D"]
+position = Vector2(600, 720)
+rotation = -0.304511
+
+[node name="Support" parent="Enemys/support/Path2D/PathFollow2D" instance=ExtResource("5_eu0x5")]
+
+[node name="Planet" parent="." instance=ExtResource("3_0urkd")]
+z_index = 1
+
+[node name="Buttons" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="start_button" type="Button" parent="Buttons"]
+layout_mode = 0
+offset_left = 750.0
+offset_top = 350.0
+offset_right = 1150.0
+offset_bottom = 400.0
+theme_override_font_sizes/font_size = 35
+theme_override_styles/normal = SubResource("StyleBoxFlat_bc57t")
+theme_override_styles/hover = SubResource("StyleBoxFlat_y18e7")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_54dje")
+theme_override_styles/focus = SubResource("StyleBoxFlat_1ofsv")
+text = "S T A R T"
+
+[node name="setting_button" type="Button" parent="Buttons"]
+layout_mode = 0
+offset_left = 750.0
+offset_top = 450.0
+offset_right = 1150.0
+offset_bottom = 500.0
+theme_override_font_sizes/font_size = 35
+theme_override_styles/normal = SubResource("StyleBoxFlat_bc57t")
+theme_override_styles/hover = SubResource("StyleBoxFlat_y18e7")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_54dje")
+theme_override_styles/focus = SubResource("StyleBoxFlat_2134j")
+text = "S E T T I N G"
+
+[node name="quit_button" type="Button" parent="Buttons"]
+layout_mode = 0
+offset_left = 750.0
+offset_top = 550.0
+offset_right = 1150.0
+offset_bottom = 600.0
+theme_override_font_sizes/font_size = 35
+theme_override_styles/normal = SubResource("StyleBoxFlat_bc57t")
+theme_override_styles/hover = SubResource("StyleBoxFlat_y18e7")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_54dje")
+theme_override_styles/focus = SubResource("StyleBoxFlat_2134j")
+text = "Q U I T"
+
+[connection signal="pressed" from="Buttons/start_button" to="." method="_on_start_button_pressed"]

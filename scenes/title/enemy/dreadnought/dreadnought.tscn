@@ -1,0 +1,84 @@
+[gd_scene load_steps=13 format=3 uid="uid://bex0tqbsamppq"]
+
+[ext_resource type="Script" path="res://scenes/title/enemy/dreadnought/dreadnought.gd" id="1_gvi7s"]
+[ext_resource type="Texture2D" uid="uid://bwje0whuf23v1" path="res://scenes/title/enemy/dreadnought/Nautolan Ship - Dreadnought - Base.png" id="2_6npqe"]
+[ext_resource type="Texture2D" uid="uid://b2s8fwh4l2rva" path="res://scenes/title/enemy/dreadnought/Nautolan Ship - Dreadnought - Engine Effect.png" id="3_difpb"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_5pgxl"]
+atlas = ExtResource("3_difpb")
+region = Rect2(0, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_3cmn6"]
+atlas = ExtResource("3_difpb")
+region = Rect2(128, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_g77k6"]
+atlas = ExtResource("3_difpb")
+region = Rect2(256, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_gfkpn"]
+atlas = ExtResource("3_difpb")
+region = Rect2(384, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_f6fik"]
+atlas = ExtResource("3_difpb")
+region = Rect2(512, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ohq5w"]
+atlas = ExtResource("3_difpb")
+region = Rect2(640, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_u7mi1"]
+atlas = ExtResource("3_difpb")
+region = Rect2(768, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_170mb"]
+atlas = ExtResource("3_difpb")
+region = Rect2(896, 0, 128, 128)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_huyom"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_5pgxl")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_3cmn6")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_g77k6")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_gfkpn")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_f6fik")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ohq5w")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_u7mi1")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_170mb")
+}],
+"loop": true,
+"name": &"Engine",
+"speed": 5.0
+}]
+
+[node name="Dreadnought" type="CharacterBody2D"]
+texture_filter = 1
+rotation = 1.5708
+scale = Vector2(1.5, 1.5)
+script = ExtResource("1_gvi7s")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("2_6npqe")
+
+[node name="Engine" type="AnimatedSprite2D" parent="."]
+sprite_frames = SubResource("SpriteFrames_huyom")
+animation = &"Engine"
+frame_progress = 0.0836416
+speed_scale = 2.0

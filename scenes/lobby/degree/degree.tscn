@@ -1,0 +1,81 @@
+[gd_scene load_steps=7 format=3 uid="uid://bhmihx0i5aiyp"]
+
+[ext_resource type="Texture2D" uid="uid://dyvfbfy4qjpxe" path="res://scenes/lobby/background_img/select dificult img.png" id="1_vyp4x"]
+[ext_resource type="PackedScene" uid="uid://vaeygyqgswys" path="res://entities/enemies/nautolan/fighter/fighter.tscn" id="2_vc3rf"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_k8n40"]
+bg_color = Color(0.247059, 0.207843, 0, 0.0117647)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 1, 1, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_4ucw0"]
+bg_color = Color(0, 0, 0, 0)
+draw_center = false
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+expand_margin_left = 3.0
+expand_margin_top = 3.0
+expand_margin_right = 3.0
+expand_margin_bottom = 3.0
+shadow_color = Color(1, 1, 1, 0.882353)
+shadow_size = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_wjj45"]
+bg_color = Color(0, 0, 0, 0)
+draw_center = false
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+expand_margin_left = 3.0
+expand_margin_top = 3.0
+expand_margin_right = 3.0
+expand_margin_bottom = 3.0
+shadow_color = Color(1, 1, 1, 0.6)
+shadow_size = 10
+
+[sub_resource type="LabelSettings" id="LabelSettings_lc6ya"]
+font_size = 25
+
+[node name="Degree" type="Button"]
+texture_filter = 1
+custom_minimum_size = Vector2(200, 350)
+offset_right = 200.0
+offset_bottom = 400.0
+scale = Vector2(0.987448, 1)
+size_flags_vertical = 3
+theme_override_styles/normal = SubResource("StyleBoxFlat_k8n40")
+theme_override_styles/hover = SubResource("StyleBoxFlat_4ucw0")
+theme_override_styles/focus = SubResource("StyleBoxFlat_wjj45")
+
+[node name="TextureRect" type="TextureRect" parent="."]
+visible = false
+layout_mode = 0
+offset_left = 3.0
+offset_top = 3.0
+offset_right = 197.0
+offset_bottom = 397.0
+texture = ExtResource("1_vyp4x")
+expand_mode = 1
+
+[node name="Label" type="Label" parent="."]
+layout_mode = 0
+offset_top = 43.0
+offset_right = 200.0
+offset_bottom = 66.0
+text = "degree"
+label_settings = SubResource("LabelSettings_lc6ya")
+horizontal_alignment = 1
+
+[node name="Fighter" parent="." instance=ExtResource("2_vc3rf")]
+position = Vector2(100.258, 290)
+scale = Vector2(1.5, 1.5)
