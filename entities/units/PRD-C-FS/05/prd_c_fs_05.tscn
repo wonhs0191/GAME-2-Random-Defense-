@@ -1,7 +1,7 @@
 [gd_scene load_steps=230 format=3 uid="uid://doxei5d0egipd"]
 
 [ext_resource type="Script" path="res://entities/units/PRD-C-FS/05/prd_c_fs_05.gd" id="1_d1ail"]
-[ext_resource type="Texture2D" uid="uid://byhsxlt4l608g" path="res://entities/units/PRD-C-FS/05/PRD-C-FS-05.png" id="2_b6se4"]
+[ext_resource type="Texture2D" uid="uid://bq5hdb6h56ld7" path="res://entities/units/PRD-C-FS/05/PRD-C-FS-05.png" id="2_b6se4"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_hgsvb"]
 atlas = ExtResource("2_b6se4")
@@ -1591,6 +1591,7 @@ radius = 40.0
 
 [node name="PrdCFs05" type="Node2D"]
 texture_filter = 1
+scale = Vector2(0.5, 0.5)
 script = ExtResource("1_d1ail")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
