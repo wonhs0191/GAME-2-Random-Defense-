@@ -15,11 +15,11 @@ class BuffZone:
 
 @export var tile_size: Vector2i = Vector2i(64, 64) # 기본 그리드 칸 크기 (필요시 인스펙터에서 수정)
 @export var grid_size: Vector2i = Vector2i(20, 9) # 화면에 그릴 그리드의 가로세로 칸 수
-@export var line_color: Color = Color(1, 1, 1, 0.2) # 그리드 선 색상 (반투명 흰색)
+@export var line_color: Color = Color(1, 1, 1, 0.07) # 그리드 선 색상 (반투명 흰색)
 @export var line_thickness: float = 1.0 # 그리드 선 두께
-@export var highlight_valid_color: Color = Color(0.0, 0.8, 1.0, 0.35) # 드롭 가능 (하늘색)
-@export var highlight_invalid_color: Color = Color(1.0, 0.5, 0.5, 0.35) # 드롭 불가능 (분홍색)
-@export var highlight_merge_color: Color = Color(1.0, 0.8, 0.25, 0.9) # 조합 가능 (금색)
+@export var highlight_valid_color: Color = Color(0.8, 0.92, 1.0, 0.06) # 드롭 가능 (옅은 별빛)
+@export var highlight_invalid_color: Color = Color(1.0, 0.55, 0.5, 0.0) # 드롭 불가능. 마우스를 올린 칸에만 표시
+@export var highlight_merge_color: Color = Color(1.0, 0.85, 0.45, 0.22) # 조합 가능 (옅은 금색)
 @export var range_color: Color = Color(1, 1, 1, 0.5) # 드래그 중 사거리 표시 색상
 @export var click_slop: float = 8.0 # 이 거리 안에서 놓으면 드래그가 아니라 클릭으로 본다 (px)
 
@@ -30,6 +30,10 @@ const ZONE_HIGHLIGHT_ALPHA := 0.3 # 유닛을 들고 있거나 구역을 놓는 
 const ZONE_BORDER_ALPHA := 0.8
 const ZONE_BORDER_WIDTH := 2.0
 const ZONE_BORDER_GAP := 3.0 # 능력치가 다른 구역의 테두리가 겹치지 않도록 띄우는 간격
+const CELL_INSET := 2.0 # 칸 색칠이 격자선에 붙지 않도록 띄우는 간격
+const HOVER_FILL_ALPHA := 0.16
+const HOVER_BORDER_ALPHA := 0.75
+const HOVER_BORDER_WIDTH := 2.0
 
 # 드래그 앤 드롭 시에만 보이도록 합니다.
 var show_grid: bool = false:
@@ -94,18 +98,16 @@ func _draw() -> void:
 	var width = grid_size.x * tile_size.x
 	var height = grid_size.y * tile_size.y
 
-	# 드래그 중일 때 각 셀에 크리스탈 하이라이트를 그립니다.
+	# 드래그 중에는 놓을 수 있는 칸과 합칠 수 있는 칸만 옅게 표시합니다.
 	if dragged_unit:
 		for x in range(grid_size.x):
 			for y in range(grid_size.y):
 				var cell = Vector2i(x, y)
-				var origin = Vector2(x * tile_size.x, y * tile_size.y)
 				if is_cell_empty(cell):
-					_draw_cell_crystal(origin, highlight_valid_color)
+					_draw_cell(cell, highlight_valid_color)
 				elif can_merge_at(cell):
-					_draw_cell_crystal(origin, highlight_merge_color)
-				else:
-					_draw_cell_crystal(origin, highlight_invalid_color)
+					_draw_cell(cell, highlight_merge_color)
+		_draw_hovered_cell()
 
 	# 세로선 그리기 (Vertical lines)
 	for x in range(grid_size.x + 1):
@@ -129,30 +131,25 @@ func _draw_zone(rect: Rect2i, color: Color, fill_alpha: float, inset: float) -> 
 	draw_rect(area, Color(color, fill_alpha))
 	draw_rect(area.grow(-inset - ZONE_BORDER_WIDTH), Color(color, ZONE_BORDER_ALPHA), false, ZONE_BORDER_WIDTH)
 
-# (내부) 크리스탈/보석 스타일 셀 렌더링
-# 셀을 중앙 기준 4개 삼각형으로 분할 → 중앙이 가장 밝고 가장자리로 갈수록 어두워짐
-func _draw_cell_crystal(origin: Vector2, base_color: Color) -> void:
-	var w = float(tile_size.x)
-	var h = float(tile_size.y)
+# 놓을 수 있는 칸은 배경이 비칠 만큼만 옅게 칠합니다.
+func _draw_cell(cell_pos: Vector2i, color: Color) -> void:
+	draw_rect(_cell_area(cell_pos), color)
 
-	# 꼭짓점 정의
-	var tl = origin
-	var tr = origin + Vector2(w, 0.0)
-	var br = origin + Vector2(w, h)
-	var bl = origin + Vector2(0.0, h)
-	var center = origin + Vector2(w * 0.5, h * 0.5)
+# 마우스가 있는 칸만 또렷하게 표시합니다. 색으로 놓을 수 있는지 알려 줍니다.
+func _draw_hovered_cell() -> void:
+	if not is_cell_in_bounds(_hovered_cell):
+		return
+	var hue := highlight_invalid_color
+	if is_cell_empty(_hovered_cell):
+		hue = highlight_valid_color
+	elif can_merge_at(_hovered_cell):
+		hue = highlight_merge_color
+	var area := _cell_area(_hovered_cell)
+	draw_rect(area, Color(hue, HOVER_FILL_ALPHA))
+	draw_rect(area, Color(hue, HOVER_BORDER_ALPHA), false, HOVER_BORDER_WIDTH)
 
-	# 중앙 색: 흰색을 살짝 혼합하여 크리스탈 내부 발광 효과
-	var bright = base_color.lerp(Color.WHITE, 0.55)
-	# 가장자리 색: 베이스보다 어둡고 반투명
-	var edge = base_color
-	edge.a *= 0.5
-
-	# 4개 삼각형 팬 (상 / 우 / 하 / 좌)
-	draw_polygon(PackedVector2Array([center, tl, tr]), PackedColorArray([bright, edge, edge]))
-	draw_polygon(PackedVector2Array([center, tr, br]), PackedColorArray([bright, edge, edge]))
-	draw_polygon(PackedVector2Array([center, br, bl]), PackedColorArray([bright, edge, edge]))
-	draw_polygon(PackedVector2Array([center, bl, tl]), PackedColorArray([bright, edge, edge]))
+func _cell_area(cell_pos: Vector2i) -> Rect2:
+	return Rect2(Vector2(cell_pos * tile_size), Vector2(tile_size)).grow(-CELL_INSET)
 
 # (유틸리티) 글로벌 픽셀 좌표를 그리드 타일 좌표(Vector2i)로 변환하는 함수
 func world_to_grid(world_pos: Vector2) -> Vector2i:

@@ -255,6 +255,11 @@ func test_grid_rules() -> void:
 	check(grid.grid_status.get(target) == unit, "유닛 칸 드롭은 원위치")
 	check(grid.grid_status.get(other_cell) == other, "기존 유닛 유지")
 
+	# 드래그 표시는 배경이 비칠 만큼 옅어야 한다
+	check(grid.highlight_valid_color.a <= 0.1, "드롭 가능 표시는 옅게")
+	check(grid.highlight_invalid_color.a == 0.0, "드롭 불가능 칸은 평소 칠하지 않음")
+	check(grid.highlight_merge_color.a <= 0.3, "조합 가능 표시는 옅게")
+
 	# 칸을 전부 채우면 NO_CELL
 	var filler := Node.new()
 	for x in grid.grid_size.x:
