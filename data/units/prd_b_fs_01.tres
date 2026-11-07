@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="UnitData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://entities/units/unit_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "PRD-B-FS-01"
+description = "가스 자이언트. 호박색 폭풍의 눈에서 번개를 쏘는 표준형."
+alias = "Amber Storm"
+grade = 1
+attack_type = 0
+sheet_path = "res://entities/units/generated/PRD-B-FS-01.png"
+sheet_columns = 10
+sheet_rows = 6
+effect_dir = "res://entities/units/PRD-C-FS/02/MG6"
+effect_frame_count = 30
+damage = 25.0
+attack_interval = 0.8
+attack_range = 192.0
+zone_radius = 56.0

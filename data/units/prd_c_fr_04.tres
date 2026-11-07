@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="UnitData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://entities/units/unit_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "PRD-C-FR-04"
+description = "테란 드라이. 오래전 바다가 말라붙은 자리에 에너지가 고였다."
+grade = 0
+attack_type = 1
+sheet_path = "res://entities/units/PRD-C-FR/04/PRD-C-FR-04.png"
+effect_dir = "res://entities/units/PRD-C-FR/04/4"
+effect_frame_count = 60
+effect_center = Vector2(16, 27)
+damage = 6.0
+attack_interval = 0.5
+attack_range = 192.0
+zone_radius = 56.0

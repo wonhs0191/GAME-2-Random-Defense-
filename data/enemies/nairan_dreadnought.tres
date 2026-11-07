@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://entities/enemies/enemy_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "nairan_dreadnought"
+faction = "nairan"
+ship = "dreadnought"
+body_path = "res://entities/enemies/nairan/dreadnought/Nairan - Dreadnought - Base.png"
+engine_path = "res://entities/enemies/nairan/dreadnought/Nairan - Dreadnought - Engine.png"
+visual_scale = 1.0
+max_hp = 600.0
+speed = 38.0
+reward = 15
+life_damage = 5

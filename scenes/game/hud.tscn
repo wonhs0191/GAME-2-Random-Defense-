@@ -1,0 +1,477 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://scenes/game/hud.gd" id="1"]
+[ext_resource type="Script" path="res://scenes/game/pause_menu.gd" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/common/setting_panel.tscn" id="3"]
+[ext_resource type="Script" path="res://scenes/game/gacha_reveal.gd" id="4"]
+
+[sub_resource type="StyleBoxFlat" id="tooltip_panel"]
+bg_color = Color(0.05, 0.06, 0.14, 0.96)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.45, 0.5, 0.7, 1)
+content_margin_left = 12.0
+content_margin_top = 10.0
+content_margin_right = 12.0
+content_margin_bottom = 10.0
+
+[sub_resource type="StyleBoxFlat" id="card_normal"]
+bg_color = Color(0.08, 0.1, 0.2, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.3, 0.35, 0.5, 1)
+
+[sub_resource type="StyleBoxFlat" id="card_hover"]
+bg_color = Color(0.14, 0.17, 0.32, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 1, 1, 1)
+
+[node name="HUD" type="CanvasLayer"]
+script = ExtResource("1")
+
+[node name="TopBar" type="ColorRect" parent="."]
+offset_right = 1280.0
+offset_bottom = 64.0
+color = Color(0.03, 0.04, 0.1, 0.8)
+
+[node name="GoldLabel" type="Label" parent="TopBar"]
+layout_mode = 0
+mouse_filter = 0
+tooltip_text = "행성 뽑기, 강화, 조합에 쓰는 재화입니다.\n적을 처치하고 웨이브를 넘기면 얻습니다."
+offset_left = 24.0
+offset_top = 14.0
+offset_right = 224.0
+offset_bottom = 50.0
+theme_override_colors/font_color = Color(1, 0.85, 0.35, 1)
+theme_override_font_sizes/font_size = 24
+text = "GOLD 0"
+
+[node name="LivesLabel" type="Label" parent="TopBar"]
+layout_mode = 0
+mouse_filter = 0
+tooltip_text = "적이 경로 끝에 닿으면 줄어듭니다. 0이 되면 패배합니다.\n최종 기함이 닿으면 라이프와 상관없이 패배합니다."
+offset_left = 240.0
+offset_top = 14.0
+offset_right = 440.0
+offset_bottom = 50.0
+theme_override_colors/font_color = Color(1, 0.5, 0.5, 1)
+theme_override_font_sizes/font_size = 24
+text = "LIFE 0"
+
+[node name="WaveLabel" type="Label" parent="TopBar"]
+layout_mode = 0
+mouse_filter = 0
+tooltip_text = "현재 웨이브입니다. 10웨이브마다 기함이 나타납니다."
+offset_left = 520.0
+offset_top = 14.0
+offset_right = 760.0
+offset_bottom = 50.0
+theme_override_font_sizes/font_size = 24
+text = "WAVE 0/0"
+horizontal_alignment = 1
+
+[node name="StatusLabel" type="Label" parent="TopBar"]
+layout_mode = 0
+offset_left = 776.0
+offset_top = 14.0
+offset_right = 1116.0
+offset_bottom = 50.0
+theme_override_font_sizes/font_size = 24
+text = "전투 중"
+horizontal_alignment = 2
+
+[node name="SpeedButton" type="Button" parent="TopBar"]
+tooltip_text = "게임 속도를 1배, 2배, 3배로 바꿉니다."
+layout_mode = 0
+offset_left = 1128.0
+offset_top = 10.0
+offset_right = 1192.0
+offset_bottom = 54.0
+focus_mode = 0
+theme_override_font_sizes/font_size = 20
+text = "x1"
+
+[node name="PauseButton" type="Button" parent="TopBar"]
+tooltip_text = "일시 정지합니다. Esc 키로도 할 수 있습니다."
+layout_mode = 0
+offset_left = 1200.0
+offset_top = 10.0
+offset_right = 1264.0
+offset_bottom = 54.0
+focus_mode = 0
+theme_override_font_sizes/font_size = 20
+text = "||"
+
+[node name="BottomBar" type="ColorRect" parent="."]
+offset_top = 640.0
+offset_right = 1280.0
+offset_bottom = 720.0
+mouse_filter = 2
+color = Color(0, 0, 0, 0)
+
+[node name="LeftBack" type="ColorRect" parent="BottomBar"]
+layout_mode = 0
+offset_right = 384.0
+offset_bottom = 80.0
+color = Color(0.03, 0.04, 0.1, 0.8)
+
+[node name="RightBack" type="ColorRect" parent="BottomBar"]
+layout_mode = 0
+offset_left = 896.0
+offset_right = 1280.0
+offset_bottom = 80.0
+color = Color(0.03, 0.04, 0.1, 0.8)
+
+[node name="WaveButton" type="Button" parent="BottomBar"]
+tooltip_text = "다음 웨이브를 바로 시작합니다.\n누르지 않아도 준비 시간이 끝나면 자동으로 시작합니다."
+layout_mode = 0
+offset_left = 24.0
+offset_top = 8.0
+offset_right = 184.0
+offset_bottom = 72.0
+focus_mode = 0
+theme_override_font_sizes/font_size = 18
+text = "WAVE START"
+
+[node name="UltimateButton" type="Button" parent="BottomBar"]
+layout_mode = 0
+offset_left = 192.0
+offset_top = 8.0
+offset_right = 352.0
+offset_bottom = 72.0
+focus_mode = 0
+theme_override_font_sizes/font_size = 18
+text = "필살기"
+
+[node name="GachaButton" type="Button" parent="BottomBar"]
+layout_mode = 0
+offset_left = 1016.0
+offset_top = 8.0
+offset_right = 1256.0
+offset_bottom = 72.0
+focus_mode = 0
+theme_override_font_sizes/font_size = 20
+text = "GACHA"
+
+[node name="OddsButton" type="Button" parent="BottomBar"]
+tooltip_text = "뽑기, 강화, 조합 확률과 규칙을 봅니다."
+layout_mode = 0
+offset_left = 904.0
+offset_top = 8.0
+offset_right = 1004.0
+offset_bottom = 72.0
+focus_mode = 0
+theme_override_font_sizes/font_size = 22
+text = "확률표"
+
+[node name="UnitPanel" type="PanelContainer" parent="."]
+visible = false
+offset_right = 300.0
+offset_bottom = 96.0
+theme_override_styles/panel = SubResource("tooltip_panel")
+
+[node name="Box" type="VBoxContainer" parent="UnitPanel"]
+layout_mode = 2
+
+[node name="UnitInfoLabel" type="Label" parent="UnitPanel/Box"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "C등급 PRD-C-FS-01  1성"
+
+[node name="UpgradeButton" type="Button" parent="UnitPanel/Box"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+focus_mode = 0
+theme_override_font_sizes/font_size = 18
+text = "강화"
+
+[node name="UnitTooltip" type="PanelContainer" parent="."]
+visible = false
+offset_right = 360.0
+offset_bottom = 120.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("tooltip_panel")
+
+[node name="Label" type="Label" parent="UnitTooltip"]
+custom_minimum_size = Vector2(336, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+autowrap_mode = 3
+
+[node name="GachaReveal" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 1280.0
+offset_bottom = 720.0
+mouse_filter = 2
+script = ExtResource("4")
+
+[node name="Dim" type="ColorRect" parent="GachaReveal"]
+show_behind_parent = true
+modulate = Color(1, 1, 1, 0)
+layout_mode = 0
+offset_right = 1280.0
+offset_bottom = 720.0
+mouse_filter = 2
+color = Color(0, 0, 0, 1)
+
+[node name="Planet" type="Sprite2D" parent="GachaReveal"]
+visible = false
+texture_filter = 1
+
+[node name="NameLabel" type="Label" parent="GachaReveal"]
+modulate = Color(1, 1, 1, 0)
+layout_mode = 0
+offset_top = 450.0
+offset_right = 1280.0
+offset_bottom = 540.0
+theme_override_font_sizes/font_size = 32
+horizontal_alignment = 1
+
+[node name="MessageLabel" type="Label" parent="."]
+modulate = Color(1, 1, 1, 0)
+offset_top = 88.0
+offset_right = 1280.0
+offset_bottom = 152.0
+theme_override_font_sizes/font_size = 40
+horizontal_alignment = 1
+
+[node name="Flash" type="ColorRect" parent="."]
+modulate = Color(1, 1, 1, 0)
+offset_right = 1280.0
+offset_bottom = 720.0
+mouse_filter = 2
+
+[node name="OddsPanel" type="ColorRect" parent="."]
+visible = false
+offset_left = 400.0
+offset_top = 68.0
+offset_right = 880.0
+offset_bottom = 636.0
+color = Color(0.03, 0.04, 0.1, 0.95)
+
+[node name="OddsLabel" type="Label" parent="OddsPanel"]
+layout_mode = 0
+offset_left = 32.0
+offset_top = 20.0
+offset_right = 448.0
+offset_bottom = 496.0
+theme_override_font_sizes/font_size = 22
+
+[node name="OddsCloseButton" type="Button" parent="OddsPanel"]
+tooltip_text = "확률표를 닫습니다."
+layout_mode = 0
+offset_left = 160.0
+offset_top = 504.0
+offset_right = 320.0
+offset_bottom = 556.0
+focus_mode = 0
+theme_override_font_sizes/font_size = 22
+text = "닫기"
+
+[node name="PlacementLabel" type="Label" parent="."]
+visible = false
+offset_top = 76.0
+offset_right = 1280.0
+offset_bottom = 124.0
+theme_override_font_sizes/font_size = 30
+horizontal_alignment = 1
+
+[node name="AugmentPanel" type="ColorRect" parent="."]
+process_mode = 3
+visible = false
+offset_right = 1280.0
+offset_bottom = 720.0
+color = Color(0, 0, 0, 0.7)
+
+[node name="TitleLabel" type="Label" parent="AugmentPanel"]
+layout_mode = 0
+offset_top = 96.0
+offset_right = 1280.0
+offset_bottom = 156.0
+theme_override_font_sizes/font_size = 40
+text = "우주 변칙 현상"
+horizontal_alignment = 1
+
+[node name="Card1" type="Button" parent="AugmentPanel"]
+layout_mode = 0
+offset_left = 130.0
+offset_top = 190.0
+offset_right = 410.0
+offset_bottom = 490.0
+focus_mode = 0
+theme_override_font_sizes/font_size = 26
+theme_override_styles/normal = SubResource("card_normal")
+theme_override_styles/hover = SubResource("card_hover")
+theme_override_styles/pressed = SubResource("card_hover")
+text = "증강"
+autowrap_mode = 3
+
+[node name="Strip" type="ColorRect" parent="AugmentPanel/Card1"]
+layout_mode = 0
+offset_right = 280.0
+offset_bottom = 16.0
+mouse_filter = 2
+
+[node name="Card2" type="Button" parent="AugmentPanel"]
+layout_mode = 0
+offset_left = 500.0
+offset_top = 190.0
+offset_right = 780.0
+offset_bottom = 490.0
+focus_mode = 0
+theme_override_font_sizes/font_size = 26
+theme_override_styles/normal = SubResource("card_normal")
+theme_override_styles/hover = SubResource("card_hover")
+theme_override_styles/pressed = SubResource("card_hover")
+text = "증강"
+autowrap_mode = 3
+
+[node name="Strip" type="ColorRect" parent="AugmentPanel/Card2"]
+layout_mode = 0
+offset_right = 280.0
+offset_bottom = 16.0
+mouse_filter = 2
+
+[node name="Card3" type="Button" parent="AugmentPanel"]
+layout_mode = 0
+offset_left = 870.0
+offset_top = 190.0
+offset_right = 1150.0
+offset_bottom = 490.0
+focus_mode = 0
+theme_override_font_sizes/font_size = 26
+theme_override_styles/normal = SubResource("card_normal")
+theme_override_styles/hover = SubResource("card_hover")
+theme_override_styles/pressed = SubResource("card_hover")
+text = "증강"
+autowrap_mode = 3
+
+[node name="Strip" type="ColorRect" parent="AugmentPanel/Card3"]
+layout_mode = 0
+offset_right = 280.0
+offset_bottom = 16.0
+mouse_filter = 2
+
+[node name="PauseMenu" type="ColorRect" parent="."]
+process_mode = 3
+visible = false
+offset_right = 1280.0
+offset_bottom = 720.0
+color = Color(0, 0, 0, 0.7)
+script = ExtResource("2")
+
+[node name="TitleLabel" type="Label" parent="PauseMenu"]
+layout_mode = 0
+offset_top = 150.0
+offset_right = 1280.0
+offset_bottom = 220.0
+theme_override_font_sizes/font_size = 48
+text = "일시 정지"
+horizontal_alignment = 1
+
+[node name="ResumeButton" type="Button" parent="PauseMenu"]
+tooltip_text = "게임으로 돌아갑니다."
+layout_mode = 0
+offset_left = 520.0
+offset_top = 270.0
+offset_right = 760.0
+offset_bottom = 334.0
+focus_mode = 0
+theme_override_font_sizes/font_size = 25
+text = "계속하기"
+
+[node name="SettingButton" type="Button" parent="PauseMenu"]
+tooltip_text = "음량과 화면을 설정합니다."
+layout_mode = 0
+offset_left = 520.0
+offset_top = 354.0
+offset_right = 760.0
+offset_bottom = 418.0
+focus_mode = 0
+theme_override_font_sizes/font_size = 25
+text = "설정"
+
+[node name="TitleButton" type="Button" parent="PauseMenu"]
+tooltip_text = "이번 판을 끝내고 타이틀로 돌아갑니다."
+layout_mode = 0
+offset_left = 520.0
+offset_top = 438.0
+offset_right = 760.0
+offset_bottom = 502.0
+focus_mode = 0
+theme_override_font_sizes/font_size = 25
+text = "타이틀로"
+
+[node name="SettingPanel" parent="PauseMenu" instance=ExtResource("3")]
+layout_mode = 0
+
+[node name="ResultPanel" type="ColorRect" parent="."]
+process_mode = 3
+visible = false
+offset_right = 1280.0
+offset_bottom = 720.0
+color = Color(0, 0, 0, 0.7)
+
+[node name="ResultLabel" type="Label" parent="ResultPanel"]
+layout_mode = 0
+offset_top = 220.0
+offset_right = 1280.0
+offset_bottom = 320.0
+theme_override_font_sizes/font_size = 64
+text = "GAME OVER"
+horizontal_alignment = 1
+
+[node name="ResultDetail" type="Label" parent="ResultPanel"]
+layout_mode = 0
+offset_top = 300.0
+offset_right = 1280.0
+offset_bottom = 370.0
+theme_override_font_sizes/font_size = 24
+horizontal_alignment = 1
+
+[node name="RetryButton" type="Button" parent="ResultPanel"]
+tooltip_text = "같은 난이도로 처음부터 다시 합니다."
+layout_mode = 0
+offset_left = 400.0
+offset_top = 380.0
+offset_right = 620.0
+offset_bottom = 444.0
+focus_mode = 0
+theme_override_font_sizes/font_size = 25
+text = "다시하기"
+
+[node name="TitleButton" type="Button" parent="ResultPanel"]
+tooltip_text = "이번 판을 끝내고 타이틀로 돌아갑니다."
+layout_mode = 0
+offset_left = 660.0
+offset_top = 380.0
+offset_right = 880.0
+offset_bottom = 444.0
+focus_mode = 0
+theme_override_font_sizes/font_size = 25
+text = "타이틀로"
+
+[connection signal="pressed" from="TopBar/SpeedButton" to="." method="_on_speed_button_pressed"]
+[connection signal="pressed" from="TopBar/PauseButton" to="." method="_on_pause_button_pressed"]
+[connection signal="pressed" from="PauseMenu/ResumeButton" to="PauseMenu" method="_on_resume_button_pressed"]
+[connection signal="pressed" from="PauseMenu/SettingButton" to="PauseMenu" method="_on_setting_button_pressed"]
+[connection signal="pressed" from="PauseMenu/TitleButton" to="PauseMenu" method="_on_title_button_pressed"]
+[connection signal="pressed" from="BottomBar/WaveButton" to="." method="_on_wave_button_pressed"]
+[connection signal="pressed" from="BottomBar/GachaButton" to="." method="_on_gacha_button_pressed"]
+[connection signal="pressed" from="BottomBar/UltimateButton" to="." method="_on_ultimate_button_pressed"]
+[connection signal="pressed" from="UnitPanel/Box/UpgradeButton" to="." method="_on_upgrade_button_pressed"]
+[connection signal="pressed" from="BottomBar/OddsButton" to="." method="_on_odds_button_pressed"]
+[connection signal="pressed" from="OddsPanel/OddsCloseButton" to="." method="_on_odds_close_button_pressed"]
+[connection signal="pressed" from="AugmentPanel/Card1" to="." method="_on_augment_card_pressed" binds= [0]]
+[connection signal="pressed" from="AugmentPanel/Card2" to="." method="_on_augment_card_pressed" binds= [1]]
+[connection signal="pressed" from="AugmentPanel/Card3" to="." method="_on_augment_card_pressed" binds= [2]]
+[connection signal="pressed" from="ResultPanel/RetryButton" to="." method="_on_retry_button_pressed"]
+[connection signal="pressed" from="ResultPanel/TitleButton" to="." method="_on_title_button_pressed"]

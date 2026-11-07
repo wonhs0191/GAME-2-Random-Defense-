@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="UltimateData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://entities/ultimates/ultimate_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "gold"
+title = "확률 회수"
+description = "웨이브 번호 x 8 골드를 얻는다"
+kind = 3
+cooldown = 60.0
+power = 8.0
+duration = 0.0

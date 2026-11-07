@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="UnitData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://entities/units/unit_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "PRD-A-FR-01"
+description = "라바. 지각이 무너져 용암이 항로까지 흘러내린다. 표준형."
+alias = "Cinder Heart"
+grade = 2
+attack_type = 1
+sheet_path = "res://entities/units/generated/PRD-A-FR-01.png"
+sheet_columns = 10
+sheet_rows = 6
+effect_dir = "res://entities/units/generated/effects/zone_lava"
+effect_frame_count = 30
+damage = 36.0
+attack_interval = 0.5
+attack_range = 224.0
+zone_radius = 72.0

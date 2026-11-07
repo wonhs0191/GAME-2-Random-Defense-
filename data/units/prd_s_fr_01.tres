@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="UnitData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://entities/units/unit_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "PRD-S-FR-01"
+description = "블랙홀. 사건의 지평선 근처에 닿은 함선은 돌아오지 못한다. 표준형."
+alias = "Event Horizon"
+grade = 3
+attack_type = 1
+sheet_path = "res://entities/units/generated/PRD-S-FR-01.png"
+sheet_columns = 10
+sheet_rows = 6
+effect_dir = "res://entities/units/generated/effects/zone_flare"
+effect_frame_count = 30
+damage = 90.0
+attack_interval = 0.5
+attack_range = 240.0
+zone_radius = 80.0

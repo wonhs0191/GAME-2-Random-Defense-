@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="UnitData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://entities/units/unit_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "PRD-S-FS-04"
+description = "블랙홀. 종결 개체. 빛을 삼켰다가 한 줄기로 되돌려 쏜다."
+alias = "Eclipse Prime"
+grade = 3
+attack_type = 0
+sheet_path = "res://entities/units/generated/PRD-S-FS-04.png"
+sheet_columns = 10
+sheet_rows = 6
+effect_dir = "res://entities/units/generated/effects/shot_jade"
+effect_frame_count = 16
+damage = 220.0
+attack_interval = 1.0
+attack_range = 272.0
+zone_radius = 56.0

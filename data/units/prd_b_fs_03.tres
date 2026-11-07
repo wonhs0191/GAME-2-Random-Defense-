@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="UnitData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://entities/units/unit_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "PRD-B-FS-03"
+description = "테란 웻. 산호 대륙의 공명으로 멀리 있는 적을 맞히는 저격형."
+alias = "Reef Core"
+grade = 1
+attack_type = 0
+sheet_path = "res://entities/units/generated/PRD-B-FS-03.png"
+sheet_columns = 10
+sheet_rows = 6
+effect_dir = "res://entities/units/PRD-C-FS/06/MG6"
+effect_frame_count = 30
+damage = 50.0
+attack_interval = 1.6
+attack_range = 272.0
+zone_radius = 56.0

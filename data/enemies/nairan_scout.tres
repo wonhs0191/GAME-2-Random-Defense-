@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://entities/enemies/enemy_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "nairan_scout"
+faction = "nairan"
+ship = "scout"
+body_path = "res://entities/enemies/nairan/scout/Nairan - Scout - Base.png"
+engine_path = "res://entities/enemies/nairan/scout/Nairan - Scout - Engine.png"
+visual_scale = 1.25
+max_hp = 20.0
+speed = 95.0
+reward = 1
+life_damage = 1

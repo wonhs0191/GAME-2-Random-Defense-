@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="UnitData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://entities/units/unit_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "PRD-S-FS-02"
+description = "갤럭시. 나선팔이 돌 때마다 별빛이 쏟아지는 연사형."
+alias = "Tidal Spiral"
+grade = 3
+attack_type = 0
+sheet_path = "res://entities/units/generated/PRD-S-FS-02.png"
+sheet_columns = 10
+sheet_rows = 6
+effect_dir = "res://entities/units/generated/effects/shot_teal"
+effect_frame_count = 16
+damage = 85.0
+attack_interval = 0.45
+attack_range = 224.0
+zone_radius = 56.0

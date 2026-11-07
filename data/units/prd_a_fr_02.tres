@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="UnitData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://entities/units/unit_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "PRD-A-FR-02"
+description = "라바. 보랏빛 마그마가 넓은 장판을 만드는 광역형."
+alias = "Umbral Forge"
+grade = 2
+attack_type = 1
+sheet_path = "res://entities/units/generated/PRD-A-FR-02.png"
+sheet_columns = 10
+sheet_rows = 6
+effect_dir = "res://entities/units/generated/effects/zone_violet"
+effect_frame_count = 30
+damage = 25.0
+attack_interval = 0.5
+attack_range = 216.0
+zone_radius = 100.0

@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://entities/enemies/enemy_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "nautolan_battlecruiser"
+faction = "nautolan"
+ship = "battlecruiser"
+body_path = "res://entities/enemies/nautolan/battlecruiser/Nautolan Ship - Battlecruiser - Base.png"
+engine_path = "res://entities/enemies/nautolan/battlecruiser/Nautolan Ship - Battlecruiser - Engine Effect.png"
+visual_scale = 1.0
+max_hp = 260.0
+speed = 45.0
+reward = 8
+life_damage = 3

@@ -1,7 +1,7 @@
 [gd_scene load_steps=7 format=3 uid="uid://bhmihx0i5aiyp"]
 
 [ext_resource type="Texture2D" uid="uid://dyvfbfy4qjpxe" path="res://scenes/lobby/background_img/select dificult img.png" id="1_vyp4x"]
-[ext_resource type="PackedScene" uid="uid://vaeygyqgswys" path="res://entities/enemies/nautolan/fighter/fighter.tscn" id="2_vc3rf"]
+[ext_resource type="PackedScene" uid="uid://vaeygyqgswys" path="res://scenes/lobby/ship/fighter.tscn" id="2_vc3rf"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_k8n40"]
 bg_color = Color(0.247059, 0.207843, 0, 0.0117647)

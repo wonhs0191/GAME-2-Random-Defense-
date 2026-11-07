@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="AugmentData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://entities/augments/augment_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "damage_small"
+stat = 0
+value = 0.4
+zone_size = Vector2i(3, 3)

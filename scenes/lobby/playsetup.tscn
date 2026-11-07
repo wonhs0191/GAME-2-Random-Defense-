@@ -4,9 +4,9 @@
 [ext_resource type="Script" path="res://scenes/lobby/playsetup.gd" id="1_ti0js"]
 [ext_resource type="Texture2D" uid="uid://c4eq0rx6tud5x" path="res://scenes/title/title_screen_background.png" id="2_eyww5"]
 [ext_resource type="ButtonGroup" uid="uid://dqd14gp22by5b" path="res://scenes/lobby/degree/difficult_group.tres" id="4_phy1l"]
-[ext_resource type="PackedScene" uid="uid://bam3bu6brfpk5" path="res://entities/enemies/nautolan/bomber/bomber.tscn" id="5_p45g4"]
-[ext_resource type="PackedScene" uid="uid://b3xflanh03pat" path="res://entities/enemies/nautolan/battlecruiser/battlecruiser.tscn" id="6_eevhu"]
-[ext_resource type="PackedScene" uid="uid://bracygxivqv23" path="res://entities/enemies/nautolan/dreadnought/dreadnought.tscn" id="7_cor45"]
+[ext_resource type="PackedScene" uid="uid://bam3bu6brfpk5" path="res://scenes/lobby/ship/bomber.tscn" id="5_p45g4"]
+[ext_resource type="PackedScene" uid="uid://b3xflanh03pat" path="res://scenes/lobby/ship/battlecruiser.tscn" id="6_eevhu"]
+[ext_resource type="PackedScene" uid="uid://bracygxivqv23" path="res://scenes/lobby/ship/dreadnought.tscn" id="7_cor45"]
 [ext_resource type="Texture2D" uid="uid://t0ryys34jsqq" path="res://scenes/lobby/background_img/oil_500.png" id="7_ol61y"]
 [ext_resource type="ButtonGroup" uid="uid://cryhbi2oqe75c" path="res://scenes/lobby/degree/theme_group.tres" id="8_iwtou"]
 [ext_resource type="Texture2D" uid="uid://ditsnbw0ntg4" path="res://scenes/lobby/background_img/borkfest_500.png" id="8_yitv4"]
@@ -254,6 +254,14 @@ scale = Vector2(1.5, 1.5)
 [node name="Dreadnought" parent="Difficulty/HBoxContainer/Degree4" instance=ExtResource("7_cor45")]
 position = Vector2(64, 95)
 scale = Vector2(1.5, 1.5)
+
+[node name="DifficultyDetail" type="Label" parent="."]
+layout_mode = 0
+offset_left = 400.0
+offset_top = 500.0
+offset_right = 960.0
+offset_bottom = 640.0
+theme_override_font_sizes/font_size = 22
 
 [node name="Theme" type="Control" parent="."]
 anchors_preset = 0
