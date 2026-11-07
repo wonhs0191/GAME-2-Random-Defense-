@@ -36,6 +36,7 @@ const UPGRADE_BASE_COST := [30, 60, 120, 240] # 등급별 강화 비용. 현재 
 @export_dir var effect_dir: String = ""
 @export var effect_frame_count: int = 0
 @export var effect_fps: float = 30.0
+@export var effect_center: Vector2 = Vector2(16, 16) # 프레임 안에서 그림의 무게중심 (px). 장판을 길 위에 맞추는 기준
 
 @export_group("Stats")
 @export var damage: float = 10.0

@@ -11,6 +11,7 @@ attack_type = 1
 sheet_path = "res://entities/units/PRD-C-FR/01/PRD-C-FR-01.png"
 effect_dir = "res://entities/units/PRD-C-FR/01/1"
 effect_frame_count = 60
+effect_center = Vector2(16, 27)
 damage = 6.0
 attack_interval = 0.5
 attack_range = 192.0

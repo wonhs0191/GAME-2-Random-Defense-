@@ -204,6 +204,6 @@ func _place_zone(from: Vector2) -> void:
 	if _zone == null:
 		_zone = ZONE_SCENE.instantiate()
 		_game.zones.add_child(_zone)
-		_zone.setup(data.get_effect_frames(), data.zone_radius)
+		_zone.setup(data.get_effect_frames(), data.zone_radius, data.effect_center)
 
 	_zone.global_position = nearest if candidates.is_empty() else candidates.pick_random()

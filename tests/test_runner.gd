@@ -88,6 +88,8 @@ func _run_all() -> void:
 	await test_zone_stays_when_dropped_in_place()
 	await test_zone_shown_on_every_cell()
 	await test_zone_on_range_boundary()
+	test_zone_art_center_data()
+	await test_zone_art_sits_on_path()
 	await test_zone_far_from_path()
 	await test_zone_survives_random_play()
 	await test_game_over()
@@ -1637,6 +1639,46 @@ func test_zone_survives_random_play() -> void:
 			if problem != "":
 				problems[unit.data.id] = problem
 	check(problems.is_empty(), "무작위 조작 후에도 불꽃 유지 %s" % str(problems.values().slice(0, 3)))
+	await end_game(game)
+
+# 프레임 안에서 그림의 무게중심을 잰다. 프레임이 많아 일부만 본다.
+func measure_effect_center(unit: UnitData) -> Vector2:
+	var total := Vector2.ZERO
+	var count := 0
+	for i in range(1, unit.effect_frame_count + 1, 5):
+		var image: Image = load(unit.effect_dir.path_join("%d.png" % i)).get_image()
+		if image.is_compressed():
+			image.decompress()
+		for y in image.get_height():
+			for x in image.get_width():
+				if image.get_pixel(x, y).a > 0.2:
+					total += Vector2(x + 0.5, y + 0.5)
+					count += 1
+	return total / count
+
+func test_zone_art_center_data() -> void:
+	for unit in Catalog.units:
+		if unit.attack_type == UnitData.AttackType.ZONE:
+			var measured := measure_effect_center(unit)
+			check(measured.distance_to(unit.effect_center) <= 1.5, "장판 그림 중심 데이터 %s %s" % [unit.id, measured])
+
+# 노드 위치가 아니라 화면에 그려지는 그림이 길 위에 있어야 한다.
+func test_zone_art_sits_on_path() -> void:
+	var game := await start_game("Normal")
+	var cell := Vector2i(1, 1)
+	var half_path_width: float = game.PATH_WIDTH / 2.0
+	for unit_data in Catalog.units:
+		if unit_data.attack_type != UnitData.AttackType.ZONE:
+			continue
+		var unit: UnitBase = game.spawn_unit(unit_data, cell)
+		var zone: ZoneField = unit._zone
+		var frame_center := Vector2.ONE * ZoneField.FRAME_SIZE / 2.0
+		var art_center := zone.global_position + (measure_effect_center(unit_data) - frame_center + zone.offset) * zone.scale
+		var path: Path2D = game.paths[0]
+		var nearest := path.to_global(path.curve.get_closest_point(path.to_local(art_center)))
+		check(art_center.distance_to(nearest) < half_path_width, "장판 그림이 길 폭 안 %s %.0fpx" % [unit_data.id, art_center.distance_to(nearest)])
+		game.grid.unregister_unit(cell)
+		unit.free()
 	await end_game(game)
 
 # 길까지 거리가 사거리와 정확히 같은 칸. 경로를 띄엄띄엄 재면 후보가 비어 불꽃이 사라졌었다.
