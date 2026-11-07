@@ -13,20 +13,39 @@ const MAP_SCENES := {
 const PATH_COLOR := Color(1, 1, 1, 0.12)
 const PATH_WIDTH := 40.0
 
+# 웨이브 클리어 보상 = 기본 + 웨이브 번호 × 증가량
+const WAVE_REWARD_BASE := 10
+const WAVE_REWARD_STEP := 2
+
+var paths: Array[Path2D] = []
+
 @onready var grid: GridManager = $Grid
+@onready var zones: Node2D = $Zones
 @onready var units: Node2D = $Units
 @onready var enemies: Node2D = $Enemies
+@onready var effects: Node2D = $Effects
 @onready var wave_manager: WaveManager = $WaveManager
+@onready var hud: CanvasLayer = $HUD
 
 func _ready():
 	# 하위 노드인 background를 찾아서 GameSetting에 저장된 텍스처를 적용
 	$background.texture = GameSetting.selected_theme_texture
 
-	var paths := _load_map()
+	var difficulty := GameSetting.get_difficulty()
+	paths = _load_map()
 	for path in paths:
 		grid.block_path(path)
 		_show_path(path)
-	wave_manager.setup(paths, enemies, GameSetting.get_difficulty())
+
+	GameState.reset(difficulty["lives"])
+	wave_manager.setup(paths, enemies, difficulty)
+	wave_manager.wave_cleared.connect(_on_wave_cleared)
+	wave_manager.all_waves_cleared.connect(GameState.end_game.bind(true))
+	GameState.game_ended.connect(_on_game_ended)
+
+	hud.setup(wave_manager)
+	hud.wave_start_pressed.connect(wave_manager.start_next_wave)
+	hud.gacha_pressed.connect(draw_unit)
 
 # 난이도에 따라 맵을 인스턴스화하고 경로 목록을 돌려준다
 func _load_map() -> Array[Path2D]:
@@ -34,11 +53,11 @@ func _load_map() -> Array[Path2D]:
 	var map_instance: Node = load(map_scene_path).instantiate()
 	$map.add_child(map_instance)
 
-	var paths: Array[Path2D] = []
+	var found: Array[Path2D] = []
 	for child in map_instance.get_children():
 		if child is Path2D:
-			paths.append(child)
-	return paths
+			found.append(child)
+	return found
 
 func _show_path(path: Path2D) -> void:
 	var line := Line2D.new()
@@ -50,19 +69,28 @@ func _show_path(path: Path2D) -> void:
 	line.joint_mode = Line2D.LINE_JOINT_ROUND
 	path.add_child(line)
 
-func _on_wave_start_pressed():
-	wave_manager.start_next_wave()
-
-func _on_button_pressed():
+# 골드를 내고 화면 중앙 가까운 빈 칸에 유닛을 뽑는다. 뽑았으면 true.
+func draw_unit() -> bool:
 	# 화면(Viewport)의 정중앙 기준으로 가까운 빈 칸을 찾는다
-	var center_pos = get_viewport_rect().size / 2
-	var target_cell := grid.find_spawn_cell(center_pos)
+	var target_cell := grid.find_spawn_cell(get_viewport_rect().size / 2)
 	if target_cell == GridManager.NO_CELL:
-		return
+		return false
+	if not GameState.spend_gold(GameState.GACHA_COST):
+		return false
+	spawn_unit(Catalog.pick_random_unit(), target_cell)
+	return true
 
+func spawn_unit(unit_data: UnitData, cell: Vector2i) -> UnitBase:
 	var new_unit: UnitBase = UNIT_SCENE.instantiate()
-	new_unit.setup(Catalog.pick_random_unit())
+	new_unit.setup(unit_data, self)
 	units.add_child(new_unit)
 
 	# (핵심) GridManager에게 새로 생성된 유닛을 던져주어 알아서 배치하게 만듦
-	grid.add_new_unit(new_unit, target_cell)
+	grid.add_new_unit(new_unit, cell)
+	return new_unit
+
+func _on_wave_cleared(wave: int) -> void:
+	GameState.add_gold(WAVE_REWARD_BASE + wave * WAVE_REWARD_STEP)
+
+func _on_game_ended(_cleared: bool) -> void:
+	get_tree().paused = true

@@ -5,7 +5,6 @@ class_name WaveManager
 #
 # WAITING(첫 웨이브 대기) → SPAWNING → FIGHTING → PREP(준비) → SPAWNING ... → FINISHED
 
-signal state_changed(state: State)
 signal wave_started(wave: int)
 signal wave_cleared(wave: int)
 signal all_waves_cleared
@@ -42,15 +41,18 @@ func setup(paths: Array[Path2D], enemy_parent: Node, difficulty: Dictionary) -> 
 	_difficulty = difficulty
 	total_waves = difficulty["waves"]
 
+func can_start_wave() -> bool:
+	return state == State.WAITING or state == State.PREP
+
 # 대기·준비 중에 다음 웨이브를 바로 시작한다.
 func start_next_wave() -> void:
-	if state != State.WAITING and state != State.PREP:
+	if not can_start_wave():
 		return
 	wave += 1
 	_spawn_queue = build_wave(wave)
 	_spawn_timer = 0.0
 	wave_started.emit(wave)
-	_set_state(State.SPAWNING)
+	state = State.SPAWNING
 
 # n번째 웨이브에 나올 적 목록을 만든다.
 func build_wave(wave_number: int) -> Array[EnemyData]:
@@ -65,6 +67,11 @@ func build_wave(wave_number: int) -> Array[EnemyData]:
 		list.append(Catalog.get_enemy(faction, recent.pick_random()))
 	return list
 
+# n번째 웨이브의 체력 배율.
+func hp_scale(wave_number: int) -> float:
+	var step := wave_number - 1
+	return _difficulty["hp"] * (1.0 + 0.15 * step + 0.01 * step * step)
+
 func _process(delta: float) -> void:
 	match state:
 		State.PREP:
@@ -77,25 +84,21 @@ func _process(delta: float) -> void:
 				_spawn_timer += spawn_interval
 				_spawn_enemy(_spawn_queue.pop_front())
 				if _spawn_queue.is_empty():
-					_set_state(State.FIGHTING)
+					state = State.FIGHTING
 		State.FIGHTING:
 			if get_tree().get_nodes_in_group("enemy").is_empty():
 				_finish_wave()
 
 func _spawn_enemy(enemy_data: EnemyData) -> void:
 	var enemy: EnemyBase = ENEMY_SCENE.instantiate()
-	enemy.setup(enemy_data, _paths.pick_random(), _difficulty["speed"])
+	enemy.setup(enemy_data, _paths.pick_random(), hp_scale(wave), _difficulty["speed"])
 	_enemy_parent.add_child(enemy)
 
 func _finish_wave() -> void:
 	wave_cleared.emit(wave)
 	if wave >= total_waves:
-		_set_state(State.FINISHED)
+		state = State.FINISHED
 		all_waves_cleared.emit()
 	else:
 		prep_left = prep_time
-		_set_state(State.PREP)
-
-func _set_state(new_state: State) -> void:
-	state = new_state
-	state_changed.emit(state)
+		state = State.PREP

@@ -5,9 +5,9 @@
 ## 현재 위치
 
 - **브랜치:** `feature/M1-combat` (`feature/M0-foundation` 위에 분기, 둘 다 미푸시)
-- **진행 중:** M1 전투
-- **다음 할 일:** 아래 체크리스트 첫 미완료 항목
-- **막힌 것:** 없음
+- **진행 중:** M1 구현 완료, 코드 리뷰 후 사용자 플레이 확인 대기
+- **다음 할 일:** 사용자 피드백 반영 후 M2 시작
+- **막힌 것:** 재미 판단은 사용자 플레이가 필요함
 
 ## 재개 방법
 
@@ -24,7 +24,14 @@ GODOT="/c/Users/wonhs/Downloads/Godot_v4.7.2-stable_win64.exe/Godot_v4.7.2-stabl
 "$GODOT" --headless --path . --import
 timeout 120 "$GODOT" --headless --path . --fixed-fps 60 res://tests/test_runner.tscn
 timeout 60 "$GODOT" --path . --fixed-fps 60 res://tests/screenshot.tscn -- <저장폴더> Easy
+timeout 60 "$GODOT" --path . --fixed-fps 60 res://tests/menu_shot.tscn -- <저장폴더>
+timeout 45 "$GODOT" --path . res://tests/input_test.tscn
+timeout 400 "$GODOT" --headless --path . --fixed-fps 60 res://tests/balance_sim.tscn
 ```
+
+- `test_runner`: 로직 전체 (헤드리스).
+- `input_test`: 마우스 이벤트로 버튼·드래그 확인 (창 모드 필요).
+- `balance_sim`: 봇이 난이도별로 2판씩 플레이하고 결과 출력 (약 2분).
 
 주의: 스크립트 파싱 오류가 나면 Godot이 종료되지 않고 멈춘다. 반드시 `timeout`을 붙이고 로그는 파일로 받는다.
 
@@ -41,12 +48,12 @@ timeout 60 "$GODOT" --path . --fixed-fps 60 res://tests/screenshot.tscn -- <저�
 
 ### M1 전투
 
-- [ ] 적 HP, 경로 이동, 라이프 감소
-- [ ] SHOT, ZONE 공격, 자동 타겟팅
-- [ ] 골드, 뽑기 비용
-- [ ] WaveManager, 웨이브 진행
-- [ ] HUD, Gameover, Clear
-- [ ] 테스트, 화면 확인, 커밋
+- [x] 적 HP, 경로 이동, 라이프 감소
+- [x] SHOT, ZONE 공격, 자동 타겟팅
+- [x] 골드, 뽑기 비용
+- [x] WaveManager, 웨이브 진행
+- [x] HUD, Gameover, Clear
+- [x] 테스트, 화면 확인, 커밋
 - [ ] 사용자 플레이 확인 (여기서 멈춤)
 
 ### M2 이후
@@ -69,3 +76,20 @@ timeout 60 "$GODOT" --path . --fixed-fps 60 res://tests/screenshot.tscn -- <저�
   - `WaveManager` 신규. `easy.gd`, `normal.gd` 삭제, 맵 씬은 Path2D만 보유.
   - Hard, Extreme은 M2 전까지 Normal 경로를 임시 사용.
 - 사용자 PC에서 Godot 4.2.1 에디터(PID 3420)가 이 프로젝트를 열고 있었음. 프로젝트는 이제 4.7이므로 4.2.1로 저장하면 안 됨. 사용자에게 알릴 것.
+- **M1 구현 완료.** 로직 259건, 마우스 입력 테스트, 봇 시뮬레이션 통과.
+  - `GameState` 오토로드(골드, 라이프, 종료), `HUD` 씬, 결과 패널, `Projectile`, `ZoneField` 추가.
+  - SHOT은 사거리 안 가장 앞선 적 추적. ZONE은 사거리 안 경로 위 임의 지점에 장판. 다른 칸으로 옮기면 위치를 다시 뽑고, 제자리에 놓으면 유지.
+  - 시작 골드 100, 뽑기 20G, 웨이브 보상 10 + 웨이브×2, 체력 배율 1 + 0.15n + 0.01n².
+  - 현재 전 유닛 C등급, 뽑기는 균등 확률. 등급 가중치는 M3.
+  - **M0 실수 수정:** 적 씬 삭제 시 로비 난이도 버튼의 장식 함선 참조를 놓쳤음. `scenes/lobby/ship/`에 장식 전용 씬으로 복구하고, 끊어진 참조를 찾는 테스트 추가.
+  - `GridManager`가 마우스 위치를 입력 이벤트로 추적하도록 변경 (합성 이벤트 테스트 가능).
+- 봇 결과 (C 유닛만, 조합·강화 없음, 경로 최적 배치):
+
+| 난이도 | 도달 웨이브 | 시간 | 결과 |
+|---|---|---|---|
+| Easy | 30/30 | 34~35분 | 클리어, 라이프 21~24 남음 |
+| Normal | 25~26/40 | 25~28분 | 패배 |
+| Hard | 21/50 | 20분 | 패배 |
+| Extreme | 13/60 | 13분 | 패배 |
+
+  Normal 이상은 조합·강화·증강이 있어야 깰 수 있는 곡선이다. M3~M4 후 다시 맞춘다. 봇이 화면 중앙에 그대로 두면 Normal은 웨이브 4~5에서 진다. 뽑은 유닛이 경로 사거리 밖에 생기기 때문이다.

@@ -17,6 +17,7 @@ config/features=PackedStringArray("4.7", "GL Compatibility")
 [autoload]
 
 Catalog="*res://global/catalog.gd"
+GameState="*res://global/game_state.gd"
 
 [display]
 

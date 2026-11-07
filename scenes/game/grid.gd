@@ -32,6 +32,9 @@ var original_grid_pos: Vector2i
 
 # 드래그 중 마우스가 위치한 셀 (하이라이트 렌더링용)
 var _hovered_cell: Vector2i = NO_CELL
+
+# 마지막 마우스 위치 (글로벌 좌표)
+var _pointer: Vector2 = Vector2.ZERO
 # ===============================================
 
 func _ready() -> void:
@@ -188,14 +191,17 @@ func _process(_delta: float) -> void:
 		return
 
 	# 드래그 중인 유닛이 있다면 마우스 커서를 따라다니게 함
-	var mouse_world = get_global_mouse_position()
-	dragged_unit.global_position = mouse_world + drag_offset
+	dragged_unit.global_position = _pointer + drag_offset
 
 	# 마우스가 위치한 셀이 바뀌었으면 리드로우 요청 (하이라이트 업데이트)
-	var new_hovered = world_to_grid(mouse_world)
+	var new_hovered = world_to_grid(_pointer)
 	if new_hovered != _hovered_cell:
 		_hovered_cell = new_hovered
 		queue_redraw()
+
+func _input(event: InputEvent) -> void:
+	if event is InputEventMouse:
+		_pointer = to_global(make_input_local(event).position)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
@@ -203,8 +209,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 # 마우스 위치에 있는 유닛을 찾아 집어 듭니다.
 func _try_pick_unit() -> void:
-	var mouse_pos = get_global_mouse_position()
-	var clicked_cell = world_to_grid(mouse_pos)
+	var clicked_cell = world_to_grid(_pointer)
 
 	# 딕셔너리에 클릭한 칸에 유닛이 있다고 기록되어 있는지 확인
 	if grid_status.has(clicked_cell):
@@ -212,7 +217,7 @@ func _try_pick_unit() -> void:
 
 		# 유닛이 맞는지 확인 (메모리 해제된 객체인지 확인용 is_instance_valid)
 		if is_instance_valid(target_unit):
-			pick_unit(clicked_cell, mouse_pos)
+			pick_unit(clicked_cell, _pointer)
 			get_viewport().set_input_as_handled() # 이벤트 전파 중단
 
 # 특정 칸의 유닛을 집어 듭니다.
@@ -226,10 +231,11 @@ func pick_unit(cell_pos: Vector2i, mouse_pos: Vector2) -> void:
 
 	drag_offset = dragged_unit.global_position - mouse_pos
 	dragged_unit.z_index = 100 # 드래그 시 맨 앞에 보이게
+	dragged_unit.on_picked()
 
 # 집어든 유닛을 현재 마우스 위치의 격자에 맞춰 내려놓습니다.
 func _drop_unit() -> void:
-	drop_unit_at(world_to_grid(get_global_mouse_position()))
+	drop_unit_at(world_to_grid(_pointer))
 
 func drop_unit_at(target_grid_pos: Vector2i) -> void:
 	show_grid = false
@@ -239,6 +245,7 @@ func drop_unit_at(target_grid_pos: Vector2i) -> void:
 	var final_cell = target_grid_pos if is_cell_empty(target_grid_pos) else original_grid_pos
 	register_unit(final_cell, dragged_unit)
 	_tween_unit(dragged_unit, cell_center(final_cell))
+	dragged_unit.on_placed(cell_center(final_cell))
 
 	dragged_unit.z_index = 0
 	dragged_unit = null # 손에서 놓음
@@ -260,3 +267,4 @@ func find_spawn_cell(spawn_world_pos: Vector2) -> Vector2i:
 func add_new_unit(unit: UnitBase, target_cell: Vector2i) -> void:
 	unit.global_position = cell_center(target_cell)
 	register_unit(target_cell, unit)
+	unit.on_placed(unit.global_position)

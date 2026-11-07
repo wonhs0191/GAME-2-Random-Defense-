@@ -17,10 +17,12 @@ func _ready() -> void:
 	add_child(game)
 	await wait_frames(10)
 
+	GameState.add_gold(300)
 	for i in 14:
-		game._on_button_pressed()
-	game._on_wave_start_pressed()
-	await wait_frames(420)
+		game.draw_unit()
+	game.wave_manager.wave = 11
+	game.wave_manager.start_next_wave()
+	await wait_frames(900)
 	await shot("01_wave.png")
 
 	# 드래그 중 하이라이트
@@ -32,6 +34,11 @@ func _ready() -> void:
 	grid.queue_redraw()
 	await wait_frames(4)
 	await shot("02_drag.png")
+
+	grid.drop_unit_at(cell)
+	GameState.lose_lives(GameState.lives)
+	await wait_frames(4)
+	await shot("03_gameover.png")
 
 	get_tree().quit()
 
