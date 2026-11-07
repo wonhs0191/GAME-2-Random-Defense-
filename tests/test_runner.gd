@@ -26,6 +26,15 @@ func _run_all() -> void:
 	await test_shot_kills_enemy()
 	await test_zone_burns_enemy()
 	await test_killed_enemy_does_not_leak()
+	test_faction_rotation()
+	test_wave_composition()
+	await test_boss_spawn()
+	await test_final_boss()
+	await test_boss_hud()
+	await test_maps()
+	await test_multi_path_spawn()
+	await test_enemy_lanes()
+	await test_large_ships_spawn_apart()
 	await test_held_unit_does_not_attack()
 	await test_zone_stays_when_dropped_in_place()
 	await test_game_over()
@@ -286,6 +295,205 @@ func test_killed_enemy_does_not_leak() -> void:
 func enemy_reward(ship: String) -> int:
 	return Catalog.get_enemy("nautolan", ship).reward
 
+func wave_manager_for(difficulty: String) -> WaveManager:
+	var manager := WaveManager.new()
+	var no_paths: Array[Path2D] = []
+	manager.setup(no_paths, self, GameSetting.DIFFICULTIES[difficulty])
+	return manager
+
+func test_faction_rotation() -> void:
+	for difficulty in GameSetting.DIFFICULTIES:
+		var manager := wave_manager_for(difficulty)
+		var total := manager.total_waves
+		var counts := {}
+		var order: Array[String] = []
+		for wave in range(1, total + 1):
+			var faction := manager.faction_for_wave(wave)
+			counts[faction] = counts.get(faction, 0) + 1
+			if not order.has(faction):
+				order.append(faction)
+		check(order == ["nautolan", "klaed", "nairan"], "세력 순서 " + difficulty)
+		for faction in counts:
+			check(abs(counts[faction] - total / 3.0) <= 1.0, "세력별 웨이브 1/3 %s %s" % [difficulty, faction])
+		manager.free()
+
+	var easy := wave_manager_for("Easy")
+	check(easy.faction_for_wave(10) == "nautolan", "Easy 10웨이브는 Nautolan")
+	check(easy.faction_for_wave(11) == "klaed", "Easy 11웨이브부터 Klaed")
+	check(easy.faction_for_wave(21) == "nairan", "Easy 21웨이브부터 Nairan")
+	easy.free()
+
+func test_wave_composition() -> void:
+	for difficulty in GameSetting.DIFFICULTIES:
+		var manager := wave_manager_for(difficulty)
+		var boss_waves := 0
+		var all_valid := true
+		var boss_only_when_expected := true
+		var faction_matches := true
+		for wave in range(1, manager.total_waves + 1):
+			var list := manager.build_wave(wave)
+			var bosses := 0
+			for enemy in list:
+				if enemy == null:
+					all_valid = false
+					continue
+				if enemy.ship == WaveManager.BOSS_SHIP:
+					bosses += 1
+				if enemy.faction != manager.faction_for_wave(wave):
+					faction_matches = false
+			if manager.is_boss_wave(wave):
+				boss_waves += 1
+				boss_only_when_expected = boss_only_when_expected and bosses == 1 and list[-1].ship == WaveManager.BOSS_SHIP
+			else:
+				boss_only_when_expected = boss_only_when_expected and bosses == 0
+		check(all_valid, "모든 웨이브 적 조회 성공 " + difficulty)
+		check(faction_matches, "웨이브 적이 해당 세력 " + difficulty)
+		check(boss_only_when_expected, "보스 웨이브에만 보스 1기 " + difficulty)
+		check(boss_waves == manager.total_waves / WaveManager.BOSS_INTERVAL, "10웨이브마다 보스 " + difficulty)
+		check(manager.is_boss_wave(manager.total_waves), "마지막 웨이브는 보스 " + difficulty)
+		check(not manager.is_boss_wave(0), "시작 전은 보스 웨이브가 아님 " + difficulty)
+		check(manager.boss_hp_scale(10) > manager.hp_scale(10), "보스 체력 배율 " + difficulty)
+		check(manager.boss_hp_scale(manager.total_waves) / manager.hp_scale(manager.total_waves) > manager.boss_hp_scale(10) / manager.hp_scale(10), "최종 보스 배율이 더 큼 " + difficulty)
+		manager.free()
+
+func find_boss(game: Node2D) -> EnemyBase:
+	for enemy: EnemyBase in game.enemies.get_children():
+		if enemy.data.ship == WaveManager.BOSS_SHIP:
+			return enemy
+	return null
+
+func test_boss_spawn() -> void:
+	var game := await start_game()
+	var manager: WaveManager = game.wave_manager
+	manager.wave = 9
+	manager.start_next_wave()
+	var spawned := await wait_until(func(): return find_boss(game) != null, 60 * 30)
+	check(spawned, "10웨이브 보스 스폰")
+	if spawned:
+		var boss := find_boss(game)
+		check(boss.data.faction == "nautolan", "보스는 해당 세력 함선")
+		check(is_equal_approx(boss.max_hp, boss.data.max_hp * manager.boss_hp_scale(10)), "보스 체력 배율 적용")
+		check(boss.visual.scale.is_equal_approx(Vector2.ONE * boss.data.visual_scale), "일반 보스 크기")
+	await end_game(game)
+
+func test_final_boss() -> void:
+	var game := await start_game()
+	var manager: WaveManager = game.wave_manager
+	manager.wave = manager.total_waves - 1
+	manager.start_next_wave()
+	var spawned := await wait_until(func(): return find_boss(game) != null, 60 * 60)
+	check(spawned, "최종 보스 스폰")
+	if spawned:
+		var boss := find_boss(game)
+		check(boss.data.faction == "nairan", "최종 보스는 마지막 세력")
+		check(is_equal_approx(boss.max_hp, boss.data.max_hp * manager.boss_hp_scale(manager.total_waves)), "최종 보스 체력 배율")
+		check(boss.visual.scale.is_equal_approx(Vector2.ONE * boss.data.visual_scale * WaveManager.FINAL_BOSS_SIZE_SCALE), "최종 보스 크기")
+		check(game.hud.status_label.text == "최종 보스 전투", "최종 보스 문구")
+	await end_game(game)
+
+func test_boss_hud() -> void:
+	var game := await start_game()
+	var manager: WaveManager = game.wave_manager
+	var hud: CanvasLayer = game.hud
+	manager.wave = 9
+	manager.state = WaveManager.State.PREP
+	manager.prep_left = 12.0
+	await wait_frames(2)
+	check(hud.status_label.text.begins_with("보스 출현"), "다음 보스 예고")
+	check(not hud.wave_label.text.begins_with("BOSS"), "준비 중에는 보스 표시 없음")
+
+	manager.start_next_wave()
+	await wait_frames(2)
+	check(hud.wave_label.text == "BOSS WAVE 10/30", "보스 웨이브 표시")
+	check(hud.wave_label.modulate == hud.BOSS_COLOR, "보스 웨이브 색상")
+	check(hud.status_label.text == "보스 전투", "보스 전투 문구")
+
+	manager.wave = 10
+	manager.state = WaveManager.State.PREP
+	await wait_frames(2)
+	check(hud.wave_label.text == "WAVE 10/30", "보스 처치 후 표시 복귀")
+	check(hud.wave_label.modulate == Color.WHITE, "보스 처치 후 색상 복귀")
+	await end_game(game)
+
+func test_maps() -> void:
+	var expected_paths := {"Easy": 1, "Normal": 1, "Hard": 2, "Extreme": 4}
+	for difficulty in expected_paths:
+		var game := await start_game(difficulty)
+		var grid: GridManager = game.grid
+		check(game.paths.size() == expected_paths[difficulty], "경로 수 " + difficulty)
+		for path: Path2D in game.paths:
+			var curve := path.curve
+			var label := "%s %s" % [difficulty, path.name]
+			check(curve.get_point_position(0).x < 0.0, "시작점이 화면 밖 " + label)
+			check(curve.get_point_position(curve.point_count - 1).x > 1280.0, "끝점이 화면 밖 " + label)
+			var aligned := true
+			var all_blocked := true
+			for i in range(1, curve.point_count - 1):
+				var point := curve.get_point_position(i)
+				aligned = aligned and grid.cell_center(grid.world_to_grid(point)) == point
+			var offset := 0.0
+			while offset <= curve.get_baked_length():
+				var cell := grid.world_to_grid(curve.sample_baked(offset))
+				if grid.is_cell_in_bounds(cell):
+					all_blocked = all_blocked and not grid.is_cell_empty(cell)
+				offset += 16.0
+			check(aligned, "제어점이 타일 중앙 " + label)
+			check(all_blocked, "경로 칸 전부 배치 금지 " + label)
+		# 뽑은 유닛이 나오는 중앙 칸에서 경로에 닿아야 조작 없이도 싸울 수 있다
+		var home := grid.cell_center(grid.find_spawn_cell(Vector2(640, 360)))
+		var nearest := INF
+		for path: Path2D in game.paths:
+			nearest = minf(nearest, home.distance_to(path.curve.get_closest_point(home)))
+		if difficulty == "Hard" or difficulty == "Extreme":
+			check(nearest <= 176.0, "중앙 스폰 칸이 경로 사거리 안 " + difficulty)
+		await end_game(game)
+
+func test_multi_path_spawn() -> void:
+	for difficulty in ["Hard", "Extreme"]:
+		var game := await start_game(difficulty)
+		var manager: WaveManager = game.wave_manager
+		var used := {}
+		for i in 60:
+			manager._spawn_enemy(Catalog.get_enemy("nautolan", "scout"))
+		for enemy: EnemyBase in game.enemies.get_children():
+			used[enemy.path] = true
+		check(used.size() == game.paths.size(), "모든 경로에 스폰 " + difficulty)
+		await end_game(game)
+
+func test_enemy_lanes() -> void:
+	var game := await start_game()
+	var lanes := {}
+	var inside := true
+	for i in 8:
+		var enemy := spawn_enemy(game)
+		enemy.distance = 300.0 + i * 700.0
+		lanes[enemy.lane] = true
+		inside = inside and abs(enemy.lane) <= EnemyBase.LANE_SPREAD
+	check(lanes.size() > 1, "적마다 다른 위치로 이동")
+	check(inside, "좌우 분산은 지정 범위 안")
+	await wait_frames(30)
+	var within_path := true
+	for enemy: EnemyBase in game.enemies.get_children():
+		var center: Vector2 = game.paths[0].curve.sample_baked(enemy.distance)
+		within_path = within_path and enemy.global_position.distance_to(center) <= EnemyBase.LANE_SPREAD + 1.0
+	check(within_path, "분산해도 경로 폭 안으로 이동")
+	await end_game(game)
+
+func test_large_ships_spawn_apart() -> void:
+	var game := await start_game()
+	var manager: WaveManager = game.wave_manager
+	var ship := Catalog.get_enemy("nautolan", "battlecruiser")
+	var queue: Array[EnemyData] = [ship, ship]
+	manager._spawn_queue = queue
+	manager.state = WaveManager.State.SPAWNING
+	var spawned := await wait_until(func(): return game.enemies.get_child_count() == 2, 60 * 10)
+	check(spawned, "대형 함선 2기 스폰")
+	if spawned:
+		var first: EnemyBase = game.enemies.get_child(0)
+		var second: EnemyBase = game.enemies.get_child(1)
+		check(first.distance - second.distance >= first.get_length() - 2.0, "대형 함선은 서로 겹치지 않게 간격 유지")
+	await end_game(game)
+
 func test_held_unit_does_not_attack() -> void:
 	var game := await start_game()
 	var cell := Vector2i(0, 2)
@@ -329,7 +537,7 @@ func test_clear() -> void:
 	var manager: WaveManager = game.wave_manager
 	manager.total_waves = 1
 	manager.start_next_wave()
-	var cleared := await wait_until(func(): return GameState.is_over, 60 * 120)
+	var cleared := await wait_until(func(): return GameState.is_over, 60 * 300)
 	check(cleared, "마지막 웨이브 후 종료")
 	check(GameState.lives > 0, "라이프가 남은 채 종료")
 	check(game.hud.result_label.text == "CLEAR", "클리어 문구")

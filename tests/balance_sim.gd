@@ -25,17 +25,25 @@ func _play(difficulty: String) -> void:
 	var frames := 0
 	var lost_wave := 0
 	var lives_before := GameState.lives
+	var boss_damage: int = Catalog.get_enemy("nautolan", WaveManager.BOSS_SHIP).life_damage
+	var boss_leaks := 0
+	var lives_last := GameState.lives
 	manager.start_next_wave()
 	while not GameState.is_over:
 		while game.draw_unit():
 			_move_to_best_cell(game, coverage)
-		if lost_wave == 0 and GameState.lives < lives_before:
-			lost_wave = manager.wave
 		frames += 1
 		await get_tree().process_frame
+		# 프레임을 진행한 뒤에 봐야 게임이 끝나는 프레임의 누수도 센다
+		if lost_wave == 0 and GameState.lives < lives_before:
+			lost_wave = manager.wave
+		# 한 프레임에 보스 피해만큼 줄었으면 보스가 경로 끝에 닿은 것이다
+		if lives_last - GameState.lives >= boss_damage:
+			boss_leaks += 1
+		lives_last = GameState.lives
 
-	print("%s wave %d/%d first_leak %d lives %d units %d gold %d time %.1fmin %s" % [
-		difficulty, manager.wave, manager.total_waves, lost_wave, GameState.lives,
+	print("%s wave %d/%d first_leak %d boss_leaks %d lives %d units %d gold %d time %.1fmin %s" % [
+		difficulty, manager.wave, manager.total_waves, lost_wave, boss_leaks, GameState.lives,
 		game.units.get_child_count(), GameState.gold, frames / 3600.0,
 		"CLEAR" if GameState.lives > 0 else "LOSE",
 	])

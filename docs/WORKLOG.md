@@ -4,10 +4,10 @@
 
 ## 현재 위치
 
-- **브랜치:** `feature/M1-combat` (`feature/M0-foundation` 위에 분기, 둘 다 미푸시, `develop` 미병합)
-- **상태:** M1까지 완료. 2026-11-07 작업 중단.
-- **다음 할 일:** 아래 "M2 웨이브" 체크리스트 첫 항목부터.
-- **사용자 플레이:** 아직 안 함. 사용자가 나중에 하기로 했고, 사용자가 시작을 지시하면 M2로 넘어가도 된다. 피드백이 와 있으면 그것부터 반영한다.
+- **브랜치:** `feature/M2-waves` (`feature/M1-combat` 위에 분기, 미푸시, `develop` 미병합)
+- **상태:** M2 구현 완료. 사용자 확인 대기.
+- **다음 할 일:** 사용자 플레이 피드백 반영, 최종 보스 통과 규칙 결정(아래 "사용자 플레이 때 확인할 것" 4번). 그다음 M3.
+- **사용자 플레이:** 아직 안 함. 피드백이 와 있으면 그것부터 반영한다.
 - **막힌 것:** 없음.
 
 ## 재개 방법
@@ -30,24 +30,31 @@
 1. 드래그 손맛, UNIT-005 드래그 버그 재현 여부.
 2. ZONE 장판 위치가 랜덤인 것이 재미있는지.
 3. 초반 속도와 뽑기 비용. Easy는 후반까지 위협이 약해 지루할 수 있다.
+4. 최종 보스 규칙. 지금은 일반 보스처럼 라이프 5만 깎으므로, 통과시켜도 라이프가 남으면 Clear다. 도달 시 즉시 패배로 바꿀지 결정한다.
+5. Hard, Extreme 맵 경로가 배치 고민을 만드는지. 적 크기는 현재 값(소형 1.25배)을 유지했다.
 
 ## 명령
 
-Godot 경로: `C:\Users\wonhs\Downloads\Godot_v4.7.2-stable_win64.exe\Godot_v4.7.2-stable_win64_console.exe`
+Godot 경로:
+- Windows: `C:\Users\wonhs\Downloads\Godot_v4.7.2-stable_win64.exe\Godot_v4.7.2-stable_win64_console.exe`
+- macOS: `/Applications/Godot.app/Contents/MacOS/Godot`
+
+macOS에는 `timeout`이 없다. 아래 명령의 `timeout N` 자리에 `perl -e 'alarm shift; exec @ARGV' N`을 쓴다.
 
 ```bash
 GODOT="/c/Users/wonhs/Downloads/Godot_v4.7.2-stable_win64.exe/Godot_v4.7.2-stable_win64_console.exe"
 "$GODOT" --headless --path . --import
 timeout 120 "$GODOT" --headless --path . --fixed-fps 60 res://tests/test_runner.tscn
-timeout 60 "$GODOT" --path . --fixed-fps 60 res://tests/screenshot.tscn -- <저장폴더> Easy
+timeout 60 "$GODOT" --path . --fixed-fps 60 res://tests/screenshot.tscn -- <저장폴더> Easy 10
 timeout 60 "$GODOT" --path . --fixed-fps 60 res://tests/menu_shot.tscn -- <저장폴더>
 timeout 45 "$GODOT" --path . res://tests/input_test.tscn
-timeout 400 "$GODOT" --headless --path . --fixed-fps 60 res://tests/balance_sim.tscn
+timeout 1700 "$GODOT" --headless --path . --fixed-fps 60 res://tests/balance_sim.tscn
 ```
 
 - `test_runner`: 로직 전체 (헤드리스).
 - `input_test`: 마우스 이벤트로 버튼·드래그 확인 (창 모드 필요).
-- `balance_sim`: 봇이 난이도별로 2판씩 플레이하고 결과 출력 (약 2분).
+- `balance_sim`: 봇이 난이도별로 2판씩 플레이하고 결과 출력 (`boss_leaks`는 경로 끝에 닿은 보스 수).
+- `screenshot`: 마지막 인자는 시작 웨이브. 보스 화면은 10, 최종 보스 화면은 총 웨이브 수.
 
 주의: 스크립트 파싱 오류가 나면 Godot이 종료되지 않고 멈춘다. 반드시 `timeout`을 붙이고 로그는 파일로 받는다.
 
@@ -74,17 +81,16 @@ timeout 400 "$GODOT" --headless --path . --fixed-fps 60 res://tests/balance_sim.
 
 ### M2 웨이브
 
-- [ ] `feature/M1-combat`에서 `feature/M2-waves` 분기
-- [ ] 세력 전환: `WaveManager.faction`을 전체 웨이브 1/3마다 Nautolan → Klaed → Nairan으로 변경
-- [ ] 보스: 10웨이브마다 `dreadnought` + 보스 체력 배율, 마지막 웨이브는 최종 보스, HUD에 보스 웨이브 표시
-- [ ] 적 겹침 완화 (MAP-001 TODO): 경로별 분산 또는 함선별 속도 차이 확인
-- [ ] Hard, Extreme 맵: `scenes/game/maps/hard.tscn`, `extreme.tscn`은 현재 빈 씬. Path2D 여러 개로 분기 구성, 제어점은 타일 중앙(x = 64c + 32, y = 96 + 64r), `game_play.gd`의 `MAP_SCENES` 교체
-- [ ] 적 크기 확인 (MAP-001 TODO: 조금 더 크게)
-- [ ] 테스트 추가: 세력 전환, 보스 스폰, 다중 경로 스폰과 칸 금지
-- [ ] `balance_sim` 재측정, 결과 기록
-- [ ] 화면 확인, 커밋, 사용자 확인 요청
-
-`WaveManager`는 이미 경로 배열(`_paths`)을 받아 스폰마다 임의 선택하고, `game_play.gd`는 맵의 Path2D를 전부 수집해 칸 금지와 표시를 처리한다. 다중 경로는 맵 씬에 Path2D를 추가하는 것으로 동작해야 한다.
+- [x] `feature/M1-combat`에서 `feature/M2-waves` 분기
+- [x] 세력 전환: `WaveManager.faction`을 전체 웨이브 1/3마다 Nautolan → Klaed → Nairan으로 변경
+- [x] 보스: 10웨이브마다 `dreadnought` + 보스 체력 배율, 마지막 웨이브는 최종 보스, HUD에 보스 웨이브 표시
+- [x] 적 겹침 완화 (MAP-001 TODO): 경로별 분산 또는 함선별 속도 차이 확인
+- [x] Hard, Extreme 맵: `scenes/game/maps/hard.tscn`, `extreme.tscn`은 현재 빈 씬. Path2D 여러 개로 분기 구성, 제어점은 타일 중앙(x = 64c + 32, y = 96 + 64r), `game_play.gd`의 `MAP_SCENES` 교체
+- [x] 적 크기 확인 (MAP-001 TODO: 조금 더 크게)
+- [x] 테스트 추가: 세력 전환, 보스 스폰, 다중 경로 스폰과 칸 금지
+- [x] `balance_sim` 재측정, 결과 기록
+- [x] 화면 확인, 커밋
+- [ ] 사용자 플레이 확인
 
 ### M3 이후
 
@@ -125,3 +131,23 @@ timeout 400 "$GODOT" --headless --path . --fixed-fps 60 res://tests/balance_sim.
   Normal 이상은 조합·강화·증강이 있어야 깰 수 있는 곡선이다. M3~M4 후 다시 맞춘다. 봇이 화면 중앙에 그대로 두면 Normal은 웨이브 4~5에서 진다. 뽑은 유닛이 경로 사거리 밖에 생기기 때문이다.
 - 코드 리뷰 지적 1건 수정: 처치된 적이 같은 프레임에 경로 끝에 닿으면 골드와 라이프가 둘 다 처리되던 문제. 회귀 테스트 추가.
 - 최종 확인: 로직 261건, 마우스 입력 테스트 통과. 사용자 요청으로 M1에서 작업 중단, 다음은 M2.
+- **M2 구현 완료.** 로직 373건, 마우스 입력 테스트 통과. 작업 환경이 macOS로 바뀜 (Godot 4.7.2 동일, Apple M1).
+  - 세력은 `faction_for_wave`로 웨이브 번호에서 계산한다. Easy 기준 1~10 Nautolan, 11~20 Klaed, 21~30 Nairan.
+  - 보스는 10웨이브마다, 호위를 절반으로 줄이고 맨 뒤에 나온다. 체력 배율 일반 2배, 최종 3배, 최종 보스 크기 1.5배. 처음 값 3배/6배는 Easy 봇이 보스를 하나도 못 잡아 낮췄다.
+  - 보스 웨이브는 HUD 웨이브 표시가 빨간색 `BOSS WAVE`로 바뀌고, 준비 시간에 "보스 출현 N초"를 보여 준다.
+  - Hard는 입구와 출구를 공유하는 위아래 2갈래, Extreme은 입구 2 × 출구 2로 경로 4개이고 중앙 복도를 공유한다.
+  - 겹침 완화: 적마다 경로 중심에서 ±12px 벗어나 이동(`lane`). 대형 함선은 같은 속도로 줄지어 겹치므로 앞 함선 길이만큼 스폰 간격을 늘렸다. 함선별 속도 차이는 M1 그대로다.
+  - 경로 표시는 `CanvasGroup`으로 묶어 공유 구간이 진해지지 않게 했다.
+  - 적 크기: 스크린샷 확인 결과 소형 함선 약 50px로 경로 폭(40px)과 행성에 어울려 수치는 바꾸지 않았다. 체력바 폭은 스프라이트 크기에 비례하도록 변경.
+- 봇 결과 (C 유닛만, 조합·강화 없음, 경로 최적 배치):
+
+| 난이도 | 도달 웨이브 | 시간 | 보스 통과 | 결과 |
+|---|---|---|---|---|
+| Easy | 30/30 | 36~37분 | 1기 (최종 보스) | 클리어, 라이프 25 남음 |
+| Normal | 28~29/40 | 33~35분 | 2기 | 패배 |
+| Hard | 13~16/50 | 11~15분 | 1기 | 패배 |
+| Extreme | 13~14/60 | 12~13분 | 1기 | 패배 |
+
+  Hard는 M1의 21웨이브에서 13~16으로 내려갔다. 이전 값은 임시로 쓰던 Normal 경로(약 3400px) 기준이고, 새 맵은 약 2400px로 더 짧다. Normal 이상은 여전히 조합·강화·증강을 전제로 한 곡선이라 M3~M4 후 다시 맞춘다. 봇이 Normal 이상에서 마지막 웨이브까지 간 적은 없으므로, 그 구간은 웨이브 구성 테스트로만 확인했다.
+- 고의 결함 4종(세력 고정, Hard 맵 교체, 분산 제거, 대형 함선 간격 제거)을 넣어 새 테스트가 모두 잡아내는 것을 확인했다.
+- 에디터가 `project.godot`의 `[gui]` 두 줄 순서를 바꾼다. 내용 변화가 없어 커밋하지 않았다.

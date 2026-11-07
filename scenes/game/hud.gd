@@ -6,6 +6,7 @@ signal wave_start_pressed
 signal gacha_pressed
 
 const TITLE_SCENE := "res://scenes/title/title_screen.tscn"
+const BOSS_COLOR := Color(1, 0.4, 0.3)
 
 var _wave_manager: WaveManager = null
 
@@ -30,15 +31,26 @@ func setup(wave_manager: WaveManager) -> void:
 func _process(_delta: float) -> void:
 	if _wave_manager == null:
 		return
-	wave_label.text = "WAVE %d/%d" % [_wave_manager.wave, _wave_manager.total_waves]
+	var wave := _wave_manager.wave
+	var fighting := _wave_manager.state in [WaveManager.State.SPAWNING, WaveManager.State.FIGHTING]
+	var boss_fight := fighting and _wave_manager.is_boss_wave(wave)
+	var wave_text := "WAVE %d/%d" % [wave, _wave_manager.total_waves]
+	wave_label.text = "BOSS " + wave_text if boss_fight else wave_text
+	wave_label.modulate = BOSS_COLOR if boss_fight else Color.WHITE
 	wave_button.disabled = not _wave_manager.can_start_wave()
 	match _wave_manager.state:
 		WaveManager.State.WAITING:
 			status_label.text = "준비되면 WAVE START"
 		WaveManager.State.PREP:
-			status_label.text = "다음 웨이브 %d초" % ceili(_wave_manager.prep_left)
+			var next_text := "보스 출현" if _wave_manager.is_boss_wave(wave + 1) else "다음 웨이브"
+			status_label.text = "%s %d초" % [next_text, ceili(_wave_manager.prep_left)]
 		_:
-			status_label.text = "전투 중"
+			if not boss_fight:
+				status_label.text = "전투 중"
+			elif _wave_manager.is_final_wave(wave):
+				status_label.text = "최종 보스 전투"
+			else:
+				status_label.text = "보스 전투"
 
 func _on_gold_changed(gold: int) -> void:
 	gold_label.text = "GOLD %d" % gold

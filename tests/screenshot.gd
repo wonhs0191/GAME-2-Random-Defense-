@@ -1,7 +1,7 @@
 extends Node
 
 # 화면 확인용. 실제 창으로 게임을 띄워 상황을 만들고 스크린샷을 저장한다.
-# 사용: Godot --path . res://tests/screenshot.tscn -- <저장 폴더> [난이도]
+# 사용: Godot --path . res://tests/screenshot.tscn -- <저장 폴더> [난이도] [웨이브]
 
 const GAME_SCENE := preload("res://scenes/game/game_play.tscn")
 
@@ -20,7 +20,7 @@ func _ready() -> void:
 	GameState.add_gold(300)
 	for i in 14:
 		game.draw_unit()
-	game.wave_manager.wave = 11
+	game.wave_manager.wave = (args[2].to_int() if args.size() > 2 else 10) - 1
 	game.wave_manager.start_next_wave()
 	await wait_frames(900)
 	await shot("01_wave.png")

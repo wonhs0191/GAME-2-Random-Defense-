@@ -2,12 +2,12 @@ extends Node2D
 
 const UNIT_SCENE := preload("res://entities/units/unit.tscn")
 
-# 난이도별 맵. 경로 분기가 필요한 Hard, Extreme은 M2에서 교체한다.
+# 난이도별 맵. Hard부터 경로가 분기한다.
 const MAP_SCENES := {
 	"Easy": "res://scenes/game/maps/easy.tscn",
 	"Normal": "res://scenes/game/maps/normal.tscn",
-	"Hard": "res://scenes/game/maps/normal.tscn",
-	"Extreme": "res://scenes/game/maps/normal.tscn",
+	"Hard": "res://scenes/game/maps/hard.tscn",
+	"Extreme": "res://scenes/game/maps/extreme.tscn",
 }
 
 const PATH_COLOR := Color(1, 1, 1, 0.12)
@@ -35,7 +35,7 @@ func _ready():
 	paths = _load_map()
 	for path in paths:
 		grid.block_path(path)
-		_show_path(path)
+	_show_paths()
 
 	GameState.reset(difficulty["lives"])
 	wave_manager.setup(paths, enemies, difficulty)
@@ -59,15 +59,19 @@ func _load_map() -> Array[Path2D]:
 			found.append(child)
 	return found
 
-func _show_path(path: Path2D) -> void:
-	var line := Line2D.new()
-	# 베이크된 점을 쓰면 모서리에서 반투명이 겹쳐 진해지므로 제어점만 잇는다
-	for i in path.curve.point_count:
-		line.add_point(path.curve.get_point_position(i))
-	line.width = PATH_WIDTH
-	line.default_color = PATH_COLOR
-	line.joint_mode = Line2D.LINE_JOINT_ROUND
-	path.add_child(line)
+# 경로가 겹치는 구간이 진해지지 않도록 그룹으로 묶어 한 번에 반투명을 입힌다
+func _show_paths() -> void:
+	var group := CanvasGroup.new()
+	group.self_modulate = PATH_COLOR
+	$map.add_child(group)
+	for path in paths:
+		var line := Line2D.new()
+		# 베이크된 점을 쓰면 모서리에 불필요한 점이 많아지므로 제어점만 잇는다
+		for i in path.curve.point_count:
+			line.add_point(path.to_global(path.curve.get_point_position(i)))
+		line.width = PATH_WIDTH
+		line.joint_mode = Line2D.LINE_JOINT_ROUND
+		group.add_child(line)
 
 # 골드를 내고 화면 중앙 가까운 빈 칸에 유닛을 뽑는다. 뽑았으면 true.
 func draw_unit() -> bool:

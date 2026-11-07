@@ -1,3 +1,39 @@
-[gd_scene format=3 uid="uid://bhimagqasw523"]
+[gd_scene load_steps=5 format=3 uid="uid://bhimagqasw523"]
+
+[sub_resource type="Curve2D" id="Curve2D_1"]
+_data = {
+"points": PackedVector2Array(0, 0, 0, 0, -40, 96, 0, 0, 0, 0, 480, 96, 0, 0, 0, 0, 480, 224, 0, 0, 0, 0, 224, 224, 0, 0, 0, 0, 224, 352, 0, 0, 0, 0, 1056, 352, 0, 0, 0, 0, 1056, 224, 0, 0, 0, 0, 800, 224, 0, 0, 0, 0, 800, 96, 0, 0, 0, 0, 1320, 96)
+}
+point_count = 10
+
+[sub_resource type="Curve2D" id="Curve2D_2"]
+_data = {
+"points": PackedVector2Array(0, 0, 0, 0, -40, 96, 0, 0, 0, 0, 480, 96, 0, 0, 0, 0, 480, 224, 0, 0, 0, 0, 224, 224, 0, 0, 0, 0, 224, 352, 0, 0, 0, 0, 1056, 352, 0, 0, 0, 0, 1056, 480, 0, 0, 0, 0, 800, 480, 0, 0, 0, 0, 800, 608, 0, 0, 0, 0, 1320, 608)
+}
+point_count = 10
+
+[sub_resource type="Curve2D" id="Curve2D_3"]
+_data = {
+"points": PackedVector2Array(0, 0, 0, 0, -40, 608, 0, 0, 0, 0, 480, 608, 0, 0, 0, 0, 480, 480, 0, 0, 0, 0, 224, 480, 0, 0, 0, 0, 224, 352, 0, 0, 0, 0, 1056, 352, 0, 0, 0, 0, 1056, 224, 0, 0, 0, 0, 800, 224, 0, 0, 0, 0, 800, 96, 0, 0, 0, 0, 1320, 96)
+}
+point_count = 10
+
+[sub_resource type="Curve2D" id="Curve2D_4"]
+_data = {
+"points": PackedVector2Array(0, 0, 0, 0, -40, 608, 0, 0, 0, 0, 480, 608, 0, 0, 0, 0, 480, 480, 0, 0, 0, 0, 224, 480, 0, 0, 0, 0, 224, 352, 0, 0, 0, 0, 1056, 352, 0, 0, 0, 0, 1056, 480, 0, 0, 0, 0, 800, 480, 0, 0, 0, 0, 800, 608, 0, 0, 0, 0, 1320, 608)
+}
+point_count = 10
 
 [node name="Extreme" type="Node2D"]
+
+[node name="PathTopTop" type="Path2D" parent="."]
+curve = SubResource("Curve2D_1")
+
+[node name="PathTopBottom" type="Path2D" parent="."]
+curve = SubResource("Curve2D_2")
+
+[node name="PathBottomTop" type="Path2D" parent="."]
+curve = SubResource("Curve2D_3")
+
+[node name="PathBottomBottom" type="Path2D" parent="."]
+curve = SubResource("Curve2D_4")
