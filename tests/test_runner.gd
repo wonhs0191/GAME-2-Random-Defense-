@@ -67,6 +67,7 @@ func _run_all() -> void:
 	await test_shot_kills_enemy()
 	await test_zone_burns_enemy()
 	await test_killed_enemy_does_not_leak()
+	test_late_hp()
 	test_faction_rotation()
 	test_wave_composition()
 	await test_boss_spawn()
@@ -1150,6 +1151,16 @@ func wave_manager_for(difficulty: String) -> WaveManager:
 	var no_paths: Array[Path2D] = []
 	manager.setup(no_paths, self, GameSetting.DIFFICULTIES[difficulty])
 	return manager
+
+func test_late_hp() -> void:
+	var easy := wave_manager_for("Easy")
+	var extreme := wave_manager_for("Extreme")
+	var early_ratio := extreme.hp_scale(5) / easy.hp_scale(5)
+	var late_ratio := extreme.hp_scale(30) / easy.hp_scale(30)
+	check(late_ratio > early_ratio, "높은 난이도는 후반 체력이 더 오름")
+	check(is_equal_approx(easy.hp_scale(1), GameSetting.DIFFICULTIES["Easy"]["hp"]), "Easy 후반 가중치 없음")
+	easy.free()
+	extreme.free()
 
 func test_faction_rotation() -> void:
 	for difficulty in GameSetting.DIFFICULTIES:

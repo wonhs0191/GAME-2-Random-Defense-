@@ -77,6 +77,19 @@ focus_mode = 0
 theme_override_font_sizes/font_size = 25
 text = "닫기"
 
+[node name="CreditLabel" type="Label" parent="."]
+layout_mode = 0
+offset_left = 200.0
+offset_top = 568.0
+offset_right = 1080.0
+offset_bottom = 690.0
+theme_override_colors/font_color = Color(0.7, 0.72, 0.8, 1)
+theme_override_font_sizes/font_size = 15
+text = "Made with Godot Engine (godotengine.org/license), Copyright (c) 2014-present Godot Engine contributors, MIT License
+Font: DNF BitBit, Copyright (c) 2022 NEOPLE Inc., SIL Open Font License 1.1
+Enemy ships: Foozle (CC0)  /  Planets and backgrounds: Deep-Fold"
+horizontal_alignment = 1
+
 [connection signal="value_changed" from="BgmSlider" to="." method="_on_bgm_slider_value_changed"]
 [connection signal="value_changed" from="SfxSlider" to="." method="_on_sfx_slider_value_changed"]
 [connection signal="toggled" from="FullscreenCheck" to="." method="_on_fullscreen_check_toggled"]

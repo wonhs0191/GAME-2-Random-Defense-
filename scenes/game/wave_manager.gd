@@ -31,8 +31,7 @@ const FINAL_BOSS_HP_SCALE := 3.0
 const FINAL_BOSS_SIZE_SCALE := 1.5
 const BOSS_ESCORT_SCALE := 0.5 # 보스 웨이브의 호위 함선 수 배율
 
-@export var prep_time: float = 15.0
-@export var spawn_interval: float = 0.9
+@export var spawn_interval: float = 0.9 # 적이 많은 난이도는 이 값을 줄여 웨이브 길이를 맞춘다
 
 var state: State = State.WAITING
 var wave: int = 0
@@ -97,7 +96,10 @@ func is_boss_wave(wave_number: int) -> bool:
 # n번째 웨이브의 체력 배율.
 func hp_scale(wave_number: int) -> float:
 	var step := wave_number - 1
-	return _difficulty["hp"] * (1.0 + 0.15 * step + 0.01 * step * step)
+	var progress := float(wave_number) / total_waves
+	# 후반에는 골드가 체력보다 빨리 늘어나므로 높은 난이도는 후반 체력을 더 올린다
+	var late_scale: float = 1.0 + _difficulty["late"] * progress * progress
+	return _difficulty["hp"] * late_scale * (1.0 + 0.15 * step + 0.01 * step * step)
 
 # n번째 웨이브 보스의 체력 배율.
 func boss_hp_scale(wave_number: int) -> float:
@@ -114,7 +116,7 @@ func _process(delta: float) -> void:
 			if _spawn_timer <= 0.0:
 				var enemy := _spawn_enemy(_spawn_queue.pop_front())
 				# 큰 함선은 같은 속도로 줄지어 겹치므로 앞 함선이 지나갈 시간만큼 기다린다
-				_spawn_timer += maxf(spawn_interval, enemy.get_length() / enemy.speed)
+				_spawn_timer += maxf(spawn_interval / _difficulty["count"], enemy.get_length() / enemy.speed)
 				if _spawn_queue.is_empty():
 					state = State.FIGHTING
 		State.FIGHTING:
@@ -139,5 +141,5 @@ func _finish_wave() -> void:
 		state = State.FINISHED
 		all_waves_cleared.emit()
 	else:
-		prep_left = prep_time
+		prep_left = _difficulty["prep"]
 		state = State.PREP

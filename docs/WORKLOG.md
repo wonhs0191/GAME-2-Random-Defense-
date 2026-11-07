@@ -4,11 +4,11 @@
 
 ## 현재 위치
 
-- **브랜치:** `feature/M6-polish` (`feature/M5-content` 위에 분기, M2~M6 미푸시, `develop` 미병합)
-- **상태:** M6 구현 완료. M7 진행 중.
-- **다음 할 일:** M7.
+- **브랜치:** `feature/M7-release` (`feature/M6-polish` 위에 분기, M2~M7 미푸시, `develop` 미병합)
+- **상태:** M7까지 구현 완료. Windows 실행 파일 빌드만 남음.
+- **다음 할 일:** export 템플릿 다운로드 승인을 받아 Windows 빌드, 사용자 플레이 피드백 반영, `docs/LICENSES.md`의 출시 전 확인 항목 처리.
 - **사용자 플레이:** 아직 안 함. 피드백이 와 있으면 그것부터 반영한다.
-- **막힌 것:** 없음.
+- **막힌 것:** Godot 4.7.2 export 템플릿이 이 PC에 없다. 다운로드는 사용자 승인이 필요하다.
 
 ## 재개 방법
 
@@ -53,12 +53,17 @@ timeout 60 "$GODOT" --path . --fixed-fps 60 res://tests/menu_shot.tscn -- <저�
 timeout 45 "$GODOT" --path . --fixed-fps 60 res://tests/input_test.tscn
 timeout 1700 "$GODOT" --headless --path . --fixed-fps 60 res://tests/balance_sim.tscn
 timeout 120 "$GODOT" --path . --fixed-fps 60 res://tests/scenario_test.tscn
+timeout 120 "$GODOT" --headless --path . --fixed-fps 60 res://tests/perf_test.tscn
+"$GODOT" --headless --path . --export-pack "Windows Desktop" build/game.pck
+"$GODOT" --headless --path . --export-release "Windows Desktop" build/windows/PlanetRandomDefense.exe
 ```
 
 - `test_runner`: 로직 전체 (헤드리스).
 - `input_test`: 마우스 이벤트로 버튼·드래그·선택·조합 확인 (창 모드 필요). 실제 마우스 입력은 테스트 안에서 차단한다.
 - `balance_sim`: 봇이 난이도별로 2판씩 플레이하고 결과 출력 (`boss_leaks`는 경로 끝에 닿은 보스 수).
 - `scenario_test`: 개발 시나리오 9개 Epic을 실제 씬 전환으로 따라간다. 끝까지 가면 Quit 버튼으로 종료되며 `SCENARIO RESULT failures=0`을 출력한다.
+- `perf_test`: 유닛 106기, 적 500기 이상의 부하에서 프레임당 시간을 잰다.
+- `--export-pack`은 템플릿 없이 된다. `--main-pack`으로 실행해 내보낸 결과를 확인할 수 있다. `--export-release`는 템플릿이 있어야 한다.
 - `screenshot`: 마지막 인자는 시작 웨이브. 보스 화면은 10, 최종 보스 화면은 총 웨이브 수.
 
 주의: 스크립트 파싱 오류가 나면 Godot이 종료되지 않고 멈춘다. 반드시 `timeout`을 붙이고 로그는 파일로 받는다.
@@ -142,7 +147,18 @@ timeout 120 "$GODOT" --path . --fixed-fps 60 res://tests/scenario_test.tscn
 - [x] 화면 확인, 커밋
 - [ ] 소리는 Claude가 들을 수 없다. 사용자 확인 필요
 
-### M7 이후
+### M7 출시 준비
+
+- [x] `feature/M6-polish`에서 `feature/M7-release` 분기
+- [x] 성능 측정 (`tests/perf_test`). 오브젝트 풀링은 측정 결과 불필요해 넣지 않음
+- [x] 밸런스 재조정, 난이도별 준비 시간과 후반 체력
+- [x] 라이선스 점검 (`docs/LICENSES.md`), 폰트 라이선스 동봉, 크레딧 표기
+- [x] Windows export 설정, 앱 아이콘, 빌드 산출물 무시
+- [x] 내보낸 pck로 시나리오 9개 Epic 통과
+- [ ] Windows 실행 파일 빌드와 완주 (템플릿 다운로드 승인 필요)
+- [ ] 사용자 플레이 확인
+
+### 이후
 
 [PLAN.md](PLAN.md) 5장 참고. 시작할 때 이 목록을 세분화한다.
 
@@ -252,4 +268,18 @@ timeout 120 "$GODOT" --path . --fixed-fps 60 res://tests/scenario_test.tscn
   - 화면 흔들림은 `canvas_transform`만 바꿔 노드 좌표에 영향이 없다. 배속과 함께 씬을 나갈 때 되돌린다.
   - 전체 화면에서 비율이 어긋나지 않도록 `window/stretch/aspect="keep"`으로 바꿨다.
   - 프로젝트 이름을 `Planet Random Defense`로 바꿨다. `user://` 경로가 프로젝트 이름을 따르므로 이전 저장 위치와 달라지지만 이전에 저장한 값은 없다.
-  - BGM과 효과음은 사인파, 사각파, 노이즈 합성이라 임시 품질일 수 있다. CC0 BGM으로 바꾸려면 다운로드 승인이 필요하다.
+  - BGM과 효과음은 사인파, 사각파, 노이즈 합성이라 임시 품질일 수 있다. CC0 BGM으로 바꾸려면 다운로드 승인이 필요하다.- **M7 구현 완료.** 로직 897건, 마우스 입력, 시나리오 9개 Epic(소스, 내보낸 pck) 통과.
+  - **풀링 생략.** PLAN의 항목이지만 측정 결과 필요 없었다. 유닛 106기, 적 537기(실제 후반 최대의 약 5배)에서 헤드리스 평균 0.3ms, 최대 3.3ms. 렌더링 포함 창 모드는 M1 맥 기준 평균 8.3ms, 최대 14~19ms다. 풀링은 재사용된 적을 투사체가 계속 쫓는 식의 버그 위험을 만든다. 저사양 PC에서 끊기면 그때 넣는다.
+  - 저사양 Windows PC에서는 측정하지 못했다.
+  - 밸런스: `DIFFICULTIES`에 `prep`, `late` 추가. 적이 많은 난이도는 스폰 간격을 줄여 웨이브 길이를 맞춘다. 후반에는 골드가 체력보다 빨리 늘어 높은 난이도일수록 후반 체력을 올린다.
+  - 내보낸 pck 6.9MB. 그중 `tests/`, `tools/`, `docs/`는 제외된다.
+- 최종 봇 결과 (뽑아서 배치, 조합·강화, 구역 배치, 필살기 사용. 유닛을 구역으로 옮기지는 않음. Easy, Normal은 `late` 추가 전 측정이지만 해당 값이 0이라 동일):
+
+| 난이도 | 결과 | 도달 웨이브 | 시간 | 끝날 때 S등급 |
+|---|---|---|---|---|
+| Easy | 클리어 2회, 라이프 손실 없음 | 30/30 | 25~29분 | 0기 |
+| Normal | 클리어 2회, 라이프 손실 없음 | 40/40 | 44분 | 7~12기 |
+| Hard | 클리어 1회, 패배 1회 | 30~50/50 | 28~60분 | 5~45기 |
+| Extreme | 패배 2회 | 56~60/60 | 82~92분 | 48~71기 |
+
+  판당 2회뿐이라 편차가 크다. Extreme 한 판은 PLAN의 1시간 세션 목표보다 길다. 봇은 사람보다 조합과 강화 타이밍이 정확하지만 유닛을 구역으로 옮기지 않으므로, 사람이 어느 쪽으로 다를지는 플레이해 봐야 안다.

@@ -6,6 +6,9 @@ extends SceneTree
 # 구를 한 바퀴 돌리는 방식이라 마지막 프레임이 첫 프레임으로 자연스럽게 이어진다.
 
 const OUT_DIR := "res://entities/units/generated"
+const ICON_PATH := "res://assets/icon.png"
+const ICON_SOURCE := "PRD-A-FS-03" # 앱 아이콘으로 쓸 행성
+const ICON_SCALE := 4
 const COLUMNS := 10
 const ROWS := 6
 const FRAME_COUNT := COLUMNS * ROWS
@@ -40,7 +43,15 @@ func _init() -> void:
 	for spec in SPECS:
 		_render(spec)
 		print("generated ", spec["id"])
+	_save_icon()
 	quit()
+
+func _save_icon() -> void:
+	var sheet := Image.load_from_file(ProjectSettings.globalize_path("%s/%s.png" % [OUT_DIR, ICON_SOURCE]))
+	var size := sheet.get_width() / COLUMNS
+	var icon := sheet.get_region(Rect2i(0, 0, size, size))
+	icon.resize(size * ICON_SCALE, size * ICON_SCALE, Image.INTERPOLATE_NEAREST)
+	icon.save_png(ICON_PATH)
 
 func _render(spec: Dictionary) -> void:
 	var size: int = spec["size"]

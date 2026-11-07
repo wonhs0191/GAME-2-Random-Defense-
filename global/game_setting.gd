@@ -1,12 +1,13 @@
 # 전역 변수 선언
 class_name GameSetting
 
-# 난이도별 설정. waves는 총 웨이브 수, lives는 시작 라이프, 나머지는 기본값 대비 배율.
+# 난이도별 설정. waves는 총 웨이브 수, lives는 시작 라이프, prep은 웨이브 사이 준비 시간(초),
+# late는 마지막 웨이브로 갈수록 더해지는 체력 비율, 나머지는 기본값 대비 배율.
 const DIFFICULTIES := {
-	"Easy": {"waves": 30, "lives": 30, "hp": 0.8, "count": 0.8, "speed": 0.9},
-	"Normal": {"waves": 40, "lives": 20, "hp": 1.0, "count": 1.0, "speed": 1.0},
-	"Hard": {"waves": 50, "lives": 15, "hp": 1.3, "count": 1.15, "speed": 1.1},
-	"Extreme": {"waves": 60, "lives": 10, "hp": 1.7, "count": 1.3, "speed": 1.2},
+	"Easy": {"waves": 30, "lives": 30, "prep": 15.0, "hp": 0.8, "late": 0.0, "count": 0.8, "speed": 0.9},
+	"Normal": {"waves": 40, "lives": 20, "prep": 15.0, "hp": 1.2, "late": 0.0, "count": 1.0, "speed": 1.0},
+	"Hard": {"waves": 50, "lives": 15, "prep": 12.0, "hp": 2.0, "late": 0.4, "count": 1.15, "speed": 1.1},
+	"Extreme": {"waves": 60, "lives": 10, "prep": 10.0, "hp": 2.0, "late": 1.5, "count": 1.3, "speed": 1.2},
 }
 
 static var selected_difficulty: String = ""

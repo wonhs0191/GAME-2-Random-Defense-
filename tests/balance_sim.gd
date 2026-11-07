@@ -2,7 +2,7 @@ extends Node
 
 # 밸런스 확인용 봇 플레이. 뽑아서 경로를 가장 많이 덮는 칸으로 옮기고, 칸이 거의 차면
 # 골드를 모아 같은 유닛을 합치고 높은 등급부터 강화한다.
-# 사용: Godot --headless --path . --fixed-fps 60 res://tests/balance_sim.tscn
+# 사용: Godot --headless --path . --fixed-fps 60 res://tests/balance_sim.tscn [-- 난이도 ...]
 
 const GAME_SCENE := preload("res://scenes/game/game_play.tscn")
 const RUNS_PER_DIFFICULTY := 2
@@ -11,7 +11,10 @@ const COVERAGE_STEP := 16.0
 const CROWDED_FREE_CELLS := 8 # 빈 칸이 이 수 이하면 뽑기 대신 조합과 강화에 쓴다
 
 func _ready() -> void:
-	for difficulty in ["Easy", "Normal", "Hard", "Extreme"]:
+	var difficulties: Array = Array(OS.get_cmdline_user_args())
+	if difficulties.is_empty():
+		difficulties = GameSetting.DIFFICULTIES.keys()
+	for difficulty in difficulties:
 		for run in RUNS_PER_DIFFICULTY:
 			await _play(difficulty)
 	get_tree().quit()
