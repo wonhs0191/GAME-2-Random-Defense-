@@ -25,6 +25,7 @@ func _run_all() -> void:
 	await test_enemy_follows_path()
 	await test_shot_kills_enemy()
 	await test_zone_burns_enemy()
+	await test_killed_enemy_does_not_leak()
 	await test_held_unit_does_not_attack()
 	await test_zone_stays_when_dropped_in_place()
 	await test_game_over()
@@ -269,6 +270,21 @@ func test_zone_burns_enemy() -> void:
 	await wait_frames(2)
 	check(game.zones.get_child_count() == 0, "유닛 제거 시 장판 제거")
 	await end_game(game)
+
+func test_killed_enemy_does_not_leak() -> void:
+	var game := await start_game()
+	var enemy := spawn_enemy(game)
+	enemy.distance = game.paths[0].curve.get_baked_length() - 0.01
+	var lives_before := GameState.lives
+	var gold_before := GameState.gold
+	enemy.take_damage(enemy.hp)
+	await wait_frames(2)
+	check(GameState.gold == gold_before + enemy_reward("scout"), "처치 골드 1회 지급")
+	check(GameState.lives == lives_before, "죽은 적은 라이프를 깎지 않음")
+	await end_game(game)
+
+func enemy_reward(ship: String) -> int:
+	return Catalog.get_enemy("nautolan", ship).reward
 
 func test_held_unit_does_not_attack() -> void:
 	var game := await start_game()

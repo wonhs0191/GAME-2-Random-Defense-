@@ -42,6 +42,9 @@ func _ready() -> void:
 	_move_along_path()
 
 func _process(delta: float) -> void:
+	# 죽은 적이 같은 프레임에 경로 끝에 닿아 라이프까지 깎는 것을 막는다
+	if is_queued_for_deletion():
+		return
 	distance += speed * delta
 	if distance >= _path_length:
 		_reach_goal()
