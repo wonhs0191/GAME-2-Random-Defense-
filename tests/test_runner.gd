@@ -176,7 +176,7 @@ func _find_text_resources(dir_path: String) -> Array[String]:
 	return found
 
 func test_catalog() -> void:
-	var expected_units := {UnitData.Grade.C: 12, UnitData.Grade.B: 5, UnitData.Grade.A: 6, UnitData.Grade.S: 6}
+	var expected_units := {UnitData.Grade.C: 20, UnitData.Grade.B: 16, UnitData.Grade.A: 14, UnitData.Grade.S: 10}
 	for grade in expected_units:
 		check(Catalog.units_of_grade(grade).size() == expected_units[grade], "%s 유닛 수" % UnitData.GRADE_NAMES[grade])
 	for grade in Catalog.GRADE_ODDS:
@@ -1249,6 +1249,7 @@ func test_bench_tooltip_and_panel() -> void:
 	var game := await start_game()
 	var grid: GridManager = game.grid
 	var hud: CanvasLayer = game.hud
+	GameState.add_gold(1000) # 어떤 등급이 뽑혀도 강화할 수 있게 한다
 	game.draw_unit()
 	var cell: Vector2i = grid.get_bench_cells()[0]
 	var unit: UnitBase = grid.grid_status[cell]

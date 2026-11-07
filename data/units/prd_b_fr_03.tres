@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="UnitData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://entities/units/unit_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "PRD-B-FR-03"
+description = "해양. 끝없는 바다가 공명해 항로에 해일을 일으키는 표준형."
+alias = "Abyssal Bloom"
+grade = 1
+attack_type = 1
+sheet_path = "res://entities/units/generated/PRD-B-FR-03.png"
+sheet_columns = 10
+sheet_rows = 6
+effect_dir = "res://entities/units/PRD-C-FR/01/1"
+effect_frame_count = 60
+effect_center = Vector2(16, 27)
+damage = 15.0
+attack_interval = 0.5
+attack_range = 208.0
+zone_radius = 64.0

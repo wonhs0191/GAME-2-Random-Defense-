@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="UnitData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://entities/units/unit_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "PRD-C-FS-09"
+description = "노 앳모스피어. 가벼운 파편을 잇달아 쏘는 연사형."
+grade = 0
+attack_type = 0
+sheet_path = "res://entities/units/generated/PRD-C-FS-09.png"
+sheet_columns = 10
+sheet_rows = 6
+effect_dir = "res://entities/units/PRD-C-FS/04/MG6"
+effect_frame_count = 30
+damage = 5.6
+attack_interval = 0.45
+attack_range = 160.0
+zone_radius = 56.0

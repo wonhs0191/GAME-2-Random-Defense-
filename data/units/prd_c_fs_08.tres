@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="UnitData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://entities/units/unit_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "PRD-C-FS-08"
+description = "노 앳모스피어. 잿빛 운석을 그대로 던지는 표준형."
+grade = 0
+attack_type = 0
+sheet_path = "res://entities/units/generated/PRD-C-FS-08.png"
+sheet_columns = 10
+sheet_rows = 6
+effect_dir = "res://entities/units/PRD-C-FS/01/MG6"
+effect_frame_count = 30
+damage = 10.0
+attack_interval = 0.8
+attack_range = 176.0
+zone_radius = 56.0

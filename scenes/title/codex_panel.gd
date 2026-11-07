@@ -4,6 +4,8 @@ extends ColorRect
 
 const GRADE_ORDER := [UnitData.Grade.S, UnitData.Grade.A, UnitData.Grade.B, UnitData.Grade.C]
 const SLOT_SIZE := Vector2(64, 64)
+const SLOTS_PER_ROW := 12
+const SLOT_GAP := 4
 const DETAIL_SIZE := 150.0
 const LOCKED_COLOR := Color(0.0, 0.0, 0.05, 0.9)
 const FRAME_RATE := 7.5
@@ -26,15 +28,19 @@ func _ready() -> void:
 
 func _add_grade_row(grade: UnitData.Grade) -> void:
 	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 4)
+	row.add_theme_constant_override("separation", SLOT_GAP)
 	rows.add_child(row)
 	var label := Label.new()
 	label.text = UnitData.GRADE_NAMES[grade]
 	label.custom_minimum_size = Vector2(36, 0)
-	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	label.add_theme_font_size_override("font_size", 28)
 	label.add_theme_color_override("font_color", UnitData.GRADE_COLORS[grade])
 	row.add_child(label)
+	var grid := GridContainer.new()
+	grid.columns = SLOTS_PER_ROW
+	grid.add_theme_constant_override("h_separation", SLOT_GAP)
+	grid.add_theme_constant_override("v_separation", SLOT_GAP)
+	row.add_child(grid)
 	for unit in Catalog.units_of_grade(grade):
 		var slot := TextureButton.new()
 		slot.custom_minimum_size = SLOT_SIZE
@@ -46,7 +52,7 @@ func _add_grade_row(grade: UnitData.Grade) -> void:
 		slot.tooltip_text = "???"
 		slot.pressed.connect(select.bind(unit))
 		slot.mouse_entered.connect(select.bind(unit))
-		row.add_child(slot)
+		grid.add_child(slot)
 		_slots[unit] = slot
 
 func open() -> void:

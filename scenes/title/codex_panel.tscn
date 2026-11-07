@@ -56,10 +56,10 @@ horizontal_alignment = 2
 [node name="Rows" type="VBoxContainer" parent="Box"]
 layout_mode = 0
 offset_left = 32.0
-offset_top = 112.0
+offset_top = 96.0
 offset_right = 880.0
-offset_bottom = 620.0
-theme_override_constants/separation = 56
+offset_bottom = 636.0
+theme_override_constants/separation = 14
 
 [node name="Separator" type="ColorRect" parent="Box"]
 layout_mode = 0

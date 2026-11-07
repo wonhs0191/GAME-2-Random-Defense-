@@ -6,8 +6,8 @@ class_name GameSetting
 const DIFFICULTIES := {
 	"Easy": {"waves": 30, "lives": 30, "prep": 15.0, "hp": 0.8, "late": 0.0, "count": 0.8, "speed": 0.9},
 	"Normal": {"waves": 40, "lives": 20, "prep": 15.0, "hp": 1.2, "late": 0.0, "count": 1.0, "speed": 1.0},
-	"Hard": {"waves": 50, "lives": 15, "prep": 12.0, "hp": 2.0, "late": 0.4, "count": 1.15, "speed": 1.1},
-	"Extreme": {"waves": 60, "lives": 10, "prep": 10.0, "hp": 2.0, "late": 1.5, "count": 1.3, "speed": 1.2},
+	"Hard": {"waves": 50, "lives": 15, "prep": 12.0, "hp": 1.9, "late": 0.3, "count": 1.15, "speed": 1.1},
+	"Extreme": {"waves": 60, "lives": 10, "prep": 10.0, "hp": 1.7, "late": 1.2, "count": 1.3, "speed": 1.2},
 }
 
 static var selected_difficulty: String = ""
