@@ -94,9 +94,18 @@ func _ready() -> void:
 	await shot("10_synergy.png")
 	grid.drop_unit_at(held_cell)
 
-	GameState.lose_lives(GameState.lives)
+	# 일시 정지와 설정
+	game.hud.pause_menu.open()
 	await wait_frames(4)
-	await shot("11_gameover.png")
+	await shot("11_pause.png")
+	game.hud.pause_menu.setting_panel.open()
+	await wait_frames(4)
+	await shot("12_setting.png")
+	game.hud.pause_menu.close()
+
+	GameState.lose_lives(GameState.lives)
+	await wait_frames(60)
+	await shot("13_gameover.png")
 
 	get_tree().quit()
 

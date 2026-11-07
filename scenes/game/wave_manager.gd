@@ -8,6 +8,7 @@ class_name WaveManager
 signal wave_started(wave: int)
 signal wave_cleared(wave: int)
 signal all_waves_cleared
+signal enemy_destroyed(enemy: EnemyBase)
 
 enum State { WAITING, PREP, SPAWNING, FIGHTING, FINISHED }
 
@@ -128,6 +129,7 @@ func _spawn_enemy(enemy_data: EnemyData) -> EnemyBase:
 	var size_scale := FINAL_BOSS_SIZE_SCALE if is_final_boss else 1.0
 	enemy.setup(enemy_data, _paths.pick_random(), enemy_hp_scale, _difficulty["speed"], size_scale)
 	enemy.is_final_boss = is_final_boss
+	enemy.destroyed.connect(enemy_destroyed.emit)
 	_enemy_parent.add_child(enemy)
 	return enemy
 

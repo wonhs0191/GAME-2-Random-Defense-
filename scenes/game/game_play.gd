@@ -1,6 +1,7 @@
 extends Node2D
 
 const UNIT_SCENE := preload("res://entities/units/unit.tscn")
+const TITLE_SCENE := "res://scenes/title/title_screen.tscn"
 
 # 난이도별 맵. Hard부터 경로가 분기한다.
 const MAP_SCENES := {
@@ -12,6 +13,11 @@ const MAP_SCENES := {
 
 const PATH_COLOR := Color(1, 1, 1, 0.12)
 const PATH_WIDTH := 40.0
+const DEATH_BURST_RADIUS := 28.0
+const DEATH_BURST_COLOR := Color(1.0, 0.7, 0.3)
+const SHAKE_STRENGTH := 6.0
+const SHAKE_TIME := 0.25
+const FACTION_NAMES := {"nautolan": "Nautolan", "klaed": "Kla'ed", "nairan": "Nairan"}
 
 # 웨이브 클리어 보상 = 기본 + 웨이브 번호 × 증가량
 const WAVE_REWARD_BASE := 10
@@ -19,6 +25,10 @@ const WAVE_REWARD_STEP := 2
 
 var paths: Array[Path2D] = []
 var selected_unit: UnitBase = null
+
+var _lives: int = 0
+var _faction: String = ""
+var _shake_tween: Tween = null
 
 @onready var grid: GridManager = $Grid
 @onready var zones: Node2D = $Zones
@@ -45,6 +55,10 @@ func _ready():
 	wave_manager.wave_cleared.connect(_on_wave_cleared)
 	wave_manager.all_waves_cleared.connect(GameState.end_game.bind(true))
 	GameState.game_ended.connect(_on_game_ended)
+	_lives = GameState.lives
+	GameState.lives_changed.connect(_on_lives_changed)
+	wave_manager.wave_started.connect(_on_wave_started)
+	wave_manager.enemy_destroyed.connect(_on_enemy_destroyed)
 
 	ultimates.setup(wave_manager, effects)
 	augments.setup(grid, ultimates)
@@ -55,6 +69,8 @@ func _ready():
 	grid.merge_requested.connect(merge_units)
 	grid.merge_unaffordable.connect(hud.show_merge_unaffordable)
 	grid.unit_clicked.connect(select_unit)
+	hud.title_requested.connect(_on_title_requested)
+	Sound.play_bgm("battle")
 	hud.augment_chosen.connect(augments.choose)
 	hud.ultimate_pressed.connect(ultimates.use)
 	ultimates.used.connect(hud.show_ultimate)
@@ -98,6 +114,7 @@ func draw_unit() -> bool:
 		return false
 	if not GameState.spend_gold(GameState.GACHA_COST):
 		return false
+	Sound.play("gacha")
 	_reveal(spawn_unit(Catalog.pick_random_unit(), target_cell))
 	augments.on_unit_drawn()
 	return true
@@ -118,6 +135,7 @@ func _reveal(unit: UnitBase) -> void:
 	burst.position = unit.position
 	effects.add_child(burst)
 	hud.show_reveal(unit.data)
+	Sound.play("reveal_" + unit.data.get_grade_name().to_lower())
 
 # 골드를 내고 같은 유닛 2개를 없애 target 자리에 상위 등급 유닛을 랜덤으로 만든다.
 func merge_units(moved: UnitBase, target: UnitBase) -> void:
@@ -129,6 +147,7 @@ func merge_units(moved: UnitBase, target: UnitBase) -> void:
 	grid.unregister_unit(cell)
 	moved.queue_free()
 	target.queue_free()
+	Sound.play("merge")
 	_reveal(spawn_unit(Catalog.pick_unit_of_grade(next_grade), cell))
 
 func select_unit(unit: UnitBase) -> void:
@@ -144,6 +163,7 @@ func upgrade_unit(unit: UnitBase, roll: float = randf()) -> bool:
 	if succeeded:
 		unit.add_star()
 	hud.show_upgrade_result(succeeded)
+	Sound.play("upgrade_success" if succeeded else "upgrade_fail")
 	if selected_unit == unit:
 		hud.show_unit(unit)
 	return succeeded
@@ -151,8 +171,53 @@ func upgrade_unit(unit: UnitBase, roll: float = randf()) -> bool:
 func _on_upgrade_pressed() -> void:
 	upgrade_unit(selected_unit)
 
+func _on_wave_started(wave: int) -> void:
+	var boss_wave := wave_manager.is_boss_wave(wave)
+	Sound.play("boss_warning" if boss_wave else "wave_start")
+	Sound.play_bgm("boss" if boss_wave else "battle")
+	var faction := wave_manager.faction_for_wave(wave)
+	if boss_wave:
+		hud.show_boss_warning(wave_manager.is_final_wave(wave))
+	elif faction != _faction:
+		hud.show_faction(FACTION_NAMES[faction])
+	_faction = faction
+
+func _on_enemy_destroyed(enemy: EnemyBase) -> void:
+	var burst := RevealBurst.new()
+	burst.setup(DEATH_BURST_COLOR, DEATH_BURST_RADIUS)
+	burst.position = enemy.global_position
+	effects.add_child(burst)
+	Sound.play("enemy_die")
+
+func _on_lives_changed(lives: int) -> void:
+	if lives < _lives:
+		Sound.play("life_lost")
+		_shake_screen()
+	_lives = lives
+
+# 노드는 그대로 두고 화면만 흔들어 좌표 계산에 영향을 주지 않는다.
+func _shake_screen() -> void:
+	if _shake_tween:
+		_shake_tween.kill()
+	_shake_tween = create_tween().set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+	_shake_tween.tween_method(_apply_shake, SHAKE_STRENGTH, 0.0, SHAKE_TIME)
+
+func _apply_shake(strength: float) -> void:
+	var offset := Vector2.from_angle(randf() * TAU) * strength
+	get_viewport().canvas_transform = Transform2D(0.0, offset)
+
+func _exit_tree() -> void:
+	# 배속과 화면 흔들림은 씬 밖까지 남으므로 되돌린다
+	Engine.time_scale = 1.0
+	get_viewport().canvas_transform = Transform2D.IDENTITY
+
+func _on_title_requested() -> void:
+	get_tree().paused = false
+	get_tree().change_scene_to_file(TITLE_SCENE)
+
 func _on_wave_cleared(wave: int) -> void:
 	GameState.add_gold(WAVE_REWARD_BASE + wave * WAVE_REWARD_STEP)
+	Sound.play_bgm("battle")
 	if wave_manager.is_final_wave(wave):
 		return
 	if wave_manager.is_boss_wave(wave):
@@ -164,5 +229,7 @@ func _on_augments_closed() -> void:
 	hud.hide_augment_ui()
 	hud.show_unit(selected_unit)
 
-func _on_game_ended(_cleared: bool) -> void:
+func _on_game_ended(cleared: bool) -> void:
 	get_tree().paused = true
+	Sound.stop_bgm()
+	Sound.play("clear" if cleared else "gameover")

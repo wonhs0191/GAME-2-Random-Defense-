@@ -10,6 +10,12 @@ const UPGRADE_BUTTON := Vector2(758, 680)
 const ODDS_BUTTON := Vector2(942, 680)
 const ODDS_CLOSE_BUTTON := Vector2(640, 598)
 const AUGMENT_CARD_2 := Vector2(640, 340)
+const PAUSE_BUTTON := Vector2(1232, 32)
+const SPEED_BUTTON := Vector2(1160, 32)
+const RESUME_BUTTON := Vector2(640, 302)
+const PAUSE_SETTING_BUTTON := Vector2(640, 386)
+const SETTING_CLOSE_BUTTON := Vector2(640, 512)
+const ULTIMATE_BUTTON := Vector2(272, 680)
 const SYNTHETIC_DEVICE := 100
 
 # 실제 마우스가 창 위에서 움직이면 합성 입력과 섞여 드래그 위치가 튄다.
@@ -101,6 +107,25 @@ func _ready() -> void:
 	check(grid.buff_zones.size() == 1, "클릭으로 구역 배치")
 	check(grid.buff_zones[0].rect.has_point(zone_cell), "클릭한 곳에 구역")
 	check(not get_tree().paused, "구역 배치 후 재개")
+
+	# 일시 정지 메뉴와 설정 창은 게임이 멈춘 상태에서 눌린다
+	await click(PAUSE_BUTTON)
+	check(get_tree().paused, "일시 정지 버튼 클릭")
+	await click(PAUSE_SETTING_BUTTON)
+	check(game.hud.pause_menu.setting_panel.visible, "정지 중 설정 열기 클릭")
+	await click(SETTING_CLOSE_BUTTON)
+	check(not game.hud.pause_menu.setting_panel.visible, "정지 중 설정 닫기 클릭")
+	await click(RESUME_BUTTON)
+	check(not get_tree().paused, "계속하기 클릭")
+
+	await click(SPEED_BUTTON)
+	check(Engine.time_scale == 2.0, "배속 버튼 클릭")
+	await click(SPEED_BUTTON)
+	await click(SPEED_BUTTON)
+	check(Engine.time_scale == 1.0, "배속 순환")
+
+	await click(ULTIMATE_BUTTON)
+	check(not game.ultimates.can_use(), "필살기 버튼 클릭")
 
 	await click(WAVE_BUTTON)
 	check(game.wave_manager.wave == 1, "WAVE START 클릭으로 시작")

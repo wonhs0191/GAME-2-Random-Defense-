@@ -1,6 +1,8 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://scenes/game/hud.gd" id="1"]
+[ext_resource type="Script" path="res://scenes/game/pause_menu.gd" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/common/setting_panel.tscn" id="3"]
 
 [sub_resource type="StyleBoxFlat" id="card_normal"]
 bg_color = Color(0.08, 0.1, 0.2, 1)
@@ -58,13 +60,33 @@ horizontal_alignment = 1
 
 [node name="StatusLabel" type="Label" parent="TopBar"]
 layout_mode = 0
-offset_left = 856.0
+offset_left = 776.0
 offset_top = 14.0
-offset_right = 1256.0
+offset_right = 1116.0
 offset_bottom = 50.0
 theme_override_font_sizes/font_size = 24
 text = "전투 중"
 horizontal_alignment = 2
+
+[node name="SpeedButton" type="Button" parent="TopBar"]
+layout_mode = 0
+offset_left = 1128.0
+offset_top = 10.0
+offset_right = 1192.0
+offset_bottom = 54.0
+focus_mode = 0
+theme_override_font_sizes/font_size = 20
+text = "x1"
+
+[node name="PauseButton" type="Button" parent="TopBar"]
+layout_mode = 0
+offset_left = 1200.0
+offset_top = 10.0
+offset_right = 1264.0
+offset_bottom = 54.0
+focus_mode = 0
+theme_override_font_sizes/font_size = 20
+text = "||"
 
 [node name="BottomBar" type="ColorRect" parent="."]
 offset_top = 640.0
@@ -258,6 +280,56 @@ offset_right = 280.0
 offset_bottom = 16.0
 mouse_filter = 2
 
+[node name="PauseMenu" type="ColorRect" parent="."]
+process_mode = 3
+visible = false
+offset_right = 1280.0
+offset_bottom = 720.0
+color = Color(0, 0, 0, 0.7)
+script = ExtResource("2")
+
+[node name="TitleLabel" type="Label" parent="PauseMenu"]
+layout_mode = 0
+offset_top = 150.0
+offset_right = 1280.0
+offset_bottom = 220.0
+theme_override_font_sizes/font_size = 48
+text = "일시 정지"
+horizontal_alignment = 1
+
+[node name="ResumeButton" type="Button" parent="PauseMenu"]
+layout_mode = 0
+offset_left = 520.0
+offset_top = 270.0
+offset_right = 760.0
+offset_bottom = 334.0
+focus_mode = 0
+theme_override_font_sizes/font_size = 25
+text = "계속하기"
+
+[node name="SettingButton" type="Button" parent="PauseMenu"]
+layout_mode = 0
+offset_left = 520.0
+offset_top = 354.0
+offset_right = 760.0
+offset_bottom = 418.0
+focus_mode = 0
+theme_override_font_sizes/font_size = 25
+text = "설정"
+
+[node name="TitleButton" type="Button" parent="PauseMenu"]
+layout_mode = 0
+offset_left = 520.0
+offset_top = 438.0
+offset_right = 760.0
+offset_bottom = 502.0
+focus_mode = 0
+theme_override_font_sizes/font_size = 25
+text = "타이틀로"
+
+[node name="SettingPanel" parent="PauseMenu" instance=ExtResource("3")]
+layout_mode = 0
+
 [node name="ResultPanel" type="ColorRect" parent="."]
 process_mode = 3
 visible = false
@@ -272,6 +344,14 @@ offset_right = 1280.0
 offset_bottom = 320.0
 theme_override_font_sizes/font_size = 64
 text = "GAME OVER"
+horizontal_alignment = 1
+
+[node name="ResultDetail" type="Label" parent="ResultPanel"]
+layout_mode = 0
+offset_top = 300.0
+offset_right = 1280.0
+offset_bottom = 370.0
+theme_override_font_sizes/font_size = 24
 horizontal_alignment = 1
 
 [node name="RetryButton" type="Button" parent="ResultPanel"]
@@ -294,6 +374,11 @@ focus_mode = 0
 theme_override_font_sizes/font_size = 25
 text = "타이틀로"
 
+[connection signal="pressed" from="TopBar/SpeedButton" to="." method="_on_speed_button_pressed"]
+[connection signal="pressed" from="TopBar/PauseButton" to="." method="_on_pause_button_pressed"]
+[connection signal="pressed" from="PauseMenu/ResumeButton" to="PauseMenu" method="_on_resume_button_pressed"]
+[connection signal="pressed" from="PauseMenu/SettingButton" to="PauseMenu" method="_on_setting_button_pressed"]
+[connection signal="pressed" from="PauseMenu/TitleButton" to="PauseMenu" method="_on_title_button_pressed"]
 [connection signal="pressed" from="BottomBar/WaveButton" to="." method="_on_wave_button_pressed"]
 [connection signal="pressed" from="BottomBar/GachaButton" to="." method="_on_gacha_button_pressed"]
 [connection signal="pressed" from="BottomBar/UltimateButton" to="." method="_on_ultimate_button_pressed"]

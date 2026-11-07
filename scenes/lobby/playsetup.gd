@@ -4,6 +4,16 @@ extends Control
 @onready var theme_detail = $Theme/theme_detail
 @onready var start_button = $Start
 
+# 난이도별 구역 설명. 수치는 GameSetting에서 가져온다.
+const DIFFICULTY_LORE := {
+	"Easy": "안정 구역. 확률 붕괴의 여파가 아직 약하다.",
+	"Normal": "붕괴 구역. 외계 연합 함대의 정규 항로다.",
+	"Hard": "분기 구역. 항로가 두 갈래로 갈라진다.",
+	"Extreme": "특이점 구역. 항로가 네 갈래로 얽혀 있다.",
+}
+
+@onready var difficulty_detail: Label = $DifficultyDetail
+
 # 맵 선언(경로) 		#TODO : 경로 변경 시 수정 필요
 var theme01 = preload("res://scenes/lobby/background_img/oil_1280.png")
 var theme02 = preload("res://scenes/lobby/background_img/borkfest_1280.png")
@@ -16,6 +26,8 @@ func _ready():
 	GameSetting.selected_theme_texture = preload("res://scenes/title/title_screen_background.png")
 	background.texture = GameSetting.selected_theme_texture
 	theme_detail.text = ""
+	Sound.bind_buttons(self)
+	Sound.play_bgm("title")
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
@@ -28,8 +40,13 @@ func _process(delta):
 func activate_start_button():
 	if GameSetting.selected_difficulty != "":
 		start_button.disabled = false
+		var difficulty: Dictionary = GameSetting.get_difficulty()
+		difficulty_detail.text = "행성 관리자, 방어 구역을 지정했습니다.\n%s\n%d 웨이브, 라이프 %d" % [
+			DIFFICULTY_LORE[GameSetting.selected_difficulty], difficulty["waves"], difficulty["lives"],
+		]
 	else:
 		start_button.disabled = true
+		difficulty_detail.text = ""
 
 ######### 난이도 저장 ###########
 func _on_degree_1_pressed():

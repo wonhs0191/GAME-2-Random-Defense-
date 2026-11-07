@@ -34,6 +34,7 @@ func use() -> bool:
 	if not can_use():
 		return false
 	cooldown_left = current.cooldown
+	Sound.play("ultimate")
 	match current.kind:
 		UltimateData.Kind.METEOR:
 			_rain_meteors()

@@ -4,9 +4,9 @@
 
 ## 현재 위치
 
-- **브랜치:** `feature/M5-content` (`feature/M4-augment` 위에 분기, M2~M5 미푸시, `develop` 미병합)
-- **상태:** M5 구현 완료. M6 진행 중.
-- **다음 할 일:** M6.
+- **브랜치:** `feature/M6-polish` (`feature/M5-content` 위에 분기, M2~M6 미푸시, `develop` 미병합)
+- **상태:** M6 구현 완료. M7 진행 중.
+- **다음 할 일:** M7.
 - **사용자 플레이:** 아직 안 함. 피드백이 와 있으면 그것부터 반영한다.
 - **막힌 것:** 없음.
 
@@ -52,11 +52,13 @@ timeout 60 "$GODOT" --path . --fixed-fps 60 res://tests/screenshot.tscn -- <저�
 timeout 60 "$GODOT" --path . --fixed-fps 60 res://tests/menu_shot.tscn -- <저장폴더>
 timeout 45 "$GODOT" --path . --fixed-fps 60 res://tests/input_test.tscn
 timeout 1700 "$GODOT" --headless --path . --fixed-fps 60 res://tests/balance_sim.tscn
+timeout 120 "$GODOT" --path . --fixed-fps 60 res://tests/scenario_test.tscn
 ```
 
 - `test_runner`: 로직 전체 (헤드리스).
 - `input_test`: 마우스 이벤트로 버튼·드래그·선택·조합 확인 (창 모드 필요). 실제 마우스 입력은 테스트 안에서 차단한다.
 - `balance_sim`: 봇이 난이도별로 2판씩 플레이하고 결과 출력 (`boss_leaks`는 경로 끝에 닿은 보스 수).
+- `scenario_test`: 개발 시나리오 9개 Epic을 실제 씬 전환으로 따라간다. 끝까지 가면 Quit 버튼으로 종료되며 `SCENARIO RESULT failures=0`을 출력한다.
 - `screenshot`: 마지막 인자는 시작 웨이브. 보스 화면은 10, 최종 보스 화면은 총 웨이브 수.
 
 주의: 스크립트 파싱 오류가 나면 Godot이 종료되지 않고 멈춘다. 반드시 `timeout`을 붙이고 로그는 파일로 받는다.
@@ -128,7 +130,19 @@ timeout 1700 "$GODOT" --headless --path . --fixed-fps 60 res://tests/balance_sim
 - [x] 필살기 4종, 쿨타임, 5웨이브마다 교체 카드
 - [x] 테스트 추가, 봇 필살기 사용, `balance_sim` 재측정, 커밋
 
-### M6 이후
+### M6 마감
+
+- [x] `feature/M5-content`에서 `feature/M6-polish` 분기
+- [x] 설정 저장, 타이틀과 일시 정지에서 쓰는 설정 창, Quit
+- [x] 일시 정지 메뉴, Esc, 배속 1·2·3배
+- [x] 효과음 19종, BGM 3곡 합성 (`tools/generate_audio.py`)
+- [x] 세계관 문구: 타이틀, 로비, 세력 진입, 보스 경고, 결과 화면
+- [x] 전투 연출: 피격 번쩍임, 처치 고리, 라이프 감소 화면 흔들림, 결과 페이드
+- [x] 시나리오 9개 Epic 자동 테스트
+- [x] 화면 확인, 커밋
+- [ ] 소리는 Claude가 들을 수 없다. 사용자 확인 필요
+
+### M7 이후
 
 [PLAN.md](PLAN.md) 5장 참고. 시작할 때 이 목록을 세분화한다.
 
@@ -231,3 +245,11 @@ timeout 1700 "$GODOT" --headless --path . --fixed-fps 60 res://tests/balance_sim
   - 필살기: 유성우(최대 체력 35%, 보스 5%), 시간 정지(4초), 과부하(8초 공격 속도 2배), 확률 회수(웨이브 × 8 골드). 시작할 때 1개가 랜덤으로 주어지고 5웨이브마다 교체한다. 현재 필살기도 후보에 있어 유지할 수 있다.
   - 카드 패널을 증강과 필살기가 공유한다. 대기열이 종류를 함께 관리하므로 10웨이브는 증강 뒤 필살기 교체가 이어진다.
   - 하단 바에 필살기 버튼을 넣으려고 WAVE START 폭을 줄였다.
+- M5 봇 결과 (필살기 포함): Easy, Normal, Hard, Extreme 전부 2회 클리어. Extreme은 S 49~77기. 난이도 재조정은 M7.
+- **M6 구현 완료.** 로직 894건, 마우스 입력 테스트, 시나리오 9개 Epic(헤드리스와 창 모드 모두) 통과.
+  - 오토로드 `Sound`, `Settings` 추가. 설정은 `user://settings.cfg`에 저장한다.
+  - 일시 정지 메뉴는 HUD가 멈춰도 입력을 받아야 해서 스크립트를 분리했다. 이미 멈춘 상태(증강 선택, 게임 종료)에서는 열리지 않는다.
+  - 화면 흔들림은 `canvas_transform`만 바꿔 노드 좌표에 영향이 없다. 배속과 함께 씬을 나갈 때 되돌린다.
+  - 전체 화면에서 비율이 어긋나지 않도록 `window/stretch/aspect="keep"`으로 바꿨다.
+  - 프로젝트 이름을 `Planet Random Defense`로 바꿨다. `user://` 경로가 프로젝트 이름을 따르므로 이전 저장 위치와 달라지지만 이전에 저장한 값은 없다.
+  - BGM과 효과음은 사인파, 사각파, 노이즈 합성이라 임시 품질일 수 있다. CC0 BGM으로 바꾸려면 다운로드 승인이 필요하다.

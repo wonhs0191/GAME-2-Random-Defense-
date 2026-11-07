@@ -10,7 +10,7 @@ config_version=5
 
 [application]
 
-config/name="Random-defense"
+config/name="Planet Random Defense"
 run/main_scene="res://scenes/title/title_screen.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 
@@ -18,12 +18,15 @@ config/features=PackedStringArray("4.7", "GL Compatibility")
 
 Catalog="*res://global/catalog.gd"
 GameState="*res://global/game_state.gd"
+Sound="*res://global/sound.gd"
+Settings="*res://global/settings.gd"
 
 [display]
 
 window/size/viewport_width=1280
 window/size/viewport_height=720
 window/stretch/mode="canvas_items"
+window/stretch/aspect="keep"
 
 [file_customization]
 
@@ -38,8 +41,8 @@ folder_colors={
 
 [gui]
 
-theme/custom_font="res://assets/fonts/DNFBitBitTTF.ttf"
 theme/default_font_generate_mipmaps=true
+theme/custom_font="res://assets/fonts/DNFBitBitTTF.ttf"
 
 [layer_names]
 

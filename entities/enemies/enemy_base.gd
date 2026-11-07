@@ -5,11 +5,15 @@ class_name EnemyBase
 # 적 공용 로직. 종류별 차이는 EnemyData(tres)로만 표현한다.
 # PathFollow2D는 진척률을 공유하는 문제가 있어(MAP-001) 경로상 거리를 직접 관리한다.
 
+signal destroyed(enemy: EnemyBase)
+
 const BAR_WIDTH_RATIO := 0.4 # 체력바 폭 / 스프라이트 폭
 const BAR_HEIGHT := 4.0
 const BAR_BACK_COLOR := Color(0, 0, 0, 0.7)
 const BAR_COLOR := Color(0.95, 0.25, 0.25)
 const FROZEN_COLOR := Color(0.5, 0.8, 1.0)
+const HIT_COLOR := Color(2.2, 2.2, 2.2)
+const HIT_FLASH_TIME := 0.06
 const SHIP_FILL := 0.75 # 스프라이트에서 함선이 차지하는 비율
 const LANE_SPREAD := 12.0 # 겹치지 않도록 경로 중심에서 좌우로 벌어지는 최대 거리 (px)
 const LANE_SMOOTHING := 24.0 # 모서리에서 좌우 위치가 튀지 않도록 앞뒤를 보는 거리 (px)
@@ -25,6 +29,7 @@ var is_final_boss: bool = false # 경로 끝에 닿으면 라이프와 상관없
 
 var _size_scale: float = 1.0
 var _frozen_left: float = 0.0
+var _hit_flash_left: float = 0.0
 var _path_length: float = 0.0
 var _bar_width: float = 0.0
 var _bar_offset: float = 0.0
@@ -58,6 +63,10 @@ func _process(delta: float) -> void:
 	# 죽은 적이 같은 프레임에 경로 끝에 닿아 라이프까지 깎는 것을 막는다
 	if is_queued_for_deletion():
 		return
+	if _hit_flash_left > 0.0:
+		_hit_flash_left -= delta
+		if _hit_flash_left <= 0.0:
+			body.modulate = Color.WHITE
 	if _frozen_left > 0.0:
 		_frozen_left -= delta
 		if _frozen_left <= 0.0:
@@ -89,6 +98,8 @@ func freeze(seconds: float) -> void:
 
 func take_damage(amount: float) -> void:
 	hp -= amount
+	body.modulate = HIT_COLOR
+	_hit_flash_left = HIT_FLASH_TIME
 	queue_redraw()
 	if hp <= 0.0 and is_in_group("enemy"):
 		_die()
@@ -97,6 +108,7 @@ func _die() -> void:
 	# 그룹에서 바로 빼서 같은 프레임의 다른 공격이 시체를 노리지 않게 한다
 	remove_from_group("enemy")
 	GameState.add_gold(data.reward)
+	destroyed.emit(self)
 	queue_free()
 
 func _reach_goal() -> void:

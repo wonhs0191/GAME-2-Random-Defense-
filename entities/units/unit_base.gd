@@ -139,6 +139,7 @@ func _shoot() -> bool:
 	var projectile: Projectile = PROJECTILE_SCENE.instantiate()
 	_game.effects.add_child(projectile)
 	projectile.launch(data.get_effect_frames(), global_position, target, get_damage())
+	Sound.play("shot")
 	return true
 
 func _find_target(attack_range: float) -> EnemyBase:

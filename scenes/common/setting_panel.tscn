@@ -1,0 +1,83 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/common/setting_panel.gd" id="1"]
+
+[node name="SettingPanel" type="ColorRect"]
+process_mode = 3
+visible = false
+offset_right = 1280.0
+offset_bottom = 720.0
+color = Color(0, 0, 0, 0.8)
+script = ExtResource("1")
+
+[node name="TitleLabel" type="Label" parent="."]
+layout_mode = 0
+offset_top = 130.0
+offset_right = 1280.0
+offset_bottom = 190.0
+theme_override_font_sizes/font_size = 40
+text = "설정"
+horizontal_alignment = 1
+
+[node name="BgmLabel" type="Label" parent="."]
+layout_mode = 0
+offset_left = 380.0
+offset_top = 240.0
+offset_right = 560.0
+offset_bottom = 280.0
+theme_override_font_sizes/font_size = 24
+text = "배경음"
+
+[node name="BgmSlider" type="HSlider" parent="."]
+layout_mode = 0
+offset_left = 560.0
+offset_top = 240.0
+offset_right = 900.0
+offset_bottom = 280.0
+max_value = 1.0
+step = 0.05
+focus_mode = 0
+
+[node name="SfxLabel" type="Label" parent="."]
+layout_mode = 0
+offset_left = 380.0
+offset_top = 310.0
+offset_right = 560.0
+offset_bottom = 350.0
+theme_override_font_sizes/font_size = 24
+text = "효과음"
+
+[node name="SfxSlider" type="HSlider" parent="."]
+layout_mode = 0
+offset_left = 560.0
+offset_top = 310.0
+offset_right = 900.0
+offset_bottom = 350.0
+max_value = 1.0
+step = 0.05
+focus_mode = 0
+
+[node name="FullscreenCheck" type="CheckButton" parent="."]
+layout_mode = 0
+offset_left = 380.0
+offset_top = 380.0
+offset_right = 900.0
+offset_bottom = 430.0
+focus_mode = 0
+theme_override_font_sizes/font_size = 24
+text = "전체 화면"
+
+[node name="CloseButton" type="Button" parent="."]
+layout_mode = 0
+offset_left = 540.0
+offset_top = 480.0
+offset_right = 740.0
+offset_bottom = 544.0
+focus_mode = 0
+theme_override_font_sizes/font_size = 25
+text = "닫기"
+
+[connection signal="value_changed" from="BgmSlider" to="." method="_on_bgm_slider_value_changed"]
+[connection signal="value_changed" from="SfxSlider" to="." method="_on_sfx_slider_value_changed"]
+[connection signal="toggled" from="FullscreenCheck" to="." method="_on_fullscreen_check_toggled"]
+[connection signal="pressed" from="CloseButton" to="." method="_on_close_button_pressed"]

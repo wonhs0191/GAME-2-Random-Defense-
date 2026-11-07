@@ -68,11 +68,13 @@ func _offer_next() -> void:
 	var pool: Array = offer["pool"].duplicate()
 	pool.shuffle()
 	cards.assign(pool.slice(0, CARD_COUNT))
+	Sound.play("augment")
 	offered.emit(cards, offer["title"])
 
 func _on_zone_placed(rect: Rect2i) -> void:
 	_grid.add_buff_zone(rect, placing.stat, placing.value)
 	placing = null
+	Sound.play("zone_place")
 	_finish_choice()
 
 func _finish_choice() -> void:

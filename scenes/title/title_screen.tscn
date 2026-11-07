@@ -1,5 +1,6 @@
 [gd_scene load_steps=16 format=3 uid="uid://co1p62exjtuqb"]
 
+[ext_resource type="PackedScene" path="res://scenes/common/setting_panel.tscn" id="setting_panel"]
 [ext_resource type="Script" path="res://scenes/title/title_screen.gd" id="1_noj3s"]
 [ext_resource type="Texture2D" uid="uid://c4eq0rx6tud5x" path="res://scenes/title/title_screen_background.png" id="1_qeulw"]
 [ext_resource type="PackedScene" uid="uid://m34ipr7mtbcr" path="res://scenes/title/unit/planet.tscn" id="3_0urkd"]
@@ -97,6 +98,15 @@ label_settings = SubResource("LabelSettings_yg0ek")
 horizontal_alignment = 1
 vertical_alignment = 1
 
+[node name="tagline" type="Label" parent="."]
+offset_left = 183.0
+offset_top = 256.0
+offset_right = 1095.0
+offset_bottom = 296.0
+theme_override_font_sizes/font_size = 22
+text = "우주는 이미 무너졌다. 남은 것은 행성과 확률뿐이다."
+horizontal_alignment = 1
+
 [node name="Enemys" type="Node2D" parent="."]
 
 [node name="scout" type="Node2D" parent="Enemys"]
@@ -179,4 +189,8 @@ theme_override_styles/pressed = SubResource("StyleBoxFlat_54dje")
 theme_override_styles/focus = SubResource("StyleBoxFlat_2134j")
 text = "Q U I T"
 
+[node name="SettingPanel" parent="." instance=ExtResource("setting_panel")]
+
 [connection signal="pressed" from="Buttons/start_button" to="." method="_on_start_button_pressed"]
+[connection signal="pressed" from="Buttons/setting_button" to="." method="_on_setting_button_pressed"]
+[connection signal="pressed" from="Buttons/quit_button" to="." method="_on_quit_button_pressed"]

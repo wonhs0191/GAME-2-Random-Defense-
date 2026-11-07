@@ -53,6 +53,16 @@ func _run_all() -> void:
 	await test_gold_ultimate()
 	await test_ultimate_cooldown()
 	await test_ultimate_swap()
+	test_sound_files()
+	test_settings_saved()
+	await test_pause_menu()
+	await test_pause_blocked()
+	await test_speed_button()
+	await test_battle_feedback()
+	await test_game_sounds()
+	await test_wave_banners()
+	await test_result_text()
+	await test_lobby_detail()
 	await test_enemy_follows_path()
 	await test_shot_kills_enemy()
 	await test_zone_burns_enemy()
@@ -878,6 +888,179 @@ func test_ultimate_swap() -> void:
 	augments.choose(0)
 	check(not get_tree().paused, "모두 끝나면 재개")
 	await end_game(game)
+
+func test_sound_files() -> void:
+	for sfx_name in ["ui_click", "gacha", "reveal_c", "reveal_b", "reveal_a", "reveal_s", "merge",
+			"upgrade_success", "upgrade_fail", "shot", "enemy_die", "life_lost", "boss_warning",
+			"wave_start", "ultimate", "augment", "zone_place", "gameover", "clear"]:
+		check(ResourceLoader.exists(Sound.SFX_PATH % sfx_name), "효과음 파일 " + sfx_name)
+	for bgm_name in ["title", "battle", "boss"]:
+		check(ResourceLoader.exists(Sound.BGM_PATH % bgm_name), "BGM 파일 " + bgm_name)
+
+func test_settings_saved() -> void:
+	var original_path := Settings.path
+	var original_bgm := Settings.bgm_volume
+	Settings.path = "user://settings_test.cfg"
+	Settings.bgm_volume = 0.25
+	Settings.sfx_volume = 0.5
+	Settings.save_settings()
+	Settings.bgm_volume = 1.0
+	Settings.sfx_volume = 1.0
+	Settings.load_settings()
+	check(Settings.bgm_volume == 0.25, "배경음 설정 저장")
+	check(Settings.sfx_volume == 0.5, "효과음 설정 저장")
+	Settings.apply()
+	var bus := AudioServer.get_bus_index(Sound.BGM_BUS)
+	check(is_equal_approx(AudioServer.get_bus_volume_db(bus), linear_to_db(0.25)), "배경음 음량 적용")
+	DirAccess.remove_absolute("user://settings_test.cfg")
+	Settings.path = original_path
+	Settings.bgm_volume = original_bgm
+
+func test_pause_menu() -> void:
+	var game := await start_game()
+	var menu: ColorRect = game.hud.pause_menu
+	var enemy := spawn_enemy(game, "bomber", 100.0)
+	await wait_frames(5)
+	game.hud._on_pause_button_pressed()
+	check(get_tree().paused, "일시 정지 버튼으로 정지")
+	check(menu.visible, "일시 정지 메뉴 표시")
+	var distance := enemy.distance
+	await wait_frames(30)
+	check(enemy.distance == distance, "일시 정지 중 적 이동 없음")
+
+	menu._on_setting_button_pressed()
+	check(menu.setting_panel.visible, "일시 정지에서 설정 열기")
+	menu.setting_panel.close()
+	check(not menu.setting_panel.visible, "설정 닫기")
+
+	var cancel := InputEventAction.new()
+	cancel.action = "ui_cancel"
+	cancel.pressed = true
+	menu._unhandled_input(cancel)
+	check(not menu.visible and not get_tree().paused, "Esc로 재개")
+	await wait_frames(5)
+	check(enemy.distance > distance, "재개 후 적 이동")
+	menu._unhandled_input(cancel)
+	check(menu.visible and get_tree().paused, "Esc로 일시 정지")
+	menu._on_resume_button_pressed()
+	check(not get_tree().paused, "계속하기로 재개")
+	await end_game(game)
+
+func test_pause_blocked() -> void:
+	var game := await start_game()
+	var menu: ColorRect = game.hud.pause_menu
+	game.augments.request_offer()
+	game.hud._on_pause_button_pressed()
+	check(not menu.visible, "증강 선택 중에는 일시 정지 안 열림")
+	game.augments.choose(0)
+	game.grid.place_zone_at(Vector2i(3, 3))
+	check(not get_tree().paused, "증강 후 정상 재개")
+	GameState.lose_lives(GameState.lives)
+	await wait_frames(2)
+	game.hud._on_pause_button_pressed()
+	check(not menu.visible, "게임 종료 후 일시 정지 안 열림")
+	await end_game(game)
+
+func test_speed_button() -> void:
+	var game := await start_game()
+	var hud: CanvasLayer = game.hud
+	check(Engine.time_scale == 1.0, "기본 1배속")
+	hud._on_speed_button_pressed()
+	check(Engine.time_scale == 2.0 and hud.speed_button.text == "x2", "2배속")
+	hud._on_speed_button_pressed()
+	check(Engine.time_scale == 3.0 and hud.speed_button.text == "x3", "3배속")
+	hud._on_speed_button_pressed()
+	check(Engine.time_scale == 1.0 and hud.speed_button.text == "x1", "다시 1배속")
+	hud._on_speed_button_pressed()
+	await end_game(game)
+	await wait_frames(2)
+	check(Engine.time_scale == 1.0, "게임을 나가면 배속 복구")
+
+func test_battle_feedback() -> void:
+	var game := await start_game()
+	var manager: WaveManager = game.wave_manager
+	var enemy := manager._spawn_enemy(Catalog.get_enemy("nautolan", "scout"))
+	enemy.take_damage(1.0)
+	check(enemy.body.modulate == EnemyBase.HIT_COLOR, "맞으면 번쩍임")
+	await wait_frames(10)
+	check(enemy.body.modulate == Color.WHITE, "번쩍임 복구")
+	enemy.take_damage(enemy.hp)
+	check(game.effects.get_child_count() == 1, "처치 연출")
+	check(Sound.last_sfx == "enemy_die", "처치 소리")
+
+	GameState.lose_lives(1)
+	check(Sound.last_sfx == "life_lost", "라이프 감소 소리")
+	await wait_frames(2)
+	check(get_viewport().canvas_transform.origin != Vector2.ZERO, "화면 흔들림")
+	await wait_frames(30)
+	check(get_viewport().canvas_transform.origin.length() < 0.5, "화면 흔들림 종료")
+	var unit: UnitBase = game.spawn_unit(Catalog.units[0], Vector2i(0, 2))
+	check(unit.global_position == game.grid.cell_center(Vector2i(0, 2)), "흔들림은 좌표에 영향 없음")
+	await end_game(game)
+
+func test_game_sounds() -> void:
+	var game := await start_game()
+	check(Sound.current_bgm == "battle", "전투 BGM")
+	game.draw_unit()
+	check(Sound.last_sfx.begins_with("reveal_"), "뽑기 등장 소리")
+	var manager: WaveManager = game.wave_manager
+	manager.wave = 9
+	manager.start_next_wave()
+	check(Sound.current_bgm == "boss", "보스 BGM")
+	check(Sound.last_sfx == "boss_warning", "보스 경고음")
+	game._on_wave_cleared(9)
+	check(Sound.current_bgm == "battle", "보스 후 전투 BGM")
+	GameState.lose_lives(GameState.lives)
+	await wait_frames(1)
+	check(Sound.last_sfx == "gameover", "게임오버 소리")
+	check(Sound.current_bgm == "", "게임오버 시 BGM 정지")
+	await end_game(game)
+
+func test_wave_banners() -> void:
+	var game := await start_game()
+	var manager: WaveManager = game.wave_manager
+	var label: Label = game.hud.message_label
+	manager.start_next_wave()
+	check(label.text == "Nautolan 선단 진입", "첫 세력 문구")
+	manager.state = WaveManager.State.WAITING
+	manager._spawn_queue.clear()
+	label.text = ""
+	manager.start_next_wave()
+	check(label.text == "", "같은 세력은 문구 없음")
+	manager.state = WaveManager.State.WAITING
+	manager.wave = 9
+	manager.start_next_wave()
+	check(label.text.begins_with("경고"), "보스 경고 문구")
+	manager.state = WaveManager.State.WAITING
+	manager.wave = 10
+	manager.start_next_wave()
+	check(label.text == "Kla'ed 선단 진입", "세력 전환 문구")
+	manager.state = WaveManager.State.WAITING
+	manager.wave = manager.total_waves - 1
+	manager.start_next_wave()
+	check(label.text.contains("최종"), "최종 보스 경고 문구")
+	await end_game(game)
+
+func test_result_text() -> void:
+	var game := await start_game()
+	game.wave_manager.wave = 7
+	GameState.lose_lives(GameState.lives)
+	await wait_frames(1)
+	check(game.hud.result_detail.text.contains("붕괴"), "패배 세계관 문구")
+	check(game.hud.result_detail.text.contains("7/30"), "도달 웨이브 표시")
+	await wait_frames(40)
+	check(game.hud.result_panel.modulate.a == 1.0, "결과 패널 페이드 완료")
+	await end_game(game)
+
+func test_lobby_detail() -> void:
+	var setup: Control = load("res://scenes/lobby/playsetup.tscn").instantiate()
+	add_child(setup)
+	await wait_frames(2)
+	setup._on_degree_3_pressed()
+	check(setup.difficulty_detail.text.contains("50 웨이브"), "난이도 수치 표시")
+	check(setup.difficulty_detail.text.contains("두 갈래"), "난이도 세계관 표시")
+	setup.queue_free()
+	await get_tree().process_frame
 
 func test_enemy_follows_path() -> void:
 	var game := await start_game()

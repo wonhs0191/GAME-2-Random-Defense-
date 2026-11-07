@@ -7,8 +7,10 @@ signal gacha_pressed
 signal upgrade_pressed
 signal augment_chosen(index: int)
 signal ultimate_pressed
+signal title_requested
 
-const TITLE_SCENE := "res://scenes/title/title_screen.tscn"
+const SPEEDS: Array[float] = [1.0, 2.0, 3.0]
+const RESULT_FADE_TIME := 0.5
 const BOSS_COLOR := Color(1, 0.4, 0.3)
 const SUCCESS_COLOR := Color(1.0, 0.85, 0.35)
 const FAILURE_COLOR := Color(0.6, 0.65, 0.8)
@@ -40,8 +42,11 @@ var _message_tween: Tween = null
 @onready var augment_panel: ColorRect = $AugmentPanel
 @onready var augment_title: Label = $AugmentPanel/TitleLabel
 @onready var augment_cards: Array[Button] = [$AugmentPanel/Card1, $AugmentPanel/Card2, $AugmentPanel/Card3]
+@onready var speed_button: Button = $TopBar/SpeedButton
+@onready var pause_menu: ColorRect = $PauseMenu
 @onready var result_panel: ColorRect = $ResultPanel
 @onready var result_label: Label = $ResultPanel/ResultLabel
+@onready var result_detail: Label = $ResultPanel/ResultDetail
 
 func setup(wave_manager: WaveManager, augments: AugmentManager, ultimates: UltimateManager) -> void:
 	_wave_manager = wave_manager
@@ -51,6 +56,8 @@ func setup(wave_manager: WaveManager, augments: AugmentManager, ultimates: Ultim
 	GameState.lives_changed.connect(_on_lives_changed)
 	GameState.game_ended.connect(_on_game_ended)
 	odds_label.text = _build_odds_text()
+	Sound.bind_buttons(self)
+	pause_menu.title_pressed.connect(title_requested.emit)
 	show_unit(null)
 	_on_gold_changed(GameState.gold)
 	_on_lives_changed(GameState.lives)
@@ -129,6 +136,12 @@ func show_reveal(data: UnitData) -> void:
 	if data.grade == UnitData.Grade.S:
 		_flash(Color.WHITE)
 
+func show_boss_warning(is_final: bool) -> void:
+	show_message("경고: 최종 기함 접근" if is_final else "경고: 외계 연합 기함 접근", BOSS_COLOR)
+
+func show_faction(faction_name: String) -> void:
+	show_message("%s 선단 진입" % faction_name, Color.WHITE)
+
 func show_ultimate(ultimate: UltimateData) -> void:
 	show_message(ultimate.get_title(), ultimate.get_color())
 	_flash(ultimate.get_color())
@@ -198,7 +211,11 @@ func _on_lives_changed(lives: int) -> void:
 
 func _on_game_ended(cleared: bool) -> void:
 	result_label.text = "CLEAR" if cleared else "GAME OVER"
+	var story := "이 구역의 확률이 안정화되었습니다." if cleared else "방어선 붕괴. 오늘의 확률은 당신 편이 아니었습니다."
+	result_detail.text = "%s\n도달 웨이브 %d/%d" % [story, _wave_manager.wave, _wave_manager.total_waves]
+	result_panel.modulate.a = 0.0
 	result_panel.show()
+	create_tween().set_pause_mode(Tween.TWEEN_PAUSE_PROCESS).tween_property(result_panel, "modulate:a", 1.0, RESULT_FADE_TIME)
 
 func _on_wave_button_pressed() -> void:
 	wave_start_pressed.emit()
@@ -208,6 +225,14 @@ func _on_gacha_button_pressed() -> void:
 
 func _on_upgrade_button_pressed() -> void:
 	upgrade_pressed.emit()
+
+func _on_speed_button_pressed() -> void:
+	var next := (SPEEDS.find(Engine.time_scale) + 1) % SPEEDS.size()
+	Engine.time_scale = SPEEDS[next]
+	speed_button.text = "x%d" % SPEEDS[next]
+
+func _on_pause_button_pressed() -> void:
+	pause_menu.open()
 
 func _on_ultimate_button_pressed() -> void:
 	ultimate_pressed.emit()
@@ -226,5 +251,4 @@ func _on_retry_button_pressed() -> void:
 	get_tree().reload_current_scene()
 
 func _on_title_button_pressed() -> void:
-	get_tree().paused = false
-	get_tree().change_scene_to_file(TITLE_SCENE)
+	title_requested.emit()
