@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="UltimateData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://entities/ultimates/ultimate_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "meteor"
+title = "유성우"
+description = "화면의 모든 적에게 최대 체력의 35% 피해\n보스는 5%"
+kind = 0
+cooldown = 45.0
+power = 0.35
+duration = 0.0

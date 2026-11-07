@@ -27,6 +27,7 @@ var selected_unit: UnitBase = null
 @onready var effects: Node2D = $Effects
 @onready var wave_manager: WaveManager = $WaveManager
 @onready var augments: AugmentManager = $AugmentManager
+@onready var ultimates: UltimateManager = $UltimateManager
 @onready var hud: CanvasLayer = $HUD
 
 func _ready():
@@ -45,8 +46,9 @@ func _ready():
 	wave_manager.all_waves_cleared.connect(GameState.end_game.bind(true))
 	GameState.game_ended.connect(_on_game_ended)
 
-	augments.setup(grid)
-	hud.setup(wave_manager, augments)
+	ultimates.setup(wave_manager, effects)
+	augments.setup(grid, ultimates)
+	hud.setup(wave_manager, augments, ultimates)
 	hud.wave_start_pressed.connect(wave_manager.start_next_wave)
 	hud.gacha_pressed.connect(draw_unit)
 	hud.upgrade_pressed.connect(_on_upgrade_pressed)
@@ -54,6 +56,8 @@ func _ready():
 	grid.merge_unaffordable.connect(hud.show_merge_unaffordable)
 	grid.unit_clicked.connect(select_unit)
 	hud.augment_chosen.connect(augments.choose)
+	hud.ultimate_pressed.connect(ultimates.use)
+	ultimates.used.connect(hud.show_ultimate)
 	augments.offered.connect(hud.show_augment_cards)
 	augments.placement_started.connect(hud.show_placement_hint)
 	augments.closed.connect(_on_augments_closed)
@@ -110,7 +114,7 @@ func spawn_unit(unit_data: UnitData, cell: Vector2i) -> UnitBase:
 func _reveal(unit: UnitBase) -> void:
 	unit.pop_in()
 	var burst := RevealBurst.new()
-	burst.setup(unit.data.grade)
+	burst.setup(UnitData.GRADE_COLORS[unit.data.grade], RevealBurst.RADIUS_BY_GRADE[unit.data.grade])
 	burst.position = unit.position
 	effects.add_child(burst)
 	hud.show_reveal(unit.data)
@@ -149,8 +153,12 @@ func _on_upgrade_pressed() -> void:
 
 func _on_wave_cleared(wave: int) -> void:
 	GameState.add_gold(WAVE_REWARD_BASE + wave * WAVE_REWARD_STEP)
-	if wave_manager.is_boss_wave(wave) and not wave_manager.is_final_wave(wave):
+	if wave_manager.is_final_wave(wave):
+		return
+	if wave_manager.is_boss_wave(wave):
 		augments.request_offer()
+	if wave % UltimateManager.SWAP_INTERVAL == 0:
+		augments.request_ultimate_offer()
 
 func _on_augments_closed() -> void:
 	hud.hide_augment_ui()

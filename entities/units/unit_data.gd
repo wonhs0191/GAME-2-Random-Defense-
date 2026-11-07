@@ -20,6 +20,7 @@ const UPGRADE_CHANCE := [0.7, 0.4]          # 1→2성, 2→3성 성공 확률
 const UPGRADE_BASE_COST := [30, 60, 120, 240] # 등급별 강화 비용. 현재 별 수를 곱한다
 
 @export var id: String = ""
+@export var alias: String = "" # 부가 정보. 공식 명칭은 id다
 @export var grade: Grade = Grade.C
 @export var attack_type: AttackType = AttackType.SHOT
 
@@ -44,6 +45,9 @@ var _effect_frames: SpriteFrames = null
 
 func get_grade_name() -> String:
 	return GRADE_NAMES[grade]
+
+func get_display_name() -> String:
+	return "%s  %s" % [id, alias] if alias else id
 
 func merge_cost() -> int:
 	return MERGE_COST[grade]

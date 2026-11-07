@@ -6,6 +6,7 @@ signal wave_start_pressed
 signal gacha_pressed
 signal upgrade_pressed
 signal augment_chosen(index: int)
+signal ultimate_pressed
 
 const TITLE_SCENE := "res://scenes/title/title_screen.tscn"
 const BOSS_COLOR := Color(1, 0.4, 0.3)
@@ -18,6 +19,7 @@ const FLASH_TIME := 0.5
 
 var _wave_manager: WaveManager = null
 var _augments: AugmentManager = null
+var _ultimates: UltimateManager = null
 var _selected_unit: UnitBase = null
 var _message_tween: Tween = null
 
@@ -34,14 +36,17 @@ var _message_tween: Tween = null
 @onready var odds_panel: ColorRect = $OddsPanel
 @onready var odds_label: Label = $OddsPanel/OddsLabel
 @onready var placement_label: Label = $PlacementLabel
+@onready var ultimate_button: Button = $BottomBar/UltimateButton
 @onready var augment_panel: ColorRect = $AugmentPanel
+@onready var augment_title: Label = $AugmentPanel/TitleLabel
 @onready var augment_cards: Array[Button] = [$AugmentPanel/Card1, $AugmentPanel/Card2, $AugmentPanel/Card3]
 @onready var result_panel: ColorRect = $ResultPanel
 @onready var result_label: Label = $ResultPanel/ResultLabel
 
-func setup(wave_manager: WaveManager, augments: AugmentManager) -> void:
+func setup(wave_manager: WaveManager, augments: AugmentManager, ultimates: UltimateManager) -> void:
 	_wave_manager = wave_manager
 	_augments = augments
+	_ultimates = ultimates
 	GameState.gold_changed.connect(_on_gold_changed)
 	GameState.lives_changed.connect(_on_lives_changed)
 	GameState.game_ended.connect(_on_game_ended)
@@ -61,6 +66,7 @@ func _process(_delta: float) -> void:
 	wave_label.modulate = BOSS_COLOR if boss_fight else Color.WHITE
 	wave_button.disabled = not _wave_manager.can_start_wave()
 	gacha_button.text = "GACHA %dG\n증강까지 %d회" % [GameState.GACHA_COST, _augments.draws_until_offer]
+	_refresh_ultimate_button()
 	match _wave_manager.state:
 		WaveManager.State.WAITING:
 			status_label.text = "준비되면 WAVE START"
@@ -88,8 +94,9 @@ func show_unit(unit: UnitBase) -> void:
 		data.get_grade_name(), data.id, unit.stars, unit.get_damage(), unit.get_attack_interval(), unit.get_attack_range(),
 	]
 
-func show_augment_cards(cards: Array[AugmentData]) -> void:
+func show_augment_cards(cards: Array[Resource], title: String) -> void:
 	placement_label.hide()
+	augment_title.text = title
 	for i in cards.size():
 		var card := augment_cards[i]
 		card.text = "%s\n\n%s" % [cards[i].get_title(), cards[i].get_description()]
@@ -118,10 +125,13 @@ func show_upgrade_result(succeeded: bool) -> void:
 func show_reveal(data: UnitData) -> void:
 	if data.grade < UnitData.Grade.A:
 		return
-	show_message("%s등급 등장!  %s" % [data.get_grade_name(), data.id], UnitData.GRADE_COLORS[data.grade])
+	show_message("%s등급 등장!  %s" % [data.get_grade_name(), data.get_display_name()], UnitData.GRADE_COLORS[data.grade])
 	if data.grade == UnitData.Grade.S:
-		flash.modulate.a = FLASH_ALPHA
-		create_tween().set_pause_mode(Tween.TWEEN_PAUSE_PROCESS).tween_property(flash, "modulate:a", 0.0, FLASH_TIME)
+		_flash(Color.WHITE)
+
+func show_ultimate(ultimate: UltimateData) -> void:
+	show_message(ultimate.get_title(), ultimate.get_color())
+	_flash(ultimate.get_color())
 
 func show_message(text: String, color: Color) -> void:
 	message_label.text = text
@@ -131,6 +141,16 @@ func show_message(text: String, color: Color) -> void:
 	_message_tween = create_tween().set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 	_message_tween.tween_interval(MESSAGE_TIME)
 	_message_tween.tween_property(message_label, "modulate:a", 0.0, MESSAGE_FADE_TIME)
+
+func _flash(color: Color) -> void:
+	flash.color = color
+	flash.modulate.a = FLASH_ALPHA
+	create_tween().set_pause_mode(Tween.TWEEN_PAUSE_PROCESS).tween_property(flash, "modulate:a", 0.0, FLASH_TIME)
+
+func _refresh_ultimate_button() -> void:
+	var state := "준비" if _ultimates.can_use() else "%d초" % ceili(_ultimates.cooldown_left)
+	ultimate_button.text = "%s\n%s" % [_ultimates.current.get_title(), state]
+	ultimate_button.disabled = not _ultimates.can_use()
 
 func _refresh_upgrade_button() -> void:
 	if _selected_unit == null:
@@ -188,6 +208,9 @@ func _on_gacha_button_pressed() -> void:
 
 func _on_upgrade_button_pressed() -> void:
 	upgrade_pressed.emit()
+
+func _on_ultimate_button_pressed() -> void:
+	ultimate_pressed.emit()
 
 func _on_augment_card_pressed(index: int) -> void:
 	augment_chosen.emit(index)

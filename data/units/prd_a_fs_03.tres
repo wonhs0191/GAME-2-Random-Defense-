@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="UnitData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://entities/units/unit_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "PRD-A-FS-03"
+alias = "Saturn Lance"
+grade = 2
+attack_type = 0
+sheet_path = "res://entities/units/generated/PRD-A-FS-03.png"
+sheet_columns = 10
+sheet_rows = 6
+effect_dir = "res://entities/units/generated/effects/shot_amber"
+effect_frame_count = 16
+damage = 120.0
+attack_interval = 1.6
+attack_range = 304.0
+zone_radius = 56.0

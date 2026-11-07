@@ -5,11 +5,14 @@
 [resource]
 script = ExtResource("1")
 id = "PRD-S-FS-01"
+alias = "Entropy Core"
 grade = 3
 attack_type = 0
-sheet_path = "res://scenes/title/unit/1621427251.png"
-effect_dir = "res://entities/units/PRD-C-FS/05/MG6"
-effect_frame_count = 30
+sheet_path = "res://entities/units/generated/PRD-S-FS-01.png"
+sheet_columns = 10
+sheet_rows = 6
+effect_dir = "res://entities/units/generated/effects/shot_violet"
+effect_frame_count = 16
 damage = 150.0
 attack_interval = 0.8
 attack_range = 240.0

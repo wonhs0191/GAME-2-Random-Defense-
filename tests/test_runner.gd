@@ -18,6 +18,7 @@ func _ready() -> void:
 func _run_all() -> void:
 	test_no_broken_references()
 	test_catalog()
+	test_unit_data()
 	test_unit_assets()
 	test_enemy_assets()
 	await test_menu_scenes()
@@ -44,6 +45,14 @@ func _run_all() -> void:
 	await test_zone_rect_stays_inside()
 	await test_zone_applies_in_combat()
 	await test_grab_outline()
+	await test_all_units_fight()
+	test_ultimate_data()
+	await test_meteor()
+	await test_freeze()
+	await test_overclock()
+	await test_gold_ultimate()
+	await test_ultimate_cooldown()
+	await test_ultimate_swap()
 	await test_enemy_follows_path()
 	await test_shot_kills_enemy()
 	await test_zone_burns_enemy()
@@ -128,11 +137,29 @@ func _find_text_resources(dir_path: String) -> Array[String]:
 	return found
 
 func test_catalog() -> void:
-	check(Catalog.units_of_grade(UnitData.Grade.C).size() == 12, "C 유닛 12종 로드")
+	var expected_units := {UnitData.Grade.C: 12, UnitData.Grade.B: 5, UnitData.Grade.A: 6, UnitData.Grade.S: 6}
+	for grade in expected_units:
+		check(Catalog.units_of_grade(grade).size() == expected_units[grade], "%s 유닛 수" % UnitData.GRADE_NAMES[grade])
 	for grade in Catalog.GRADE_ODDS:
 		check(not Catalog.units_of_grade(grade).is_empty(), "등급별 유닛 존재 " + UnitData.GRADE_NAMES[grade])
 	check(Catalog.enemies.size() == 24, "적 24종 로드")
 	check(Catalog.get_enemy("klaed", "fighter") != null, "세력+함선으로 적 조회")
+
+func test_unit_data() -> void:
+	var ids := {}
+	var total_dps := [0.0, 0.0, 0.0, 0.0]
+	for unit in Catalog.units:
+		ids[unit.id] = true
+		check(unit.id.begins_with("PRD-%s-" % unit.get_grade_name()), "ID에 등급 표기 " + unit.id)
+		var is_zone := unit.attack_type == UnitData.AttackType.ZONE
+		check(unit.id.contains("-FR-") == is_zone, "FR은 ZONE, FS는 SHOT " + unit.id)
+		check(unit.grade == UnitData.Grade.C or unit.alias != "", "상위 등급 별칭 " + unit.id)
+		total_dps[unit.grade] += unit.damage / unit.attack_interval
+	check(ids.size() == Catalog.units.size(), "유닛 ID 중복 없음")
+	for grade in [UnitData.Grade.C, UnitData.Grade.B, UnitData.Grade.A]:
+		var lower: float = total_dps[grade] / Catalog.units_of_grade(grade).size()
+		var upper: float = total_dps[grade + 1] / Catalog.units_of_grade(grade + 1).size()
+		check(upper > lower, "상위 등급 평균 DPS가 더 높음 " + UnitData.GRADE_NAMES[grade])
 
 func test_unit_assets() -> void:
 	for unit in Catalog.units:
@@ -624,6 +651,7 @@ func test_offer_after_boss() -> void:
 	game._on_wave_cleared(10)
 	check(game.augments.is_busy(), "보스 처치 후 증강")
 	close_offer(game)
+	game.augments.choose(0) # 10웨이브는 필살기 교체가 이어진다
 	game._on_wave_cleared(manager.total_waves)
 	check(not game.augments.is_busy(), "마지막 보스 뒤에는 증강 없음")
 	await end_game(game)
@@ -721,6 +749,134 @@ func test_grab_outline() -> void:
 	check(unit.sprite.material != null, "집으면 외곽선")
 	grid.drop_unit_at(cell)
 	check(unit.sprite.material == null, "놓으면 외곽선 제거")
+	await end_game(game)
+
+# 등급별 유닛을 전부 실제로 띄워 공격까지 돌린다.
+func test_all_units_fight() -> void:
+	var game := await start_game()
+	var grid: GridManager = game.grid
+	var cell := Vector2i(0, 2)
+	for unit_data in Catalog.units:
+		var unit: UnitBase = game.spawn_unit(unit_data, cell)
+		await wait_frames(1)
+		check(unit.sprite.hframes * unit.sprite.vframes == unit_data.sheet_columns * unit_data.sheet_rows, "시트 프레임 " + unit_data.id)
+		var size: float = unit.sprite.texture.get_width() / float(unit.sprite.hframes) * unit.sprite.scale.x
+		check(is_equal_approx(size, UnitBase.SPRITE_SIZES[unit_data.grade]), "화면 크기 " + unit_data.id)
+		grid.unregister_unit(cell)
+		unit.free()
+	await end_game(game)
+
+func test_ultimate_data() -> void:
+	check(Catalog.ultimates.size() == 4, "필살기 4종 로드")
+	var kinds := {}
+	for ultimate in Catalog.ultimates:
+		kinds[ultimate.kind] = true
+		check(ultimate.title != "" and ultimate.cooldown > 0.0, "필살기 데이터 " + ultimate.id)
+	check(kinds.size() == 4, "필살기 종류가 모두 다름")
+
+func ultimate_of(kind: UltimateData.Kind) -> UltimateData:
+	for ultimate in Catalog.ultimates:
+		if ultimate.kind == kind:
+			return ultimate
+	return null
+
+func test_meteor() -> void:
+	var game := await start_game()
+	var ultimates: UltimateManager = game.ultimates
+	var meteor := ultimate_of(UltimateData.Kind.METEOR)
+	ultimates.equip(meteor)
+	var ship := spawn_enemy(game, "bomber", 100.0)
+	var boss := spawn_enemy(game, "dreadnought", 100.0)
+	check(ultimates.use(), "유성우 사용")
+	check(is_equal_approx(ship.hp, ship.max_hp * (1.0 - meteor.power)), "적 체력 비율 피해")
+	check(is_equal_approx(boss.hp, boss.max_hp * (1.0 - meteor.power * UltimateManager.BOSS_DAMAGE_SCALE)), "보스는 일부만 피해")
+	check(game.hud.message_label.text == meteor.title, "필살기 이름 표시")
+	await end_game(game)
+
+func test_freeze() -> void:
+	var game := await start_game()
+	var ultimates: UltimateManager = game.ultimates
+	var freeze := ultimate_of(UltimateData.Kind.FREEZE)
+	ultimates.equip(freeze)
+	var enemy := spawn_enemy(game, "bomber", 100.0)
+	await wait_frames(10)
+	ultimates.use()
+	var distance := enemy.distance
+	await wait_frames(int(freeze.duration * 60.0) - 10)
+	check(enemy.distance == distance, "시간 정지 중 이동 없음")
+	await wait_frames(30)
+	check(enemy.distance > distance, "시간 정지 후 이동 재개")
+	check(enemy.visual.modulate == Color.WHITE, "시간 정지 후 색 복구")
+	await end_game(game)
+
+func test_overclock() -> void:
+	var game := await start_game()
+	var ultimates: UltimateManager = game.ultimates
+	var overclock := ultimate_of(UltimateData.Kind.OVERCLOCK)
+	ultimates.equip(overclock)
+	var unit: UnitBase = game.spawn_unit(first_unit(UnitData.AttackType.SHOT), Vector2i(0, 2))
+	var normal := unit.get_attack_interval()
+	ultimates.use()
+	check(is_equal_approx(unit.get_attack_interval(), normal / (1.0 + overclock.power)), "과부하 중 공격 간격 감소")
+	await wait_frames(int(overclock.duration * 60.0) + 5)
+	check(unit.get_attack_interval() == normal, "과부하 후 공격 간격 복구")
+	await end_game(game)
+
+func test_gold_ultimate() -> void:
+	var game := await start_game()
+	var ultimates: UltimateManager = game.ultimates
+	var gold := ultimate_of(UltimateData.Kind.GOLD)
+	ultimates.equip(gold)
+	game.wave_manager.wave = 7
+	var before := GameState.gold
+	ultimates.use()
+	check(GameState.gold == before + int(gold.power * 7), "웨이브 비례 골드")
+	await end_game(game)
+
+func test_ultimate_cooldown() -> void:
+	var game := await start_game()
+	var ultimates: UltimateManager = game.ultimates
+	var hud: CanvasLayer = game.hud
+	ultimates.equip(ultimate_of(UltimateData.Kind.FREEZE))
+	await wait_frames(2)
+	check(ultimates.can_use() and not hud.ultimate_button.disabled, "시작하면 사용 가능")
+	check(hud.ultimate_button.text.contains("준비"), "준비 표시")
+	hud._on_ultimate_button_pressed()
+	await wait_frames(2)
+	check(not ultimates.can_use(), "사용 후 대기")
+	check(hud.ultimate_button.disabled, "대기 중 버튼 비활성")
+	check(hud.ultimate_button.text.contains("초"), "남은 시간 표시")
+	check(not ultimates.use(), "대기 중 재사용 불가")
+	ultimates.cooldown_left = 0.05
+	await wait_frames(6)
+	check(ultimates.can_use(), "대기 후 재사용 가능")
+	await end_game(game)
+
+func test_ultimate_swap() -> void:
+	var game := await start_game()
+	var augments: AugmentManager = game.augments
+	var hud: CanvasLayer = game.hud
+	game._on_wave_cleared(4)
+	check(not augments.is_busy(), "일반 웨이브는 교체 없음")
+	game._on_wave_cleared(5)
+	check(augments.is_busy(), "5웨이브마다 교체 제시")
+	check(get_tree().paused, "교체 중 정지")
+	check(hud.augment_title.text == AugmentManager.ULTIMATE_TITLE, "교체 패널 제목")
+	check(augments.cards[0] is UltimateData, "교체 카드는 필살기")
+	var chosen: UltimateData = augments.cards[2]
+	hud._on_augment_card_pressed(2)
+	check(game.ultimates.current == chosen, "고른 필살기 장착")
+	check(not get_tree().paused, "교체 후 재개")
+	check(not game.grid.is_placing_zone(), "필살기는 구역 배치 없음")
+
+	# 보스 웨이브는 증강 뒤에 필살기 교체가 이어진다
+	game._on_wave_cleared(10)
+	check(hud.augment_title.text == AugmentManager.AUGMENT_TITLE, "증강이 먼저")
+	close_offer(game)
+	check(hud.augment_title.text == AugmentManager.ULTIMATE_TITLE, "이어서 필살기 교체")
+	check(hud.augment_panel.visible and get_tree().paused, "교체 패널 표시")
+	augments.choose(0)
+	check(not get_tree().paused, "모두 끝나면 재개")
 	await end_game(game)
 
 func test_enemy_follows_path() -> void:

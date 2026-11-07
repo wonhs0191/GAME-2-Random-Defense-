@@ -5,11 +5,14 @@
 [resource]
 script = ExtResource("1")
 id = "PRD-A-FS-01"
+alias = "Solar Crown"
 grade = 2
 attack_type = 0
-sheet_path = "res://scenes/title/unit/2599008541.png"
-effect_dir = "res://entities/units/PRD-C-FS/04/MG6"
-effect_frame_count = 30
+sheet_path = "res://entities/units/generated/PRD-A-FS-01.png"
+sheet_columns = 10
+sheet_rows = 6
+effect_dir = "res://entities/units/generated/effects/shot_gold"
+effect_frame_count = 16
 damage = 60.0
 attack_interval = 0.8
 attack_range = 208.0

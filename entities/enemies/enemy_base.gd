@@ -9,6 +9,7 @@ const BAR_WIDTH_RATIO := 0.4 # 체력바 폭 / 스프라이트 폭
 const BAR_HEIGHT := 4.0
 const BAR_BACK_COLOR := Color(0, 0, 0, 0.7)
 const BAR_COLOR := Color(0.95, 0.25, 0.25)
+const FROZEN_COLOR := Color(0.5, 0.8, 1.0)
 const SHIP_FILL := 0.75 # 스프라이트에서 함선이 차지하는 비율
 const LANE_SPREAD := 12.0 # 겹치지 않도록 경로 중심에서 좌우로 벌어지는 최대 거리 (px)
 const LANE_SMOOTHING := 24.0 # 모서리에서 좌우 위치가 튀지 않도록 앞뒤를 보는 거리 (px)
@@ -23,6 +24,7 @@ var lane: float = 0.0 # 경로 중심에서 벗어난 거리 (px)
 var is_final_boss: bool = false # 경로 끝에 닿으면 라이프와 상관없이 패배한다
 
 var _size_scale: float = 1.0
+var _frozen_left: float = 0.0
 var _path_length: float = 0.0
 var _bar_width: float = 0.0
 var _bar_offset: float = 0.0
@@ -56,6 +58,11 @@ func _process(delta: float) -> void:
 	# 죽은 적이 같은 프레임에 경로 끝에 닿아 라이프까지 깎는 것을 막는다
 	if is_queued_for_deletion():
 		return
+	if _frozen_left > 0.0:
+		_frozen_left -= delta
+		if _frozen_left <= 0.0:
+			visual.modulate = Color.WHITE
+		return
 	distance += speed * delta
 	if distance >= _path_length:
 		_reach_goal()
@@ -74,6 +81,11 @@ func _draw() -> void:
 # 진행 방향으로 잰 함선 길이 (px).
 func get_length() -> float:
 	return body.texture.get_height() * visual.scale.y * SHIP_FILL
+
+# 일정 시간 제자리에 멈춘다.
+func freeze(seconds: float) -> void:
+	_frozen_left = seconds
+	visual.modulate = FROZEN_COLOR
 
 func take_damage(amount: float) -> void:
 	hp -= amount

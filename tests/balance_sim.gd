@@ -34,6 +34,8 @@ func _play(difficulty: String) -> void:
 	while not GameState.is_over:
 		if game.augments.is_busy():
 			_take_augment(game)
+		if game.ultimates.can_use() and not get_tree().get_nodes_in_group("enemy").is_empty():
+			game.ultimates.use()
 		var saving := false
 		if _is_crowded(game.grid):
 			saving = _merge_duplicates(game, coverage)
@@ -65,6 +67,9 @@ func _play(difficulty: String) -> void:
 # 유닛을 가장 많이 강화할 수 있는 카드와 위치를 고른다. 사람이 하듯 유닛을 옮기지는 않는다.
 func _take_augment(game: Node2D) -> void:
 	var grid: GridManager = game.grid
+	if game.augments.cards[0] is UltimateData:
+		game.augments.choose(0)
+		return
 	var best_card := 0
 	var best_cell := Vector2i.ZERO
 	var best_gain := -1.0

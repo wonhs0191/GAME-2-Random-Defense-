@@ -2,7 +2,7 @@ extends Node2D
 
 class_name RevealBurst
 
-# 유닛 등장 연출. 등급이 높을수록 크게 터진다.
+# 고리가 퍼지며 사라지는 연출. 유닛 등장과 필살기에 쓴다.
 
 const DURATION := 0.55
 const RAY_COUNT := 12
@@ -13,9 +13,9 @@ var _color: Color
 var _radius: float = 0.0
 var _progress: float = 0.0
 
-func setup(grade: UnitData.Grade) -> void:
-	_color = UnitData.GRADE_COLORS[grade]
-	_radius = RADIUS_BY_GRADE[grade]
+func setup(color: Color, radius: float) -> void:
+	_color = color
+	_radius = radius
 
 func _ready() -> void:
 	var tween := create_tween().set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)

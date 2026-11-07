@@ -76,11 +76,21 @@ color = Color(0.03, 0.04, 0.1, 0.8)
 layout_mode = 0
 offset_left = 24.0
 offset_top = 8.0
-offset_right = 264.0
+offset_right = 184.0
 offset_bottom = 72.0
 focus_mode = 0
-theme_override_font_sizes/font_size = 25
+theme_override_font_sizes/font_size = 18
 text = "WAVE START"
+
+[node name="UltimateButton" type="Button" parent="BottomBar"]
+layout_mode = 0
+offset_left = 192.0
+offset_top = 8.0
+offset_right = 352.0
+offset_bottom = 72.0
+focus_mode = 0
+theme_override_font_sizes/font_size = 18
+text = "필살기"
 
 [node name="GachaButton" type="Button" parent="BottomBar"]
 layout_mode = 0
@@ -95,11 +105,11 @@ text = "GACHA"
 [node name="UnitInfoLabel" type="Label" parent="BottomBar"]
 visible = false
 layout_mode = 0
-offset_left = 280.0
+offset_left = 364.0
 offset_top = 8.0
-offset_right = 640.0
+offset_right = 644.0
 offset_bottom = 72.0
-theme_override_font_sizes/font_size = 18
+theme_override_font_sizes/font_size = 16
 text = "C등급 PRD-C-FS-01  1성"
 vertical_alignment = 1
 
@@ -286,6 +296,7 @@ text = "타이틀로"
 
 [connection signal="pressed" from="BottomBar/WaveButton" to="." method="_on_wave_button_pressed"]
 [connection signal="pressed" from="BottomBar/GachaButton" to="." method="_on_gacha_button_pressed"]
+[connection signal="pressed" from="BottomBar/UltimateButton" to="." method="_on_ultimate_button_pressed"]
 [connection signal="pressed" from="BottomBar/UpgradeButton" to="." method="_on_upgrade_button_pressed"]
 [connection signal="pressed" from="BottomBar/OddsButton" to="." method="_on_odds_button_pressed"]
 [connection signal="pressed" from="OddsPanel/OddsCloseButton" to="." method="_on_odds_close_button_pressed"]

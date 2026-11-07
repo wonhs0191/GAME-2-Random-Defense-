@@ -5,9 +5,12 @@
 [resource]
 script = ExtResource("1")
 id = "PRD-B-FR-01"
+alias = "Frost Mantle"
 grade = 1
 attack_type = 1
-sheet_path = "res://scenes/title/unit/2628889477.png"
+sheet_path = "res://entities/units/generated/PRD-B-FR-01.png"
+sheet_columns = 10
+sheet_rows = 6
 effect_dir = "res://entities/units/PRD-C-FR/02/2"
 effect_frame_count = 60
 damage = 15.0

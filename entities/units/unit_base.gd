@@ -83,7 +83,8 @@ func get_damage() -> float:
 	return data.damage * UnitData.STAR_DAMAGE[stars - 1] * (1.0 + _zone_bonus(global_position, AugmentData.Stat.DAMAGE))
 
 func get_attack_interval() -> float:
-	return data.attack_interval / (1.0 + _zone_bonus(global_position, AugmentData.Stat.ATTACK_SPEED))
+	var bonus: float = _zone_bonus(global_position, AugmentData.Stat.ATTACK_SPEED) + _game.ultimates.attack_speed_bonus()
+	return data.attack_interval / (1.0 + bonus)
 
 # 놓을 위치에 따라 구역 효과가 달라지므로 위치를 받는다.
 func get_attack_range(at: Vector2 = global_position) -> float:

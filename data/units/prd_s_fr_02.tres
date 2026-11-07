@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="UnitData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://entities/units/unit_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "PRD-S-FR-02"
+alias = "Null Bloom"
+grade = 3
+attack_type = 1
+sheet_path = "res://entities/units/generated/PRD-S-FR-02.png"
+sheet_columns = 10
+sheet_rows = 6
+effect_dir = "res://entities/units/generated/effects/zone_abyss"
+effect_frame_count = 30
+damage = 60.0
+attack_interval = 0.5
+attack_range = 232.0
+zone_radius = 112.0

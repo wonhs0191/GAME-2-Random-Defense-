@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="UltimateData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://entities/ultimates/ultimate_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "freeze"
+title = "시간 정지"
+description = "화면의 모든 적을 4초 동안 멈춘다"
+kind = 1
+cooldown = 40.0
+power = 0.0
+duration = 4.0
