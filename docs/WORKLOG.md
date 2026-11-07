@@ -4,8 +4,8 @@
 
 ## 현재 위치
 
-- **브랜치:** `feature/M0-foundation` (`develop`에서 분기, 미푸시)
-- **진행 중:** M0 기반 작업
+- **브랜치:** `feature/M1-combat` (`feature/M0-foundation` 위에 분기, 둘 다 미푸시)
+- **진행 중:** M1 전투
 - **다음 할 일:** 아래 체크리스트 첫 미완료 항목
 - **막힌 것:** 없음
 
@@ -22,19 +22,22 @@ Godot 경로: `C:\Users\wonhs\Downloads\Godot_v4.7.2-stable_win64.exe\Godot_v4.7
 ```bash
 GODOT="/c/Users/wonhs/Downloads/Godot_v4.7.2-stable_win64.exe/Godot_v4.7.2-stable_win64_console.exe"
 "$GODOT" --headless --path . --import
-"$GODOT" --headless --path . --fixed-fps 60 res://tests/test_runner.tscn
+timeout 120 "$GODOT" --headless --path . --fixed-fps 60 res://tests/test_runner.tscn
+timeout 60 "$GODOT" --path . --fixed-fps 60 res://tests/screenshot.tscn -- <저장폴더> Easy
 ```
+
+주의: 스크립트 파싱 오류가 나면 Godot이 종료되지 않고 멈춘다. 반드시 `timeout`을 붙이고 로그는 파일로 받는다.
 
 ## 체크리스트
 
 ### M0 기반
 
-- [ ] Godot 4.7.2 업그레이드, 임포트 확인
-- [ ] UnitData, EnemyData, 공용 씬, tres 생성
-- [ ] 기존 유닛·적 씬과 중복 스크립트 제거 (UNIT-005 해결)
-- [ ] 격자 20×9, 경로 칸 금지, 드롭 하이라이팅 (MAP-005 재구현)
-- [ ] 경로 타일 정렬, 경로 표시
-- [ ] 테스트 러너, M0 검증, 커밋
+- [x] Godot 4.7.2 업그레이드, 임포트 확인
+- [x] UnitData, EnemyData, 공용 씬, tres 생성
+- [x] 기존 유닛·적 씬과 중복 스크립트 제거 (UNIT-005 해결)
+- [x] 격자 20×9, 경로 칸 금지, 드롭 하이라이팅 (MAP-005 재구현)
+- [x] 경로 타일 정렬, 경로 표시
+- [x] 테스트 러너, M0 검증, 커밋
 
 ### M1 전투
 
@@ -56,3 +59,13 @@ GODOT="/c/Users/wonhs/Downloads/Godot_v4.7.2-stable_win64.exe/Godot_v4.7.2-stabl
 
 - Notion 기획, 태스크, 스케치, repo 에셋, git 이력 조사 완료. 추천안 6개 승인.
 - `docs/PLAN.md`, `docs/WORKLOG.md` 작성, `feature/M0-foundation` 생성.
+- **M0 완료.** 테스트 110건 통과, 창 실행 스크린샷 확인.
+  - 유닛 12개 씬과 적 8개 씬을 공용 씬 + tres로 교체 (`data/units` 12개, `data/enemies` 24개). 3세력 함선 전부 데이터로 등록됨.
+  - 텍스처는 경로로 지연 로드 (시트 1장 9MB, 29종 전부 올리면 부담).
+  - 드래그는 `GridManager`만 담당. 버튼 놓침은 `Input.is_mouse_button_pressed` 폴링으로 방지.
+  - 격자는 `Grid` 노드를 y=64로 내리고 20×9칸. 위 64px는 HUD, 아래 80px는 버튼 영역.
+  - 경로 제어점을 타일 중앙으로 정렬, 시작점을 화면 밖 -40으로 이동.
+  - MAP-005는 Notion의 "크리스탈" 버전 채택 (마지막 저장본). 드래그 중 사거리 원 추가.
+  - `WaveManager` 신규. `easy.gd`, `normal.gd` 삭제, 맵 씬은 Path2D만 보유.
+  - Hard, Extreme은 M2 전까지 Normal 경로를 임시 사용.
+- 사용자 PC에서 Godot 4.2.1 에디터(PID 3420)가 이 프로젝트를 열고 있었음. 프로젝트는 이제 4.7이므로 4.2.1로 저장하면 안 됨. 사용자에게 알릴 것.

@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://entities/enemies/enemy_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "nautolan_support"
+faction = "nautolan"
+ship = "support"
+body_path = "res://entities/enemies/nautolan/support/Nautolan Ship - Support - Base.png"
+engine_path = "res://entities/enemies/nautolan/support/Nautolan Ship - Support - Engine Effect.png"
+visual_scale = 1.25
+max_hp = 90.0
+speed = 65.0
+reward = 4
+life_damage = 2

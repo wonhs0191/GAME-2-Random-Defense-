@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://entities/enemies/enemy_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "nautolan_bomber"
+faction = "nautolan"
+ship = "bomber"
+body_path = "res://entities/enemies/nautolan/bomber/Nautolan Ship - Bomber - Base.png"
+engine_path = "res://entities/enemies/nautolan/bomber/Nautolan Ship - Bomber - Engine Effect.png"
+visual_scale = 1.25
+max_hp = 70.0
+speed = 55.0
+reward = 3
+life_damage = 1

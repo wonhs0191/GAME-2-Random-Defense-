@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://entities/enemies/enemy_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "klaed_fighter"
+faction = "klaed"
+ship = "fighter"
+body_path = "res://entities/enemies/klaed/fighter/Kla'ed - Fighter - Base.png"
+engine_path = "res://entities/enemies/klaed/fighter/Kla'ed - Fighter - Engine.png"
+visual_scale = 1.25
+max_hp = 35.0
+speed = 75.0
+reward = 2
+life_damage = 1

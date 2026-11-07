@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="UnitData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://entities/units/unit_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "PRD-C-FS-03"
+grade = 0
+attack_type = 0
+sheet_path = "res://entities/units/PRD-C-FS/03/PRD-C-FS-03.png"
+effect_dir = "res://entities/units/PRD-C-FS/03/MG6"
+effect_frame_count = 30
+damage = 10.0
+attack_interval = 0.8
+attack_range = 176.0
+zone_radius = 56.0

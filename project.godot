@@ -12,7 +12,11 @@ config_version=5
 
 config/name="Random-defense"
 run/main_scene="res://scenes/title/title_screen.tscn"
-config/features=PackedStringArray("4.2", "GL Compatibility")
+config/features=PackedStringArray("4.7", "GL Compatibility")
+
+[autoload]
+
+Catalog="*res://global/catalog.gd"
 
 [display]
 

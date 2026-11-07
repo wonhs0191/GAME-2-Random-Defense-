@@ -1,90 +1,68 @@
 extends Node2D
 
-signal wave_started
+const UNIT_SCENE := preload("res://entities/units/unit.tscn")
 
-# 유닛들이 저장된 폴더 경로 (기본값: res://Units)
-@export_dir var unit_folder_path: String = "res://entities/units"
+# 난이도별 맵. 경로 분기가 필요한 Hard, Extreme은 M2에서 교체한다.
+const MAP_SCENES := {
+	"Easy": "res://scenes/game/maps/easy.tscn",
+	"Normal": "res://scenes/game/maps/normal.tscn",
+	"Hard": "res://scenes/game/maps/normal.tscn",
+	"Extreme": "res://scenes/game/maps/normal.tscn",
+}
 
-# 동적으로 로드된 유닛 리스트
-var loaded_units: Array[PackedScene] = []
+const PATH_COLOR := Color(1, 1, 1, 0.12)
+const PATH_WIDTH := 40.0
+
+@onready var grid: GridManager = $Grid
+@onready var units: Node2D = $Units
+@onready var enemies: Node2D = $Enemies
+@onready var wave_manager: WaveManager = $WaveManager
 
 func _ready():
-    
 	# 하위 노드인 background를 찾아서 GameSetting에 저장된 텍스처를 적용
-	var background_node = $background
-	if background_node:
-		background_node.texture = GameSetting.selected_theme_texture
-	
-	# 난이도에 따라 맵 인스턴스화
-	var map_node = $map
-	if map_node:
-		var map_scene_path = ""
-		
-		match GameSetting.selected_difficulty:
-			"Easy":
-				map_scene_path = "res://scenes/game/maps/easy.tscn"
-			"Normal":
-				map_scene_path = "res://scenes/game/maps/normal.tscn"
-			"Hard":
-				pass
-			"Extreme":
-				pass
-		
-		if map_scene_path != "":
-			var map_scene = load(map_scene_path)
-			if map_scene:
-				var map_instance = map_scene.instantiate()
-				map_node.add_child(map_instance)
-				#! 디버깅: 노드 트리 구조 출력
-				#! print("=== 노드 트리 구조 ===")
-				#! print_tree()
-				#! print("===================")
-	
-	_load_units_dynamically()
+	$background.texture = GameSetting.selected_theme_texture
 
-# 유닛 폴더 하위의 PRD-*로 시작되는 씬들을 자동으로 로드하여 리스트에 추가
-func _load_units_dynamically():
-	_scan_recursive(unit_folder_path)
+	var paths := _load_map()
+	for path in paths:
+		grid.block_path(path)
+		_show_path(path)
+	wave_manager.setup(paths, enemies, GameSetting.get_difficulty())
 
-# 재귀적으로 폴더를 탐색하는 함수
-func _scan_recursive(path: String):
-	var dir = DirAccess.open(path)
-	if dir:
-		dir.list_dir_begin()
-		var file_name = dir.get_next()
-		while file_name != "":
-			if dir.current_is_dir():
-				# . (현재폴더) .. (상위폴더)가 아닌 경우에만 재귀 호출 (무한루프 방지)
-				if file_name != "." and file_name != "..":
-					_scan_recursive(path.path_join(file_name))
-			else:
-				# PRD-로 시작하고 .tscn 확장자를 가진 파일만 로드
-				if file_name.to_lower().begins_with("prd_") and file_name.ends_with(".tscn"):
-					var full_path = path.path_join(file_name)
-					var scene = load(full_path)
-					if scene is PackedScene:
-						loaded_units.append(scene)
-			file_name = dir.get_next()
+# 난이도에 따라 맵을 인스턴스화하고 경로 목록을 돌려준다
+func _load_map() -> Array[Path2D]:
+	var map_scene_path: String = MAP_SCENES.get(GameSetting.selected_difficulty, MAP_SCENES["Easy"])
+	var map_instance: Node = load(map_scene_path).instantiate()
+	$map.add_child(map_instance)
+
+	var paths: Array[Path2D] = []
+	for child in map_instance.get_children():
+		if child is Path2D:
+			paths.append(child)
+	return paths
+
+func _show_path(path: Path2D) -> void:
+	var line := Line2D.new()
+	# 베이크된 점을 쓰면 모서리에서 반투명이 겹쳐 진해지므로 제어점만 잇는다
+	for i in path.curve.point_count:
+		line.add_point(path.curve.get_point_position(i))
+	line.width = PATH_WIDTH
+	line.default_color = PATH_COLOR
+	line.joint_mode = Line2D.LINE_JOINT_ROUND
+	path.add_child(line)
 
 func _on_wave_start_pressed():
-	wave_started.emit()
+	wave_manager.start_next_wave()
 
 func _on_button_pressed():
-	var scene_to_spawn: PackedScene = null
-	if not loaded_units.is_empty():
-		scene_to_spawn = loaded_units.pick_random()
-		
-	if scene_to_spawn:
-		var new_unit = scene_to_spawn.instantiate()
-		add_child(new_unit)
-		
-		# 화면(Viewport)의 크기를 가져와 정중앙 좌표 계산
-		var viewport_size = get_viewport_rect().size
-		var center_pos = viewport_size / 2
-		
-		# (핵심) GridManager에게 새로 생성된 유닛을 던져주어 알아서 배치하게 만듦
-		var grid = $Grid
-		if grid and grid.has_method("add_new_unit"):
-			grid.add_new_unit(new_unit, center_pos)
-		else:
-			new_unit.global_position = center_pos
+	# 화면(Viewport)의 정중앙 기준으로 가까운 빈 칸을 찾는다
+	var center_pos = get_viewport_rect().size / 2
+	var target_cell := grid.find_spawn_cell(center_pos)
+	if target_cell == GridManager.NO_CELL:
+		return
+
+	var new_unit: UnitBase = UNIT_SCENE.instantiate()
+	new_unit.setup(Catalog.pick_random_unit())
+	units.add_child(new_unit)
+
+	# (핵심) GridManager에게 새로 생성된 유닛을 던져주어 알아서 배치하게 만듦
+	grid.add_new_unit(new_unit, target_cell)
