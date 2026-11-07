@@ -63,6 +63,7 @@ func _run_all() -> void:
 	await test_wave_banners()
 	await test_result_text()
 	await test_lobby_detail()
+	await test_setting_panel_on_top()
 	test_star_shape()
 	await test_all_buttons_have_tooltips()
 	await test_dynamic_tooltips()
@@ -1080,6 +1081,22 @@ func test_result_text() -> void:
 	await wait_frames(40)
 	check(game.hud.result_panel.modulate.a == 1.0, "결과 패널 페이드 완료")
 	await end_game(game)
+
+# 타이틀의 행성은 z_index가 높아 같은 캔버스에 두면 설정 창을 덮는다.
+func test_setting_panel_on_top() -> void:
+	var title: Node = load("res://scenes/title/title_screen.tscn").instantiate()
+	add_child(title)
+	await wait_frames(2)
+	var panel: ColorRect = title.setting_panel
+	check(panel.get_canvas_layer_node() != null and panel.get_canvas_layer_node().layer > 0, "타이틀 설정 창은 위 레이어")
+	var box: Panel = panel.get_node("Box")
+	var box_color: Color = box.get_theme_stylebox("panel").bg_color
+	check(box_color.a == 1.0, "설정 창 상자는 불투명")
+	for path in ["BgmSlider", "SfxSlider", "FullscreenCheck", "CloseButton", "CreditLabel"]:
+		var control: Control = panel.get_node(path)
+		check(box.get_global_rect().encloses(control.get_global_rect()), "설정 항목이 상자 안 " + path)
+	title.queue_free()
+	await wait_frames(1)
 
 func test_lobby_detail() -> void:
 	var setup: Control = load("res://scenes/lobby/playsetup.tscn").instantiate()

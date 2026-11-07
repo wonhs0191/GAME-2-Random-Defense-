@@ -84,7 +84,7 @@ class Runner extends Node:
 
 		print("--- Epic 4 Setting")
 		press("Buttons/setting_button")
-		var panel: ColorRect = current().get_node("SettingPanel")
+		var panel: ColorRect = current().get_node("SettingLayer/SettingPanel")
 		check(panel.visible, "설정 열기")
 		var saved_bgm := Settings.bgm_volume
 		panel.bgm_slider.value = 0.3

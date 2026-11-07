@@ -192,7 +192,10 @@ theme_override_styles/pressed = SubResource("StyleBoxFlat_54dje")
 theme_override_styles/focus = SubResource("StyleBoxFlat_2134j")
 text = "Q U I T"
 
-[node name="SettingPanel" parent="." instance=ExtResource("setting_panel")]
+[node name="SettingLayer" type="CanvasLayer" parent="."]
+layer = 10
+
+[node name="SettingPanel" parent="SettingLayer" instance=ExtResource("setting_panel")]
 
 [connection signal="pressed" from="Buttons/start_button" to="." method="_on_start_button_pressed"]
 [connection signal="pressed" from="Buttons/setting_button" to="." method="_on_setting_button_pressed"]

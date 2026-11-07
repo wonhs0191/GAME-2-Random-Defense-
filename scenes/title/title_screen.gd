@@ -1,6 +1,7 @@
 extends Node2D
 
-@onready var setting_panel: ColorRect = $SettingPanel
+# 행성이 z_index로 앞에 그려지므로 설정 창은 별도 레이어에 둔다
+@onready var setting_panel: ColorRect = $SettingLayer/SettingPanel
 
 func _ready():
 	Sound.bind_buttons(self)

@@ -11,5 +11,12 @@ func _ready() -> void:
 			await get_tree().process_frame
 		await RenderingServer.frame_post_draw
 		get_viewport().get_texture().get_image().save_png(out_dir.path_join(scene_path.get_file() + ".png"))
+		var setting_panel: Node = scene.find_child("SettingPanel", true, false)
+		if setting_panel:
+			setting_panel.open()
+			for i in 5:
+				await get_tree().process_frame
+			await RenderingServer.frame_post_draw
+			get_viewport().get_texture().get_image().save_png(out_dir.path_join("setting.png"))
 		scene.free()
 	get_tree().quit()
