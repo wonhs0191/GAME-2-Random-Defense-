@@ -1,13 +1,19 @@
 extends Node2D
 class_name GridManager
 
+signal merge_requested(moved: UnitBase, target: UnitBase)
+signal merge_unaffordable(cost: int)
+signal unit_clicked(unit: UnitBase) # 빈 곳을 누르면 null
+
 @export var tile_size: Vector2i = Vector2i(64, 64) # 기본 그리드 칸 크기 (필요시 인스펙터에서 수정)
 @export var grid_size: Vector2i = Vector2i(20, 9) # 화면에 그릴 그리드의 가로세로 칸 수
 @export var line_color: Color = Color(1, 1, 1, 0.2) # 그리드 선 색상 (반투명 흰색)
 @export var line_thickness: float = 1.0 # 그리드 선 두께
 @export var highlight_valid_color: Color = Color(0.0, 0.8, 1.0, 0.35) # 드롭 가능 (하늘색)
 @export var highlight_invalid_color: Color = Color(1.0, 0.5, 0.5, 0.35) # 드롭 불가능 (분홍색)
+@export var highlight_merge_color: Color = Color(1.0, 0.8, 0.25, 0.9) # 조합 가능 (금색)
 @export var range_color: Color = Color(1, 1, 1, 0.5) # 드래그 중 사거리 표시 색상
+@export var click_slop: float = 8.0 # 이 거리 안에서 놓으면 드래그가 아니라 클릭으로 본다 (px)
 
 const NO_CELL := Vector2i(-1, -1)
 
@@ -16,6 +22,12 @@ var show_grid: bool = false:
 	set(value):
 		show_grid = value
 		queue_redraw() # visible 상태가 바뀔 때마다 _draw() 함수를 다시 호출하도록 예약
+
+# 선택된 유닛. 사거리를 표시합니다.
+var selected_unit: UnitBase = null:
+	set(value):
+		selected_unit = value
+		queue_redraw()
 
 # 격자에 유닛이 놓여있는지 추적하는 딕셔너리
 # Key: Vector2i (격자 좌표), Value: UnitBase (유닛 객체)
@@ -30,6 +42,8 @@ var drag_offset: Vector2 = Vector2.ZERO
 var original_grid_pos: Vector2i
 @export var snap_duration: float = 0.15 # 유닛 이동 애니메이션 속도
 
+var _press_position: Vector2 = Vector2.ZERO
+
 # 드래그 중 마우스가 위치한 셀 (하이라이트 렌더링용)
 var _hovered_cell: Vector2i = NO_CELL
 
@@ -42,6 +56,9 @@ func _ready() -> void:
 	queue_redraw()
 
 func _draw() -> void:
+	if selected_unit:
+		draw_arc(to_local(selected_unit.global_position), selected_unit.data.attack_range, 0.0, TAU, 64, range_color, 1.5)
+
 	if not show_grid:
 		return
 
@@ -56,6 +73,8 @@ func _draw() -> void:
 				var origin = Vector2(x * tile_size.x, y * tile_size.y)
 				if is_cell_empty(cell):
 					_draw_cell_crystal(origin, highlight_valid_color)
+				elif can_merge_at(cell):
+					_draw_cell_crystal(origin, highlight_merge_color)
 				else:
 					_draw_cell_crystal(origin, highlight_invalid_color)
 
@@ -118,6 +137,13 @@ func is_cell_empty(cell_pos: Vector2i) -> bool:
 	if not is_cell_in_bounds(cell_pos):
 		return false
 	return not blocked_cells.has(cell_pos) and not grid_status.has(cell_pos)
+
+# 들고 있는 유닛을 이 칸의 유닛과 합칠 수 있는지 확인합니다.
+func can_merge_at(cell_pos: Vector2i) -> bool:
+	return _is_merge_target(cell_pos) and GameState.gold >= dragged_unit.data.merge_cost()
+
+func _is_merge_target(cell_pos: Vector2i) -> bool:
+	return dragged_unit != null and grid_status.has(cell_pos) and dragged_unit.can_merge_with(grid_status[cell_pos])
 
 # 경로가 지나는 칸을 배치 금지로 등록합니다.
 func block_path(path: Path2D) -> void:
@@ -205,10 +231,11 @@ func _input(event: InputEvent) -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
-		_try_pick_unit()
+		if not _try_pick_unit():
+			unit_clicked.emit(null)
 
-# 마우스 위치에 있는 유닛을 찾아 집어 듭니다.
-func _try_pick_unit() -> void:
+# 마우스 위치에 있는 유닛을 찾아 집어 듭니다. 집었으면 true.
+func _try_pick_unit() -> bool:
 	var clicked_cell = world_to_grid(_pointer)
 
 	# 딕셔너리에 클릭한 칸에 유닛이 있다고 기록되어 있는지 확인
@@ -219,11 +246,14 @@ func _try_pick_unit() -> void:
 		if is_instance_valid(target_unit):
 			pick_unit(clicked_cell, _pointer)
 			get_viewport().set_input_as_handled() # 이벤트 전파 중단
+			return true
+	return false
 
 # 특정 칸의 유닛을 집어 듭니다.
 func pick_unit(cell_pos: Vector2i, mouse_pos: Vector2) -> void:
 	dragged_unit = grid_status[cell_pos]
 	original_grid_pos = cell_pos
+	_press_position = mouse_pos
 
 	# 자리 비우기 및 그리드 시각화 켜기
 	unregister_unit(original_grid_pos)
@@ -235,11 +265,24 @@ func pick_unit(cell_pos: Vector2i, mouse_pos: Vector2) -> void:
 
 # 집어든 유닛을 현재 마우스 위치의 격자에 맞춰 내려놓습니다.
 func _drop_unit() -> void:
+	var unit := dragged_unit
+	var clicked := _pointer.distance_to(_press_position) < click_slop
 	drop_unit_at(world_to_grid(_pointer))
+	if clicked:
+		unit_clicked.emit(unit)
 
 func drop_unit_at(target_grid_pos: Vector2i) -> void:
 	show_grid = false
 	_hovered_cell = NO_CELL # 하이라이트 초기화
+
+	# 같은 유닛 위에 놓으면 합친다. 처리는 GamePlay가 한다
+	if can_merge_at(target_grid_pos):
+		var moved := dragged_unit
+		dragged_unit = null
+		merge_requested.emit(moved, grid_status[target_grid_pos])
+		return
+	if _is_merge_target(target_grid_pos):
+		merge_unaffordable.emit(dragged_unit.data.merge_cost())
 
 	# 겹침/비정상이면 원래 있던 자리로 복귀
 	var final_cell = target_grid_pos if is_cell_empty(target_grid_pos) else original_grid_pos

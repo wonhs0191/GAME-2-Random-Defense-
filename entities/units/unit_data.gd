@@ -7,6 +7,18 @@ extends Resource
 enum Grade { C, B, A, S }
 enum AttackType { SHOT, ZONE }
 
+const GRADE_NAMES := ["C", "B", "A", "S"]
+const GRADE_COLORS := [
+	Color(0.75, 0.75, 0.75), Color(0.35, 0.7, 1.0), Color(0.8, 0.45, 1.0), Color(1.0, 0.8, 0.25),
+]
+
+const MERGE_COST := [10, 40, 160, 0]        # 등급별 조합 비용. 공짜면 S등급이 쏟아진다
+
+const MAX_STARS := 3
+const STAR_DAMAGE := [1.0, 1.6, 2.5]        # 별 수별 공격력 배율
+const UPGRADE_CHANCE := [0.7, 0.4]          # 1→2성, 2→3성 성공 확률
+const UPGRADE_BASE_COST := [30, 60, 120, 240] # 등급별 강화 비용. 현재 별 수를 곱한다
+
 @export var id: String = ""
 @export var grade: Grade = Grade.C
 @export var attack_type: AttackType = AttackType.SHOT
@@ -29,6 +41,15 @@ enum AttackType { SHOT, ZONE }
 @export var zone_radius: float = 56.0    # ZONE 장판 반경 (px)
 
 var _effect_frames: SpriteFrames = null
+
+func get_grade_name() -> String:
+	return GRADE_NAMES[grade]
+
+func merge_cost() -> int:
+	return MERGE_COST[grade]
+
+func upgrade_cost(stars: int) -> int:
+	return UPGRADE_BASE_COST[grade] * stars
 
 # 이펙트 프레임(1.png ~ N.png)을 SpriteFrames로 묶어 돌려준다. 같은 유닛끼리 공유한다.
 func get_effect_frames() -> SpriteFrames:

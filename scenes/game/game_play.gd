@@ -18,6 +18,7 @@ const WAVE_REWARD_BASE := 10
 const WAVE_REWARD_STEP := 2
 
 var paths: Array[Path2D] = []
+var selected_unit: UnitBase = null
 
 @onready var grid: GridManager = $Grid
 @onready var zones: Node2D = $Zones
@@ -46,6 +47,10 @@ func _ready():
 	hud.setup(wave_manager)
 	hud.wave_start_pressed.connect(wave_manager.start_next_wave)
 	hud.gacha_pressed.connect(draw_unit)
+	hud.upgrade_pressed.connect(_on_upgrade_pressed)
+	grid.merge_requested.connect(merge_units)
+	grid.merge_unaffordable.connect(hud.show_merge_unaffordable)
+	grid.unit_clicked.connect(select_unit)
 
 # 난이도에 따라 맵을 인스턴스화하고 경로 목록을 돌려준다
 func _load_map() -> Array[Path2D]:
@@ -81,7 +86,7 @@ func draw_unit() -> bool:
 		return false
 	if not GameState.spend_gold(GameState.GACHA_COST):
 		return false
-	spawn_unit(Catalog.pick_random_unit(), target_cell)
+	_reveal(spawn_unit(Catalog.pick_random_unit(), target_cell))
 	return true
 
 func spawn_unit(unit_data: UnitData, cell: Vector2i) -> UnitBase:
@@ -92,6 +97,46 @@ func spawn_unit(unit_data: UnitData, cell: Vector2i) -> UnitBase:
 	# (핵심) GridManager에게 새로 생성된 유닛을 던져주어 알아서 배치하게 만듦
 	grid.add_new_unit(new_unit, cell)
 	return new_unit
+
+func _reveal(unit: UnitBase) -> void:
+	unit.pop_in()
+	var burst := RevealBurst.new()
+	burst.setup(unit.data.grade)
+	burst.position = unit.position
+	effects.add_child(burst)
+	hud.show_reveal(unit.data)
+
+# 골드를 내고 같은 유닛 2개를 없애 target 자리에 상위 등급 유닛을 랜덤으로 만든다.
+func merge_units(moved: UnitBase, target: UnitBase) -> void:
+	GameState.spend_gold(target.data.merge_cost())
+	if selected_unit == moved or selected_unit == target:
+		select_unit(null)
+	var cell: Vector2i = grid.grid_status.find_key(target)
+	var next_grade: UnitData.Grade = target.data.grade + 1
+	grid.unregister_unit(cell)
+	moved.queue_free()
+	target.queue_free()
+	_reveal(spawn_unit(Catalog.pick_unit_of_grade(next_grade), cell))
+
+func select_unit(unit: UnitBase) -> void:
+	selected_unit = unit
+	grid.selected_unit = unit
+	hud.show_unit(unit)
+
+# 골드를 내고 강화를 시도한다. 실패해도 골드는 돌아오지 않는다. 별이 올랐으면 true.
+func upgrade_unit(unit: UnitBase, roll: float = randf()) -> bool:
+	if not unit.can_upgrade() or not GameState.spend_gold(unit.data.upgrade_cost(unit.stars)):
+		return false
+	var succeeded: bool = roll < UnitData.UPGRADE_CHANCE[unit.stars - 1]
+	if succeeded:
+		unit.add_star()
+	hud.show_upgrade_result(succeeded)
+	if selected_unit == unit:
+		hud.show_unit(unit)
+	return succeeded
+
+func _on_upgrade_pressed() -> void:
+	upgrade_unit(selected_unit)
 
 func _on_wave_cleared(wave: int) -> void:
 	GameState.add_gold(WAVE_REWARD_BASE + wave * WAVE_REWARD_STEP)

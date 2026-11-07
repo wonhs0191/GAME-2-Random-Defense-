@@ -1,15 +1,29 @@
 extends Node
 
 # 실제 입력 경로 확인. 마우스 이벤트를 흘려 버튼과 드래그가 동작하는지 본다.
-# 입력 상태가 필요하므로 창 모드로 실행한다: Godot --path . res://tests/input_test.tscn
+# 입력 상태가 필요하므로 창 모드로 실행한다: Godot --path . --fixed-fps 60 res://tests/input_test.tscn
 
 const GAME_SCENE := preload("res://scenes/game/game_play.tscn")
 const GACHA_BUTTON := Vector2(1136, 680)
 const WAVE_BUTTON := Vector2(144, 680)
+const UPGRADE_BUTTON := Vector2(758, 680)
+const ODDS_BUTTON := Vector2(942, 680)
+const ODDS_CLOSE_BUTTON := Vector2(640, 568)
+const SYNTHETIC_DEVICE := 100
+
+# 실제 마우스가 창 위에서 움직이면 합성 입력과 섞여 드래그 위치가 튄다.
+# 트리 맨 뒤에 두면 _input을 가장 먼저 받으므로 여기서 실제 마우스 이벤트를 막는다.
+class RealMouseFilter extends Node:
+	func _input(event: InputEvent) -> void:
+		if event is InputEventMouse and event.device != SYNTHETIC_DEVICE:
+			get_viewport().set_input_as_handled()
 
 var _failures: int = 0
 
 func _ready() -> void:
+	get_tree().root.add_child.call_deferred(RealMouseFilter.new())
+	await wait_frames(2)
+
 	GameSetting.selected_difficulty = "Easy"
 	var game: Node2D = GAME_SCENE.instantiate()
 	add_child(game)
@@ -41,6 +55,39 @@ func _ready() -> void:
 	check(grid.dragged_unit == null, "버튼 위에서 놓아도 드래그 종료")
 	check(unit.global_position == grid.cell_center(target), "격자 밖 드롭은 복귀")
 
+	# 클릭은 선택, 강화 버튼은 골드 소모
+	GameState.add_gold(1000)
+	await click(unit.global_position)
+	check(game.selected_unit == unit, "유닛 클릭으로 선택")
+	check(grid.dragged_unit == null, "클릭 후 손에서 놓음")
+	check(grid.grid_status.get(target) == unit, "클릭해도 제자리")
+	var gold_at_upgrade := GameState.gold
+	await click(UPGRADE_BUTTON)
+	check(GameState.gold == gold_at_upgrade - unit.data.upgrade_cost(1), "강화 버튼 클릭으로 골드 소모")
+	check(game.selected_unit == unit, "강화 버튼을 눌러도 선택 유지")
+	var empty_cell := grid.find_spawn_cell(Vector2(640, 360))
+	await click(grid.cell_center(empty_cell))
+	check(game.selected_unit == null, "빈 칸 클릭으로 선택 해제")
+
+	await click(ODDS_BUTTON)
+	check(game.hud.odds_panel.visible, "확률표 버튼으로 열기")
+	await click(ODDS_CLOSE_BUTTON)
+	check(not game.hud.odds_panel.visible, "닫기 버튼으로 닫기")
+
+	# 같은 유닛 위로 끌어 놓으면 합쳐진다
+	var data: UnitData = Catalog.units_of_grade(UnitData.Grade.C)[0]
+	var from_cell := grid.find_spawn_cell(Vector2(640, 360))
+	var from_unit: UnitBase = game.spawn_unit(data, from_cell)
+	var to_cell := grid.find_spawn_cell(Vector2(640, 360))
+	var to_unit: UnitBase = game.spawn_unit(data, to_cell)
+	await wait_frames(2)
+	await drag(from_unit.global_position, to_unit.global_position)
+	await wait_frames(30)
+	var merged: UnitBase = grid.grid_status.get(to_cell)
+	check(merged != null and merged.data.grade == UnitData.Grade.B, "드래그로 조합")
+	check(not grid.grid_status.has(from_cell), "조합 후 원래 칸 비움")
+	check(game.selected_unit == null, "조합 드래그는 선택이 아님")
+
 	await click(WAVE_BUTTON)
 	check(game.wave_manager.wave == 1, "WAVE START 클릭으로 시작")
 
@@ -58,6 +105,7 @@ func wait_frames(count: int) -> void:
 
 func move_to(position: Vector2, held: bool) -> void:
 	var event := InputEventMouseMotion.new()
+	event.device = SYNTHETIC_DEVICE
 	event.position = position
 	event.global_position = position
 	event.button_mask = MOUSE_BUTTON_MASK_LEFT if held else 0
@@ -66,6 +114,7 @@ func move_to(position: Vector2, held: bool) -> void:
 
 func press(position: Vector2, pressed: bool) -> void:
 	var event := InputEventMouseButton.new()
+	event.device = SYNTHETIC_DEVICE
 	event.position = position
 	event.global_position = position
 	event.button_index = MOUSE_BUTTON_LEFT

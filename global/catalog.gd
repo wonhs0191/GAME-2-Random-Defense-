@@ -6,6 +6,14 @@ extends Node
 const UNIT_DIR := "res://data/units"
 const ENEMY_DIR := "res://data/enemies"
 
+# 뽑기 등급 확률 (%)
+const GRADE_ODDS := {
+	UnitData.Grade.C: 80.0,
+	UnitData.Grade.B: 15.0,
+	UnitData.Grade.A: 4.5,
+	UnitData.Grade.S: 0.5,
+}
+
 var units: Array[UnitData] = []
 var enemies: Dictionary = {} # id -> EnemyData
 
@@ -29,5 +37,17 @@ func _load_dir(path: String) -> Array[Resource]:
 func get_enemy(faction: String, ship: String) -> EnemyData:
 	return enemies.get("%s_%s" % [faction, ship])
 
+func units_of_grade(grade: UnitData.Grade) -> Array[UnitData]:
+	return units.filter(func(unit: UnitData): return unit.grade == grade)
+
+func pick_unit_of_grade(grade: UnitData.Grade) -> UnitData:
+	return units_of_grade(grade).pick_random()
+
+# 등급을 확률대로 정한 뒤 그 등급 안에서 균등하게 뽑는다.
 func pick_random_unit() -> UnitData:
-	return units.pick_random()
+	var roll := randf() * 100.0
+	for grade in GRADE_ODDS:
+		roll -= GRADE_ODDS[grade]
+		if roll < 0.0:
+			return pick_unit_of_grade(grade)
+	return pick_unit_of_grade(UnitData.Grade.C)

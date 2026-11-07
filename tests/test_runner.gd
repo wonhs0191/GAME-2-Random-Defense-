@@ -22,6 +22,16 @@ func _run_all() -> void:
 	await test_menu_scenes()
 	await test_grid_rules()
 	await test_gacha_economy()
+	test_gacha_odds()
+	await test_merge()
+	await test_merge_rules()
+	await test_merge_removes_zone()
+	await test_upgrade()
+	await test_upgrade_needs_gold()
+	await test_upgraded_damage_applies()
+	await test_select_unit()
+	await test_reveal()
+	await test_odds_panel()
 	await test_enemy_follows_path()
 	await test_shot_kills_enemy()
 	await test_zone_burns_enemy()
@@ -104,7 +114,9 @@ func _find_text_resources(dir_path: String) -> Array[String]:
 	return found
 
 func test_catalog() -> void:
-	check(Catalog.units.size() == 12, "C 유닛 12종 로드")
+	check(Catalog.units_of_grade(UnitData.Grade.C).size() == 12, "C 유닛 12종 로드")
+	for grade in Catalog.GRADE_ODDS:
+		check(not Catalog.units_of_grade(grade).is_empty(), "등급별 유닛 존재 " + UnitData.GRADE_NAMES[grade])
 	check(Catalog.enemies.size() == 24, "적 24종 로드")
 	check(Catalog.get_enemy("klaed", "fighter") != null, "세력+함선으로 적 조회")
 
@@ -212,6 +224,275 @@ func test_gacha_economy() -> void:
 	var frame_before := unit.sprite.frame
 	await wait_frames(30)
 	check(unit.sprite.frame != frame_before, "행성 애니메이션 재생")
+	await end_game(game)
+
+func test_gacha_odds() -> void:
+	var total_odds := 0.0
+	var counts := {}
+	var trials := 40000
+	for i in trials:
+		var grade: UnitData.Grade = Catalog.pick_random_unit().grade
+		counts[grade] = counts.get(grade, 0) + 1
+	for grade in Catalog.GRADE_ODDS:
+		var odds: float = Catalog.GRADE_ODDS[grade]
+		total_odds += odds
+		var percent: float = 100.0 * counts.get(grade, 0) / trials
+		check(abs(percent - odds) <= 0.3 + odds * 0.03, "뽑기 확률 %s %.2f%%" % [UnitData.GRADE_NAMES[grade], percent])
+	check(is_equal_approx(total_odds, 100.0), "확률 합계 100%")
+	check(Catalog.GRADE_ODDS[UnitData.Grade.S] == 0.5, "S등급 확률은 기획값 0.5%")
+
+# 중앙 근처 빈 칸에 유닛을 놓고 칸과 함께 돌려준다.
+func place_unit(game: Node2D, data: UnitData) -> Array:
+	var cell: Vector2i = game.grid.find_spawn_cell(Vector2(640, 360))
+	return [game.spawn_unit(data, cell), cell]
+
+func test_merge() -> void:
+	var game := await start_game()
+	var grid: GridManager = game.grid
+	var data: UnitData = Catalog.units_of_grade(UnitData.Grade.C)[0]
+	var first: Array = place_unit(game, data)
+	var second: Array = place_unit(game, data)
+	await wait_frames(1)
+	game.select_unit(first[0])
+	var gold_before := GameState.gold
+
+	grid.pick_unit(first[1], first[0].global_position)
+	check(grid.can_merge_at(second[1]), "같은 유닛 칸은 조합 가능")
+	grid.drop_unit_at(second[1])
+	await wait_frames(2)
+
+	check(GameState.gold == gold_before - data.merge_cost(), "조합 골드 소모")
+	check(game.units.get_child_count() == 1, "조합하면 유닛 1개")
+	check(grid.grid_status.size() == 1, "조합하면 칸 1개 점유")
+	check(not grid.grid_status.has(first[1]), "옮긴 유닛 칸은 빈다")
+	var result: UnitBase = grid.grid_status.get(second[1])
+	check(result != null and result.data.grade == UnitData.Grade.B, "조합 결과는 상위 등급")
+	check(result != null and result.stars == 1, "조합 결과는 1성")
+	check(grid.dragged_unit == null and not grid.show_grid, "조합 후 드래그 종료")
+	check(game.selected_unit == null, "조합한 유닛의 선택 해제")
+	check(not game.hud.upgrade_button.visible, "조합 후 강화 버튼 숨김")
+	await end_game(game)
+
+func test_merge_rules() -> void:
+	var game := await start_game()
+	var grid: GridManager = game.grid
+	var c_units := Catalog.units_of_grade(UnitData.Grade.C)
+	var first: Array = place_unit(game, c_units[0])
+	var other: Array = place_unit(game, c_units[1])
+	grid.pick_unit(first[1], first[0].global_position)
+	check(not grid.can_merge_at(other[1]), "다른 유닛은 조합 불가")
+	grid.drop_unit_at(other[1])
+	await wait_frames(1)
+	check(grid.grid_status.get(first[1]) == first[0], "다른 유닛에 놓으면 원위치")
+	check(grid.grid_status.get(other[1]) == other[0], "다른 유닛 유지")
+
+	# 골드가 모자라면 합치지 않고 이유를 알린다
+	var poor: Array = place_unit(game, c_units[2])
+	var poor_target: Array = place_unit(game, c_units[2])
+	GameState.spend_gold(GameState.gold)
+	grid.pick_unit(poor[1], poor[0].global_position)
+	check(not grid.can_merge_at(poor_target[1]), "골드 부족이면 조합 불가")
+	grid.drop_unit_at(poor_target[1])
+	await wait_frames(1)
+	check(grid.grid_status.get(poor[1]) == poor[0], "골드 부족이면 원위치")
+	check(grid.grid_status.get(poor_target[1]) == poor_target[0], "골드 부족이면 대상 유지")
+	check(game.hud.message_label.text.begins_with("조합 골드 부족"), "골드 부족 문구")
+	check(GameState.gold == 0, "조합 실패 시 골드 유지")
+
+	# 등급을 끝까지 올린다
+	GameState.add_gold(1000)
+	var grades := [UnitData.Grade.C, UnitData.Grade.B, UnitData.Grade.A]
+	for grade in grades:
+		var data: UnitData = Catalog.units_of_grade(grade)[0]
+		var a: Array = place_unit(game, data)
+		var b: Array = place_unit(game, data)
+		grid.pick_unit(a[1], a[0].global_position)
+		grid.drop_unit_at(b[1])
+		await wait_frames(1)
+		var merged: UnitBase = grid.grid_status.get(b[1])
+		check(merged.data.grade == grade + 1, "%s 조합 결과" % UnitData.GRADE_NAMES[grade])
+
+	var top: UnitData = Catalog.units_of_grade(UnitData.Grade.S)[0]
+	var s_first: Array = place_unit(game, top)
+	var s_second: Array = place_unit(game, top)
+	grid.pick_unit(s_first[1], s_first[0].global_position)
+	check(not grid.can_merge_at(s_second[1]), "S등급은 조합 불가")
+	grid.drop_unit_at(s_second[1])
+	await wait_frames(1)
+	check(grid.grid_status.get(s_first[1]) == s_first[0], "S등급을 겹치면 원위치")
+	check(grid.grid_status.get(s_second[1]) == s_second[0], "S등급 대상 유지")
+	await end_game(game)
+
+func test_merge_removes_zone() -> void:
+	var game := await start_game()
+	var grid: GridManager = game.grid
+	var zone_data: UnitData = null
+	for unit in Catalog.units_of_grade(UnitData.Grade.C):
+		if unit.attack_type == UnitData.AttackType.ZONE:
+			zone_data = unit
+			break
+	var first: Array = place_unit(game, zone_data)
+	var second: Array = place_unit(game, zone_data)
+	await wait_frames(1)
+	check(game.zones.get_child_count() == 2, "ZONE 유닛 2개면 장판 2개")
+	grid.pick_unit(first[1], first[0].global_position)
+	grid.drop_unit_at(second[1])
+	await wait_frames(3)
+	var result: UnitBase = grid.grid_status.get(second[1])
+	var expected := 1 if result.data.attack_type == UnitData.AttackType.ZONE else 0
+	check(game.zones.get_child_count() == expected, "재료 유닛의 장판 제거")
+	await end_game(game)
+
+func test_upgrade() -> void:
+	var game := await start_game()
+	GameState.add_gold(1000)
+	var data: UnitData = Catalog.units_of_grade(UnitData.Grade.C)[0]
+	var unit: UnitBase = game.spawn_unit(data, Vector2i(0, 2))
+	var base_damage := unit.get_damage()
+	var gold := GameState.gold
+
+	check(not game.upgrade_unit(unit, 0.71), "1→2성 확률 밖이면 실패")
+	gold -= data.upgrade_cost(1)
+	check(unit.stars == 1, "실패하면 별 유지")
+	check(GameState.gold == gold, "실패해도 골드 소모")
+	check(game.hud.message_label.text == "강화 실패...", "실패 문구")
+
+	check(game.upgrade_unit(unit, 0.69), "1→2성 확률 안이면 성공")
+	gold -= data.upgrade_cost(1)
+	check(unit.stars == 2, "성공하면 별 증가")
+	check(GameState.gold == gold, "성공 골드 소모")
+	check(is_equal_approx(unit.get_damage(), base_damage * UnitData.STAR_DAMAGE[1]), "2성 공격력")
+	check(game.hud.message_label.text == "강화 성공!", "성공 문구")
+
+	check(not game.upgrade_unit(unit, 0.41), "2→3성 확률 밖이면 실패")
+	gold -= data.upgrade_cost(2)
+	check(data.upgrade_cost(2) == data.upgrade_cost(1) * 2, "별이 높을수록 비용 증가")
+	check(game.upgrade_unit(unit, 0.39), "2→3성 확률 안이면 성공")
+	gold -= data.upgrade_cost(2)
+	check(unit.stars == UnitData.MAX_STARS, "3성 도달")
+	check(is_equal_approx(unit.get_damage(), base_damage * UnitData.STAR_DAMAGE[2]), "3성 공격력")
+	check(GameState.gold == gold, "누적 골드 소모")
+
+	check(not game.upgrade_unit(unit, 0.0), "3성은 강화 불가")
+	check(unit.stars == UnitData.MAX_STARS, "3성 초과 없음")
+	check(GameState.gold == gold, "강화 불가면 골드 유지")
+	await end_game(game)
+
+func test_upgrade_needs_gold() -> void:
+	var game := await start_game()
+	var unit: UnitBase = game.spawn_unit(Catalog.units_of_grade(UnitData.Grade.S)[0], Vector2i(0, 2))
+	var cost := unit.data.upgrade_cost(1)
+	check(GameState.gold < cost, "시작 골드로는 S 강화 불가")
+	var gold := GameState.gold
+	check(not game.upgrade_unit(unit, 0.0), "골드 부족이면 강화 실패")
+	check(unit.stars == 1 and GameState.gold == gold, "골드 부족이면 변화 없음")
+	await end_game(game)
+
+func test_upgraded_damage_applies() -> void:
+	var game := await start_game()
+	GameState.add_gold(1000)
+	var unit: UnitBase = game.spawn_unit(first_unit(UnitData.AttackType.SHOT), Vector2i(0, 2))
+	game.upgrade_unit(unit, 0.0)
+	spawn_enemy(game, "bomber", 100.0)
+	var fired := await wait_until(func(): return game.effects.get_child_count() > 0, 60 * 10)
+	check(fired, "강화 유닛 발사")
+	if fired:
+		var projectile: Projectile = game.effects.get_child(0)
+		check(is_equal_approx(projectile.damage, unit.get_damage()), "투사체에 강화 공격력 적용")
+	await end_game(game)
+
+func test_select_unit() -> void:
+	var game := await start_game()
+	var grid: GridManager = game.grid
+	var hud: CanvasLayer = game.hud
+	var placed: Array = place_unit(game, Catalog.units_of_grade(UnitData.Grade.C)[0])
+	var unit: UnitBase = placed[0]
+	var cell: Vector2i = placed[1]
+	check(not hud.upgrade_button.visible, "선택 전에는 강화 버튼 숨김")
+
+	# 놓은 자리에서 그대로 떼면 클릭이다
+	grid._pointer = unit.global_position
+	grid.pick_unit(cell, grid._pointer)
+	grid._drop_unit()
+	check(game.selected_unit == unit, "클릭으로 유닛 선택")
+	check(grid.selected_unit == unit, "격자에 선택 전달")
+	check(hud.upgrade_button.visible, "선택하면 강화 버튼 표시")
+	check(hud.unit_info_label.text.contains(unit.data.id), "선택 유닛 정보 표시")
+	check(hud.upgrade_button.text.contains("70%"), "강화 확률 표시")
+
+	# 골드가 모자라면 버튼이 꺼지고, 벌면 켜진다
+	GameState.spend_gold(GameState.gold)
+	check(hud.upgrade_button.disabled, "골드 부족이면 강화 버튼 비활성")
+	GameState.add_gold(unit.data.upgrade_cost(1))
+	check(not hud.upgrade_button.disabled, "골드가 생기면 강화 버튼 활성")
+
+	# 3성이면 강화 완료
+	unit.stars = UnitData.MAX_STARS
+	hud.show_unit(unit)
+	check(hud.upgrade_button.disabled and hud.upgrade_button.text == "강화 완료", "3성이면 강화 완료")
+	unit.stars = 1
+
+	game.select_unit(null)
+	check(not hud.upgrade_button.visible, "선택 해제하면 강화 버튼 숨김")
+
+	# 다른 칸으로 끌면 선택하지 않는다
+	var target := grid.find_spawn_cell(Vector2(640, 360))
+	grid._pointer = unit.global_position
+	grid.pick_unit(cell, grid._pointer)
+	grid._pointer = grid.cell_center(target)
+	grid._drop_unit()
+	check(game.selected_unit == null, "드래그는 선택이 아님")
+	check(grid.grid_status.get(target) == unit, "드래그는 그대로 이동")
+
+	# 빈 곳을 누르면 선택이 풀린다
+	game.select_unit(unit)
+	var press := InputEventMouseButton.new()
+	press.button_index = MOUSE_BUTTON_LEFT
+	press.pressed = true
+	grid._pointer = grid.cell_center(cell)
+	grid._unhandled_input(press)
+	check(game.selected_unit == null, "빈 칸을 누르면 선택 해제")
+	await end_game(game)
+
+func test_reveal() -> void:
+	var game := await start_game()
+	var hud: CanvasLayer = game.hud
+	var c_unit: Array = place_unit(game, Catalog.units_of_grade(UnitData.Grade.C)[0])
+	game._reveal(c_unit[0])
+	check(game.effects.get_child_count() == 1, "등장 연출 생성")
+	check(c_unit[0].scale.x < 0.01, "등장 시 크기 0에서 시작")
+	check(hud.message_label.modulate.a == 0.0, "C등급은 문구 없음")
+	var finished := await wait_until(func(): return game.effects.get_child_count() == 0, 120)
+	check(finished, "등장 연출 종료")
+	check(c_unit[0].scale.is_equal_approx(Vector2.ONE), "등장 후 원래 크기")
+
+	var a_unit: Array = place_unit(game, Catalog.units_of_grade(UnitData.Grade.A)[0])
+	game._reveal(a_unit[0])
+	check(hud.message_label.text.begins_with("A등급 등장"), "A등급 문구")
+	check(hud.message_label.modulate.a == 1.0, "A등급 문구 표시")
+	check(hud.flash.modulate.a == 0.0, "A등급은 화면 번쩍임 없음")
+
+	var s_unit: Array = place_unit(game, Catalog.units_of_grade(UnitData.Grade.S)[0])
+	game._reveal(s_unit[0])
+	check(hud.message_label.text.begins_with("S등급 등장"), "S등급 문구")
+	check(hud.flash.modulate.a > 0.0, "S등급 화면 번쩍임")
+	var faded := await wait_until(func(): return hud.flash.modulate.a == 0.0 and hud.message_label.modulate.a == 0.0, 240)
+	check(faded, "문구와 번쩍임이 사라짐")
+	await end_game(game)
+
+func test_odds_panel() -> void:
+	var game := await start_game()
+	var hud: CanvasLayer = game.hud
+	check(not hud.odds_panel.visible, "확률표는 처음에 숨김")
+	hud._on_odds_button_pressed()
+	check(hud.odds_panel.visible, "확률표 열기")
+	var text: String = hud.odds_label.text
+	for grade in Catalog.GRADE_ODDS:
+		check(text.contains("%s등급  %.1f%%" % [UnitData.GRADE_NAMES[grade], Catalog.GRADE_ODDS[grade]]), "확률표 등급 표시")
+	check(text.contains("1성 → 2성  70%") and text.contains("2성 → 3성  40%"), "확률표 강화 표시")
+	check(text.contains("C 10G / B 40G / A 160G"), "확률표 조합 비용 표시")
+	hud._on_odds_close_button_pressed()
+	check(not hud.odds_panel.visible, "확률표 닫기")
 	await end_game(game)
 
 func test_enemy_follows_path() -> void:

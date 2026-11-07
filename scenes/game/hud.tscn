@@ -76,6 +76,78 @@ focus_mode = 0
 theme_override_font_sizes/font_size = 25
 text = "GACHA"
 
+[node name="UnitInfoLabel" type="Label" parent="BottomBar"]
+visible = false
+layout_mode = 0
+offset_left = 280.0
+offset_top = 8.0
+offset_right = 640.0
+offset_bottom = 72.0
+theme_override_font_sizes/font_size = 18
+text = "C등급 PRD-C-FS-01  1성"
+vertical_alignment = 1
+
+[node name="UpgradeButton" type="Button" parent="BottomBar"]
+visible = false
+layout_mode = 0
+offset_left = 648.0
+offset_top = 8.0
+offset_right = 868.0
+offset_bottom = 72.0
+focus_mode = 0
+theme_override_font_sizes/font_size = 20
+text = "강화"
+
+[node name="OddsButton" type="Button" parent="BottomBar"]
+layout_mode = 0
+offset_left = 880.0
+offset_top = 8.0
+offset_right = 1004.0
+offset_bottom = 72.0
+focus_mode = 0
+theme_override_font_sizes/font_size = 22
+text = "확률표"
+
+[node name="MessageLabel" type="Label" parent="."]
+modulate = Color(1, 1, 1, 0)
+offset_top = 88.0
+offset_right = 1280.0
+offset_bottom = 152.0
+theme_override_font_sizes/font_size = 40
+horizontal_alignment = 1
+
+[node name="Flash" type="ColorRect" parent="."]
+modulate = Color(1, 1, 1, 0)
+offset_right = 1280.0
+offset_bottom = 720.0
+mouse_filter = 2
+
+[node name="OddsPanel" type="ColorRect" parent="."]
+visible = false
+offset_left = 400.0
+offset_top = 110.0
+offset_right = 880.0
+offset_bottom = 610.0
+color = Color(0.03, 0.04, 0.1, 0.95)
+
+[node name="OddsLabel" type="Label" parent="OddsPanel"]
+layout_mode = 0
+offset_left = 32.0
+offset_top = 24.0
+offset_right = 448.0
+offset_bottom = 420.0
+theme_override_font_sizes/font_size = 22
+
+[node name="OddsCloseButton" type="Button" parent="OddsPanel"]
+layout_mode = 0
+offset_left = 160.0
+offset_top = 432.0
+offset_right = 320.0
+offset_bottom = 484.0
+focus_mode = 0
+theme_override_font_sizes/font_size = 22
+text = "닫기"
+
 [node name="ResultPanel" type="ColorRect" parent="."]
 process_mode = 3
 visible = false
@@ -114,5 +186,8 @@ text = "타이틀로"
 
 [connection signal="pressed" from="BottomBar/WaveButton" to="." method="_on_wave_button_pressed"]
 [connection signal="pressed" from="BottomBar/GachaButton" to="." method="_on_gacha_button_pressed"]
+[connection signal="pressed" from="BottomBar/UpgradeButton" to="." method="_on_upgrade_button_pressed"]
+[connection signal="pressed" from="BottomBar/OddsButton" to="." method="_on_odds_button_pressed"]
+[connection signal="pressed" from="OddsPanel/OddsCloseButton" to="." method="_on_odds_close_button_pressed"]
 [connection signal="pressed" from="ResultPanel/RetryButton" to="." method="_on_retry_button_pressed"]
 [connection signal="pressed" from="ResultPanel/TitleButton" to="." method="_on_title_button_pressed"]

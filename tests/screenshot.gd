@@ -36,9 +36,40 @@ func _ready() -> void:
 	await shot("02_drag.png")
 
 	grid.drop_unit_at(cell)
+
+	# 조합 하이라이트: 같은 유닛을 하나 더 놓고 집어 든다
+	var unit: UnitBase = grid.grid_status[cell]
+	var twin_cell := grid.find_spawn_cell(unit.global_position)
+	game.spawn_unit(unit.data, twin_cell)
+	grid.pick_unit(cell, grid.cell_center(cell))
+	grid._hovered_cell = twin_cell
+	grid.queue_redraw()
+	await wait_frames(4)
+	await shot("03_merge.png")
+	grid.drop_unit_at(cell)
+	grid.set_process(true)
+
+	# 선택 패널
+	unit.add_star()
+	game.select_unit(unit)
+	await wait_frames(4)
+	await shot("04_selected.png")
+
+	# 확률표
+	game.hud.odds_panel.show()
+	await wait_frames(4)
+	await shot("05_odds.png")
+	game.hud.odds_panel.hide()
+
+	# S등급 등장
+	var s_cell := grid.find_spawn_cell(Vector2(640, 360))
+	game._reveal(game.spawn_unit(Catalog.units_of_grade(UnitData.Grade.S)[0], s_cell))
+	await wait_frames(8)
+	await shot("06_reveal.png")
+
 	GameState.lose_lives(GameState.lives)
 	await wait_frames(4)
-	await shot("03_gameover.png")
+	await shot("07_gameover.png")
 
 	get_tree().quit()
 
