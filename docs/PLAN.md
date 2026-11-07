@@ -51,6 +51,7 @@
 | 증강 | 3택 카드 패널, 공속·공격력·범위, 패널 표시 중 게임 정지 [Notion]. 뽑기 5회마다 + 보스 처치 시 |
 | 시너지 ZONE | 증강 선택 시 격자에 버프 구역 지정, 구역 안 유닛 강화 [Notion]. 3x3 또는 5x5, 옮길 수 없음, 같은 능력치는 큰 값 2개까지 합산 [제안] |
 | 편의 | 배속, HUD, 확률표 [Notion] |
+| 도감 | 타이틀 메뉴. 뽑기나 조합으로 얻은 행성만 공개되고 나머지는 실루엣. 발견 기록은 `user://codex.cfg` [제안] |
 
 ### 유닛 표
 
@@ -78,6 +79,7 @@ entities/effects/            등장 연출
 entities/augments/           AugmentData 정의
 global/                      GameSetting(선택값), GameState(런타임 상태), Catalog(데이터 로더)
 scenes/game/                 game_play, grid, wave_manager, augment_manager, hud, maps(경로만)
+entities/units/thumbnails/   도감 썸네일 (tools/generate_thumbnails.gd로 생성)
 tests/                       헤드리스 테스트
 ```
 

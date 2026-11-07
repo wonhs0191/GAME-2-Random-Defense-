@@ -21,6 +21,7 @@ Catalog="*res://global/catalog.gd"
 GameState="*res://global/game_state.gd"
 Sound="*res://global/sound.gd"
 Settings="*res://global/settings.gd"
+Codex="*res://global/codex.gd"
 
 [display]
 

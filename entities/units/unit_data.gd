@@ -7,6 +7,7 @@ extends Resource
 enum Grade { C, B, A, S }
 enum AttackType { SHOT, ZONE }
 
+const THUMBNAIL_PATH := "res://entities/units/thumbnails/%s.png"
 const GRADE_NAMES := ["C", "B", "A", "S"]
 const ATTACK_TYPE_NAMES := ["투사체", "장판"]
 const GRADE_COLORS := [
@@ -45,6 +46,16 @@ const UPGRADE_BASE_COST := [30, 60, 120, 240] # 등급별 강화 비용. 현재 
 @export var zone_radius: float = 56.0    # ZONE 장판 반경 (px)
 
 var _effect_frames: SpriteFrames = null
+
+# 도감용 작은 그림. 없으면 시트의 첫 프레임을 잘라 쓴다.
+func get_thumbnail() -> Texture2D:
+	if ResourceLoader.exists(THUMBNAIL_PATH % id):
+		return load(THUMBNAIL_PATH % id)
+	var sheet: Texture2D = load(sheet_path)
+	var frame := AtlasTexture.new()
+	frame.atlas = sheet
+	frame.region = Rect2(Vector2.ZERO, sheet.get_size() / Vector2(sheet_columns, sheet_rows))
+	return frame
 
 func get_grade_name() -> String:
 	return GRADE_NAMES[grade]

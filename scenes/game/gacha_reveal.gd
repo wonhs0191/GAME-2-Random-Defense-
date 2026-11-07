@@ -37,7 +37,7 @@ var _ray_angle: float = 0.0
 func is_playing() -> bool:
 	return _unit != null
 
-func play(unit: UnitBase) -> void:
+func play(unit: UnitBase, is_new: bool = false) -> void:
 	skip()
 	_unit = unit
 	var data := unit.data
@@ -50,7 +50,8 @@ func play(unit: UnitBase) -> void:
 	planet.position = STAGE_CENTER
 	planet.scale = Vector2.ZERO
 	planet.show()
-	name_label.text = "%s등급\n%s" % [data.get_grade_name(), data.get_display_name()]
+	var heading := "%s등급  신규 발견!" % data.get_grade_name() if is_new else "%s등급" % data.get_grade_name()
+	name_label.text = "%s\n%s" % [heading, data.get_display_name()]
 	name_label.modulate = Color(UnitData.GRADE_COLORS[grade], 0.0)
 
 	_tween = create_tween()

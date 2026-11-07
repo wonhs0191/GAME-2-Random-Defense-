@@ -67,6 +67,12 @@ class Runner extends Node:
 		check(Sound.current_bgm == "title", "타이틀 BGM")
 		check(current().get_node("tagline").text != "", "세계관 문구")
 
+		press("Buttons/codex_button")
+		var codex: ColorRect = current().get_node("SettingLayer/CodexPanel")
+		check(codex.visible, "도감 열기")
+		codex.get_node("Box/CloseButton").pressed.emit()
+		check(not codex.visible, "도감 닫기")
+
 		print("--- Epic 2 Play-1")
 		await start_game("Degree1")
 		var game := current()

@@ -64,6 +64,10 @@ func _run_all() -> void:
 	await test_result_text()
 	await test_lobby_detail()
 	await test_setting_panel_on_top()
+	test_codex_data()
+	await test_codex_discovery()
+	await test_codex_panel()
+	await test_codex_new_label()
 	await test_swap_rules()
 	await test_swap_zone_units()
 	await test_bench_draw()
@@ -1370,6 +1374,111 @@ func test_bgm_playlist() -> void:
 	var before_boss_next: String = tracks[(tracks.find(heard[0]) + 1) % tracks.size()]
 	game._on_wave_cleared(9)
 	check(Sound.current_bgm == before_boss_next, "보스전 뒤에는 이어서 다음 곡")
+	await end_game(game)
+
+func test_codex_data() -> void:
+	check(not Codex.persist, "테스트에서는 도감을 저장하지 않음")
+	for unit in Catalog.units:
+		check(ResourceLoader.exists(UnitData.THUMBNAIL_PATH % unit.id), "도감 썸네일 " + unit.id)
+		check(unit.get_thumbnail() != null, "썸네일 로드 " + unit.id)
+	var original_path := Codex.path
+	Codex.path = "user://codex_test.cfg"
+	Codex.persist = true
+	var saved := Codex._discovered.duplicate()
+	Codex._discovered.clear()
+	check(Codex.discover("PRD-TEST-01"), "처음 발견")
+	check(not Codex.discover("PRD-TEST-01"), "두 번째는 신규 아님")
+	Codex._discovered.clear()
+	check(not Codex.is_discovered("PRD-TEST-01"), "메모리 비움")
+	Codex.load_codex()
+	check(Codex.is_discovered("PRD-TEST-01"), "저장 후 다시 불러옴")
+	DirAccess.remove_absolute("user://codex_test.cfg")
+	Codex.path = original_path
+	Codex.persist = false
+	Codex._discovered = saved
+
+func test_codex_discovery() -> void:
+	Codex._discovered.clear()
+	var game := await start_game()
+	game.draw_unit()
+	var unit: UnitBase = game.grid.grid_status[game.grid.get_bench_cells()[0]]
+	check(Codex.is_discovered(unit.data.id), "뽑으면 도감에 기록")
+	check(Codex.discovered_count() == 1, "뽑은 행성만 기록")
+
+	var data: UnitData = Catalog.units_of_grade(UnitData.Grade.C)[0]
+	var first: Array = place_unit(game, data)
+	var second: Array = place_unit(game, data)
+	game.grid.pick_unit(first[1], first[0].global_position)
+	game.grid.drop_unit_at(second[1])
+	await wait_frames(1)
+	var merged: UnitBase = game.grid.grid_status[second[1]]
+	check(Codex.is_discovered(merged.data.id), "조합으로 나온 행성도 기록")
+	await end_game(game)
+
+func test_codex_panel() -> void:
+	Codex._discovered.clear()
+	var known: UnitData = Catalog.units_of_grade(UnitData.Grade.A)[0]
+	var unknown: UnitData = Catalog.units_of_grade(UnitData.Grade.C)[0]
+	Codex.discover(known.id)
+	var title: Node = load("res://scenes/title/title_screen.tscn").instantiate()
+	add_child(title)
+	await wait_frames(2)
+	var panel: ColorRect = title.codex_panel
+	check(panel.get_canvas_layer_node().layer > 0, "도감은 위 레이어")
+	check(panel._slots.size() == Catalog.units.size(), "모든 행성 칸")
+
+	title._on_codex_button_pressed()
+	await wait_frames(2)
+	check(panel.visible, "도감 열기")
+	check(panel.progress_label.text == "발견 1 / %d" % Catalog.units.size(), "발견 수 표시")
+	check(panel.detail_name.text.contains(known.id), "처음엔 발견한 행성 선택")
+	check(panel.detail_text.text.contains(known.description), "발견한 행성 설명")
+	check(panel.detail_text.text.contains("초당 피해"), "발견한 행성 수치")
+	check(panel._slots[known].modulate == Color.WHITE, "발견한 행성은 원래 색")
+	check(panel.selection_frame.global_position == panel._slots[known].global_position, "처음 열 때 테두리가 선택한 칸에 있음")
+
+	panel.select(unknown)
+	check(panel.detail_name.text == "???", "미발견 행성 이름 숨김")
+	check(not panel.detail_text.text.contains(unknown.description), "미발견 행성 설명 숨김")
+	check(panel.detail_planet.modulate == panel.LOCKED_COLOR, "미발견 행성은 실루엣")
+	check(panel._slots[unknown].tooltip_text == "???", "미발견 행성 툴팁 숨김")
+	await wait_frames(2)
+	check(panel.selection_frame.global_position == panel._slots[unknown].global_position, "선택 테두리가 칸을 따라감")
+
+	var box_rect: Rect2 = panel.get_node("Box").get_global_rect()
+	var all_inside := true
+	for slot: TextureButton in panel._slots.values():
+		all_inside = all_inside and box_rect.encloses(slot.get_global_rect())
+	check(all_inside, "모든 칸이 도감 상자 안")
+
+	# 다시 열면 새로 발견한 행성이 반영된다
+	panel.close()
+	Codex.discover(unknown.id)
+	panel.open()
+	check(panel._slots[unknown].modulate == Color.WHITE, "새로 발견하면 공개")
+	check(panel.progress_label.text.begins_with("발견 2 /"), "발견 수 갱신")
+
+	var cancel := InputEventAction.new()
+	cancel.action = "ui_cancel"
+	cancel.pressed = true
+	panel._unhandled_input(cancel)
+	check(not panel.visible, "Esc로 닫기")
+	check(title.get_node("Buttons/codex_button").tooltip_text != "", "도감 버튼 설명")
+	title.queue_free()
+	await wait_frames(1)
+
+func test_codex_new_label() -> void:
+	Codex._discovered.clear()
+	var game := await start_game()
+	var reveal: GachaReveal = game.hud.gacha_reveal
+	game.instant_reveal = false
+	var data: UnitData = Catalog.units_of_grade(UnitData.Grade.B)[0]
+	game._start_reveal(game.spawn_unit(data, game.grid.find_bench_slot()))
+	check(reveal.name_label.text.contains("신규 발견"), "처음 뽑으면 신규 발견 표시")
+	reveal.skip()
+	game._start_reveal(game.spawn_unit(data, game.grid.find_bench_slot()))
+	check(not reveal.name_label.text.contains("신규 발견"), "다시 뽑으면 표시 없음")
+	reveal.skip()
 	await end_game(game)
 
 func test_lobby_detail() -> void:
