@@ -6,7 +6,6 @@ extends Node
 const GAME_SCENE := preload("res://scenes/game/game_play.tscn")
 const GACHA_BUTTON := Vector2(1136, 680)
 const WAVE_BUTTON := Vector2(144, 680)
-const UPGRADE_BUTTON := Vector2(758, 680)
 const ODDS_BUTTON := Vector2(942, 680)
 const ODDS_CLOSE_BUTTON := Vector2(640, 598)
 const AUGMENT_CARD_2 := Vector2(640, 340)
@@ -71,7 +70,8 @@ func _ready() -> void:
 	check(grid.dragged_unit == null, "클릭 후 손에서 놓음")
 	check(grid.grid_status.get(target) == unit, "클릭해도 제자리")
 	var gold_at_upgrade := GameState.gold
-	await click(UPGRADE_BUTTON)
+	await wait_frames(4)
+	await click(game.hud.upgrade_button.get_global_rect().get_center())
 	check(GameState.gold == gold_at_upgrade - unit.data.upgrade_cost(1), "강화 버튼 클릭으로 골드 소모")
 	check(game.selected_unit == unit, "강화 버튼을 눌러도 선택 유지")
 	var empty_cell := grid.find_spawn_cell(Vector2(640, 360))
@@ -96,6 +96,28 @@ func _ready() -> void:
 	check(merged != null and merged.data.grade == UnitData.Grade.B, "드래그로 조합")
 	check(not grid.grid_status.has(from_cell), "조합 후 원래 칸 비움")
 	check(game.selected_unit == null, "조합 드래그는 선택이 아님")
+
+	# 다른 행성 위로 끌어 놓으면 자리를 바꾼다
+	var swap_a: UnitBase = game.spawn_unit(Catalog.units_of_grade(UnitData.Grade.C)[3], Vector2i(0, 7))
+	var swap_b: UnitBase = game.spawn_unit(Catalog.units_of_grade(UnitData.Grade.C)[4], Vector2i(2, 7))
+	await wait_frames(2)
+	await drag(swap_a.global_position, swap_b.global_position)
+	await wait_frames(30)
+	check(grid.grid_status.get(Vector2i(2, 7)) == swap_a and grid.grid_status.get(Vector2i(0, 7)) == swap_b, "드래그로 자리 교체")
+
+	# 보관함에서 끌어내고 다시 넣는다
+	GameState.add_gold(100)
+	await click(GACHA_BUTTON)
+	await wait_frames(120)
+	var bench_cell: Vector2i = grid.get_bench_cells()[0]
+	var benched: UnitBase = grid.grid_status.get(bench_cell)
+	check(benched != null and benched.visible, "뽑은 행성이 보관함에 표시")
+	await drag(grid.cell_center(bench_cell), grid.cell_center(Vector2i(5, 7)))
+	await wait_frames(30)
+	check(grid.grid_status.get(Vector2i(5, 7)) == benched, "보관함에서 격자로 드래그")
+	await drag(grid.cell_center(Vector2i(5, 7)), grid.cell_center(grid.get_bench_cells()[3]))
+	await wait_frames(30)
+	check(grid.grid_status.get(grid.get_bench_cells()[3]) == benched, "격자에서 보관함으로 드래그")
 
 	# 행성과 버튼에 마우스를 올리면 설명이 나온다
 	await move_to(grid.cell_center(to_cell), false)

@@ -25,6 +25,7 @@ func _play(difficulty: String) -> void:
 	add_child(game)
 	await get_tree().process_frame
 
+	game.instant_reveal = true
 	var coverage := _build_coverage(game)
 	var manager: WaveManager = game.wave_manager
 	var frames := 0

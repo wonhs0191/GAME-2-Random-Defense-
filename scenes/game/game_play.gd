@@ -18,6 +18,9 @@ const DEATH_BURST_COLOR := Color(1.0, 0.7, 0.3)
 const SHAKE_STRENGTH := 6.0
 const SHAKE_TIME := 0.25
 const FACTION_NAMES := {"nautolan": "Nautolan", "klaed": "Kla'ed", "nairan": "Nairan"}
+const BATTLE_TRACKS := ["battle_nautolan", "battle_drift", "battle_klaed", "battle_nova", "battle_storm", "battle_nairan"]
+const BENCH_FULL_TEXT := "보관함이 가득 찼습니다"
+const BENCH_FULL_COLOR := Color(1.0, 0.6, 0.5)
 
 # 웨이브 클리어 보상 = 기본 + 웨이브 번호 × 증가량
 const WAVE_REWARD_BASE := 10
@@ -25,6 +28,7 @@ const WAVE_REWARD_STEP := 2
 
 var paths: Array[Path2D] = []
 var selected_unit: UnitBase = null
+var instant_reveal: bool = false # true면 뽑기 연출을 건너뛴다 (테스트와 봇용)
 
 var _lives: int = 0
 var _faction: String = ""
@@ -71,7 +75,8 @@ func _ready():
 	grid.unit_clicked.connect(select_unit)
 	grid.unit_hovered.connect(hud.show_unit_tooltip)
 	hud.title_requested.connect(_on_title_requested)
-	Sound.play_bgm(_battle_bgm(1))
+	hud.gacha_reveal.finished.connect(_on_reveal_finished)
+	Sound.play_playlist(BATTLE_TRACKS)
 	hud.augment_chosen.connect(augments.choose)
 	hud.ultimate_pressed.connect(ultimates.use)
 	ultimates.used.connect(hud.show_ultimate)
@@ -105,19 +110,18 @@ func _show_paths() -> void:
 		line.joint_mode = Line2D.LINE_JOINT_ROUND
 		group.add_child(line)
 
-# 골드를 내고 화면 중앙 가까운 빈 칸에 유닛을 뽑는다. 뽑았으면 true.
+# 골드를 내고 유닛을 뽑아 보관함에 넣는다. 뽑았으면 true.
 func draw_unit() -> bool:
 	if augments.is_busy():
 		return false
-	# 화면(Viewport)의 정중앙 기준으로 가까운 빈 칸을 찾는다
-	var target_cell := grid.find_spawn_cell(get_viewport_rect().size / 2)
-	if target_cell == GridManager.NO_CELL:
+	var slot := grid.find_bench_slot()
+	if slot == GridManager.NO_CELL:
+		hud.show_message(BENCH_FULL_TEXT, BENCH_FULL_COLOR)
 		return false
 	if not GameState.spend_gold(GameState.GACHA_COST):
 		return false
 	Sound.play("gacha")
-	_reveal(spawn_unit(Catalog.pick_random_unit(), target_cell))
-	augments.on_unit_drawn()
+	_start_reveal(spawn_unit(Catalog.pick_random_unit(), slot))
 	return true
 
 func spawn_unit(unit_data: UnitData, cell: Vector2i) -> UnitBase:
@@ -129,12 +133,31 @@ func spawn_unit(unit_data: UnitData, cell: Vector2i) -> UnitBase:
 	grid.add_new_unit(new_unit, cell)
 	return new_unit
 
-func _reveal(unit: UnitBase) -> void:
+# 뽑기 연출을 시작한다. 연출이 끝나면 유닛이 보관함에 나타나고 뽑기 횟수를 센다.
+func _start_reveal(unit: UnitBase) -> void:
+	Sound.play("reveal_" + unit.data.get_grade_name().to_lower())
+	if instant_reveal:
+		_on_reveal_finished(unit)
+		return
+	unit.hide()
+	hud.gacha_reveal.play(unit)
+
+func _on_reveal_finished(unit: UnitBase) -> void:
+	if is_instance_valid(unit):
+		unit.show()
+		_pop_unit(unit)
+	augments.on_unit_drawn()
+
+func _pop_unit(unit: UnitBase) -> void:
 	unit.pop_in()
 	var burst := RevealBurst.new()
 	burst.setup(UnitData.GRADE_COLORS[unit.data.grade], RevealBurst.RADIUS_BY_GRADE[unit.data.grade])
 	burst.position = unit.position
 	effects.add_child(burst)
+
+# 조합으로 나온 유닛의 등장.
+func _reveal(unit: UnitBase) -> void:
+	_pop_unit(unit)
 	hud.show_reveal(unit.data)
 	Sound.play("reveal_" + unit.data.get_grade_name().to_lower())
 
@@ -178,7 +201,7 @@ func _on_wave_started(wave: int) -> void:
 	if boss_wave:
 		Sound.play_bgm("final_boss" if wave_manager.is_final_wave(wave) else "boss")
 	else:
-		Sound.play_bgm(_battle_bgm(wave))
+		Sound.play_playlist(BATTLE_TRACKS)
 	var faction := wave_manager.faction_for_wave(wave)
 	if boss_wave:
 		hud.show_boss_warning(wave_manager.is_final_wave(wave))
@@ -219,15 +242,11 @@ func _on_title_requested() -> void:
 	get_tree().paused = false
 	get_tree().change_scene_to_file(TITLE_SCENE)
 
-# 세력마다 전투곡이 다르다.
-func _battle_bgm(wave: int) -> String:
-	return "battle_" + wave_manager.faction_for_wave(wave)
-
 func _on_wave_cleared(wave: int) -> void:
 	GameState.add_gold(WAVE_REWARD_BASE + wave * WAVE_REWARD_STEP)
 	if wave_manager.is_final_wave(wave):
 		return
-	Sound.play_bgm(_battle_bgm(wave + 1))
+	Sound.play_playlist(BATTLE_TRACKS)
 	if wave_manager.is_boss_wave(wave):
 		augments.request_offer()
 	if wave % UltimateManager.SWAP_INTERVAL == 0:

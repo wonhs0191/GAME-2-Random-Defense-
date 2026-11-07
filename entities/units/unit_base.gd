@@ -26,6 +26,7 @@ const OUTLINE_SCREEN_WIDTH := 2.0 # 집어 든 유닛의 외곽선 두께 (px)
 
 var data: UnitData
 var is_held: bool = false # 드래그 중에는 공격하지 않는다
+var is_benched: bool = false # 보관함에서는 공격하지 않는다
 var stars: int = 1
 
 var _game: Node2D
@@ -80,7 +81,7 @@ func _process(delta: float) -> void:
 	sprite.frame = int(_frame_time * data.sheet_fps) % (sprite.hframes * sprite.vframes)
 
 	_cooldown -= delta
-	if _cooldown > 0.0 or is_held:
+	if _cooldown > 0.0 or is_held or is_benched:
 		return
 	var attacked := _shoot() if data.attack_type == UnitData.AttackType.SHOT else _burn_zone()
 	_cooldown = get_attack_interval() if attacked else RESCAN_INTERVAL
@@ -143,11 +144,16 @@ func on_picked() -> void:
 func on_placed(world_position: Vector2) -> void:
 	is_held = false
 	sprite.material = null
+	is_benched = _game.grid.is_bench_cell(_game.grid.world_to_grid(world_position))
 	if data.attack_type == UnitData.AttackType.ZONE:
-		# 제자리에 다시 놓으면 장판 위치를 유지한다
-		if world_position != _placed_position:
-			_place_zone(world_position)
-		_zone.show()
+		if is_benched:
+			if _zone:
+				_zone.hide()
+		else:
+			# 제자리에 다시 놓으면 장판 위치를 유지한다
+			if world_position != _placed_position or _zone == null:
+				_place_zone(world_position)
+			_zone.show()
 	_placed_position = world_position
 
 # 사거리 안의 적 중 가장 앞서 간 적을 쏜다.

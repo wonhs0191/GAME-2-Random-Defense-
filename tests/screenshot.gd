@@ -19,8 +19,12 @@ func _ready() -> void:
 	game.augments.draws_until_offer = 1000000 # 찍는 도중 패널이 열리지 않게 한다
 
 	GameState.add_gold(300)
+	game.instant_reveal = true
 	for i in 14:
+		game.spawn_unit(Catalog.pick_random_unit(), game.grid.find_spawn_cell(Vector2(640, 360)))
+	for i in 3:
 		game.draw_unit()
+	game.instant_reveal = false
 	game.wave_manager.wave = (args[2].to_int() if args.size() > 2 else 10) - 1
 	game.wave_manager.start_next_wave()
 	await wait_frames(900)
@@ -81,11 +85,14 @@ func _ready() -> void:
 	await shot("05_odds.png")
 	game.hud.odds_panel.hide()
 
-	# S등급 등장
-	var s_cell := grid.find_spawn_cell(Vector2(640, 360))
-	game._reveal(game.spawn_unit(Catalog.units_of_grade(UnitData.Grade.S)[0], s_cell))
-	await wait_frames(8)
-	await shot("06_reveal.png")
+	# 등급별 뽑기 연출
+	for grade in [UnitData.Grade.C, UnitData.Grade.A, UnitData.Grade.S]:
+		game.select_unit(null)
+		game._start_reveal(game.spawn_unit(Catalog.units_of_grade(grade)[0], grid.find_bench_slot()))
+		await wait_frames(40)
+		await shot("06_reveal_%s.png" % UnitData.GRADE_NAMES[grade])
+		game.hud.gacha_reveal.skip()
+		await wait_frames(60)
 
 	# 증강 카드
 	await wait_frames(120)

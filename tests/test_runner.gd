@@ -64,6 +64,17 @@ func _run_all() -> void:
 	await test_result_text()
 	await test_lobby_detail()
 	await test_setting_panel_on_top()
+	await test_swap_rules()
+	await test_swap_zone_units()
+	await test_bench_draw()
+	await test_bench_unit_idle()
+	await test_bench_full_then_freed()
+	await test_bench_tooltip_and_panel()
+	await test_reveal_stage()
+	await test_reveal_fireworks_by_grade()
+	await test_reveal_waits_for_offer()
+	await test_reveal_skip_on_next_draw()
+	await test_bgm_playlist()
 	test_star_shape()
 	await test_all_buttons_have_tooltips()
 	await test_dynamic_tooltips()
@@ -121,6 +132,7 @@ func start_game(difficulty: String = "Easy") -> Node2D:
 	await get_tree().process_frame
 	# 뽑기 횟수를 세는 테스트만 켠다. 나머지는 패널로 멈추면 안 된다
 	game.augments.draws_until_offer = OFFERS_OFF
+	game.instant_reveal = true
 	return game
 
 func end_game(game: Node2D) -> void:
@@ -250,13 +262,14 @@ func test_grid_rules() -> void:
 	grid.drop_unit_at(path_cell)
 	check(grid.grid_status.get(target) == unit, "경로 칸 드롭은 원위치")
 
-	# 다른 유닛 칸에 놓으면 원위치
+	# 다른 유닛 칸에 놓으면 자리 교체
 	var other_cell := grid.find_spawn_cell(Vector2(640, 360))
 	var other: UnitBase = game.spawn_unit(Catalog.units[1], other_cell)
 	grid.pick_unit(target, unit.global_position)
 	grid.drop_unit_at(other_cell)
-	check(grid.grid_status.get(target) == unit, "유닛 칸 드롭은 원위치")
-	check(grid.grid_status.get(other_cell) == other, "기존 유닛 유지")
+	check(grid.grid_status.get(other_cell) == unit, "유닛 칸 드롭은 자리 교체 (옮긴 유닛)")
+	check(grid.grid_status.get(target) == other, "유닛 칸 드롭은 자리 교체 (있던 유닛)")
+	check(not other.is_held and not unit.is_held, "교체 후 둘 다 놓인 상태")
 
 	# 드래그 표시는 배경이 비칠 만큼 옅어야 한다
 	check(grid.highlight_valid_color.a <= 0.1, "드롭 가능 표시는 옅게")
@@ -270,9 +283,12 @@ func test_grid_rules() -> void:
 			if grid.is_cell_empty(Vector2i(x, y)):
 				grid.grid_status[Vector2i(x, y)] = filler
 	check(grid.find_spawn_cell(Vector2(640, 360)) == GridManager.NO_CELL, "빈 칸 없으면 NO_CELL")
+	for bench_cell in grid.get_bench_cells():
+		grid.grid_status[bench_cell] = filler
 	var gold_before := GameState.gold
-	check(not game.draw_unit(), "빈 칸 없으면 뽑기 실패")
+	check(not game.draw_unit(), "보관함이 차면 뽑기 실패")
 	check(GameState.gold == gold_before, "뽑기 실패 시 골드 유지")
+	check(game.hud.message_label.text == game.BENCH_FULL_TEXT, "보관함 가득 참 안내")
 	filler.free()
 	grid.grid_status.clear()
 	await end_game(game)
@@ -353,8 +369,8 @@ func test_merge_rules() -> void:
 	check(not grid.can_merge_at(other[1]), "다른 유닛은 조합 불가")
 	grid.drop_unit_at(other[1])
 	await wait_frames(1)
-	check(grid.grid_status.get(first[1]) == first[0], "다른 유닛에 놓으면 원위치")
-	check(grid.grid_status.get(other[1]) == other[0], "다른 유닛 유지")
+	check(grid.grid_status.get(other[1]) == first[0], "다른 유닛에 놓으면 자리 교체")
+	check(grid.grid_status.get(first[1]) == other[0], "있던 유닛은 옮긴 유닛 자리로")
 
 	# 골드가 모자라면 합치지 않고 이유를 알린다
 	var poor: Array = place_unit(game, c_units[2])
@@ -389,8 +405,8 @@ func test_merge_rules() -> void:
 	check(not grid.can_merge_at(s_second[1]), "S등급은 조합 불가")
 	grid.drop_unit_at(s_second[1])
 	await wait_frames(1)
-	check(grid.grid_status.get(s_first[1]) == s_first[0], "S등급을 겹치면 원위치")
-	check(grid.grid_status.get(s_second[1]) == s_second[0], "S등급 대상 유지")
+	check(grid.grid_status.get(s_second[1]) == s_first[0], "S등급끼리는 자리 교체")
+	check(grid.grid_status.get(s_first[1]) == s_second[0], "S등급 대상은 옮긴 유닛 자리로")
 	await end_game(game)
 
 func test_merge_removes_zone() -> void:
@@ -908,12 +924,15 @@ func test_ultimate_swap() -> void:
 	check(not get_tree().paused, "모두 끝나면 재개")
 	await end_game(game)
 
+func game_tracks() -> Array:
+	return GAME_SCENE.instantiate().BATTLE_TRACKS
+
 func test_sound_files() -> void:
 	for sfx_name in ["ui_click", "gacha", "reveal_c", "reveal_b", "reveal_a", "reveal_s", "merge",
 			"upgrade_success", "upgrade_fail", "shot", "enemy_die", "life_lost", "boss_warning",
-			"wave_start", "ultimate", "augment", "zone_place", "gameover", "clear"]:
+			"wave_start", "ultimate", "augment", "zone_place", "gameover", "clear", "firework"]:
 		check(ResourceLoader.exists(Sound.SFX_PATH % sfx_name), "효과음 파일 " + sfx_name)
-	for bgm_name in ["title", "lobby", "battle_nautolan", "battle_klaed", "battle_nairan", "boss", "final_boss"]:
+	for bgm_name in ["title", "lobby", "boss", "final_boss"] + game_tracks():
 		check(ResourceLoader.exists(Sound.BGM_PATH % bgm_name), "BGM 파일 " + bgm_name)
 
 func test_settings_saved() -> void:
@@ -1019,7 +1038,7 @@ func test_battle_feedback() -> void:
 
 func test_game_sounds() -> void:
 	var game := await start_game()
-	check(Sound.current_bgm == "battle_nautolan", "첫 세력 전투 BGM")
+	check(game.BATTLE_TRACKS.has(Sound.current_bgm), "전투 재생 목록 BGM")
 	game.draw_unit()
 	check(Sound.last_sfx.begins_with("reveal_"), "뽑기 등장 소리")
 	var manager: WaveManager = game.wave_manager
@@ -1031,11 +1050,7 @@ func test_game_sounds() -> void:
 	game.augments.choose(0)
 	game.grid.place_zone_at(Vector2i(3, 3))
 	game.augments.choose(0)
-	check(Sound.current_bgm == "battle_klaed", "보스 뒤 다음 세력 전투 BGM")
-	manager.state = WaveManager.State.WAITING
-	manager.wave = 20
-	manager.start_next_wave()
-	check(Sound.current_bgm == "battle_nairan", "세력이 바뀌면 전투 BGM도 바뀜")
+	check(game.BATTLE_TRACKS.has(Sound.current_bgm), "보스 뒤 재생 목록 복귀")
 	manager.state = WaveManager.State.WAITING
 	manager.wave = manager.total_waves - 1
 	manager.start_next_wave()
@@ -1097,6 +1112,265 @@ func test_setting_panel_on_top() -> void:
 		check(box.get_global_rect().encloses(control.get_global_rect()), "설정 항목이 상자 안 " + path)
 	title.queue_free()
 	await wait_frames(1)
+
+func test_swap_rules() -> void:
+	var game := await start_game()
+	var grid: GridManager = game.grid
+	var c_units := Catalog.units_of_grade(UnitData.Grade.C)
+	var a: UnitBase = game.spawn_unit(c_units[0], Vector2i(8, 5))
+	var b: UnitBase = game.spawn_unit(c_units[1], Vector2i(9, 5))
+	var bench_cell: Vector2i = grid.get_bench_cells()[0]
+	var benched: UnitBase = game.spawn_unit(c_units[2], bench_cell)
+	var gold := GameState.gold
+
+	grid.pick_unit(Vector2i(8, 5), a.global_position)
+	grid.drop_unit_at(Vector2i(9, 5))
+	await wait_frames(20)
+	check(grid.grid_status[Vector2i(9, 5)] == a and grid.grid_status[Vector2i(8, 5)] == b, "격자끼리 자리 교체")
+	check(a.global_position == grid.cell_center(Vector2i(9, 5)), "옮긴 유닛이 새 칸 중앙으로")
+	check(b.global_position == grid.cell_center(Vector2i(8, 5)), "있던 유닛도 새 칸 중앙으로")
+	check(GameState.gold == gold, "자리 교체는 공짜")
+
+	# 보관함과 격자 사이도 바꾼다
+	grid.pick_unit(bench_cell, benched.global_position)
+	grid.drop_unit_at(Vector2i(9, 5))
+	check(grid.grid_status[Vector2i(9, 5)] == benched and not benched.is_benched, "보관함 유닛이 격자로")
+	check(grid.grid_status[bench_cell] == a and a.is_benched, "격자 유닛이 보관함으로")
+
+	# 경로 칸은 그대로 원위치, 자기 칸도 그대로
+	var path_cell: Vector2i = grid.blocked_cells.keys()[0]
+	grid.pick_unit(Vector2i(8, 5), b.global_position)
+	grid.drop_unit_at(path_cell)
+	check(grid.grid_status.get(Vector2i(8, 5)) == b, "경로 칸은 교체 없이 원위치")
+	grid.pick_unit(Vector2i(8, 5), b.global_position)
+	grid.drop_unit_at(Vector2i(8, 5))
+	check(grid.grid_status.get(Vector2i(8, 5)) == b, "제자리에 놓으면 그대로")
+	check(grid.grid_status.size() == 3, "유닛 수 유지")
+
+	# 같은 유닛은 교체보다 조합이 먼저다
+	var twin: UnitBase = game.spawn_unit(b.data, Vector2i(11, 5))
+	grid.pick_unit(Vector2i(11, 5), twin.global_position)
+	grid.drop_unit_at(Vector2i(8, 5))
+	await wait_frames(1)
+	check(grid.grid_status[Vector2i(8, 5)].data.grade == UnitData.Grade.B, "같은 유닛은 조합")
+
+	# 골드가 모자란 같은 유닛은 교체하지 않고 원위치
+	var poor_a: UnitBase = game.spawn_unit(c_units[3], Vector2i(12, 5))
+	var poor_b: UnitBase = game.spawn_unit(c_units[3], Vector2i(14, 5))
+	GameState.spend_gold(GameState.gold)
+	grid.pick_unit(Vector2i(12, 5), poor_a.global_position)
+	grid.drop_unit_at(Vector2i(14, 5))
+	check(grid.grid_status[Vector2i(12, 5)] == poor_a and grid.grid_status[Vector2i(14, 5)] == poor_b, "조합 비용 부족이면 그대로")
+	await end_game(game)
+
+func test_swap_zone_units() -> void:
+	var game := await start_game()
+	var grid: GridManager = game.grid
+	var zone_data := first_unit(UnitData.AttackType.ZONE)
+	var shot_data := first_unit(UnitData.AttackType.SHOT)
+	var zone_unit: UnitBase = game.spawn_unit(zone_data, Vector2i(3, 5))
+	var shot_unit: UnitBase = game.spawn_unit(shot_data, Vector2i(15, 5))
+	var before := zone_unit._zone.global_position
+	grid.pick_unit(Vector2i(15, 5), shot_unit.global_position)
+	grid.drop_unit_at(Vector2i(3, 5))
+	await wait_frames(20)
+	check(zone_problem(game, zone_unit) == "", "교체된 장판 유닛도 불꽃 유지")
+	check(zone_unit._zone.global_position != before, "교체되면 장판 위치도 새 칸 기준")
+	check(zone_unit._zone.global_position.distance_to(zone_unit.global_position) <= zone_unit.get_attack_range() + 1.0, "장판이 새 칸의 사거리 안")
+	await end_game(game)
+
+func test_bench_draw() -> void:
+	var game := await start_game()
+	var grid: GridManager = game.grid
+	check(game.draw_unit(), "뽑기 성공")
+	var bench: Array[Vector2i] = grid.get_bench_cells()
+	check(bench.size() == 8, "보관함 8칸")
+	var unit: UnitBase = grid.grid_status.get(bench[0])
+	check(unit != null and unit.is_benched, "뽑은 유닛은 보관함으로")
+	check(unit.global_position == grid.cell_center(bench[0]), "보관함 칸 중앙에 놓임")
+	check(grid.grid_status.size() == 1, "격자에는 없음")
+	check(unit.global_position.y > 640.0, "보관함은 하단 바 자리")
+	check(game.hud.get_node("BottomBar").mouse_filter == Control.MOUSE_FILTER_IGNORE, "보관함 자리는 마우스를 막지 않음")
+	var button_rects: Array[Rect2] = []
+	for path in ["BottomBar/UltimateButton", "BottomBar/OddsButton"]:
+		button_rects.append(game.hud.get_node(path).get_global_rect())
+	check(not button_rects[0].has_point(grid.cell_center(bench[0]) - Vector2(32, 0)), "보관함이 왼쪽 버튼과 겹치지 않음")
+	check(not button_rects[1].has_point(grid.cell_center(bench[7]) + Vector2(31, 0)), "보관함이 오른쪽 버튼과 겹치지 않음")
+	await end_game(game)
+
+func test_bench_unit_idle() -> void:
+	var game := await start_game()
+	var grid: GridManager = game.grid
+	var bench_cell: Vector2i = grid.get_bench_cells()[0]
+	var shot: UnitBase = game.spawn_unit(first_unit(UnitData.AttackType.SHOT), bench_cell)
+	var zone_data := first_unit(UnitData.AttackType.ZONE)
+	var zone_cell: Vector2i = grid.get_bench_cells()[1]
+	var zone_unit: UnitBase = game.spawn_unit(zone_data, zone_cell)
+	check(game.zones.get_child_count() == 0, "보관함에서는 장판 없음")
+
+	# 사거리 안에 적이 있어도 쏘지 않는다
+	var enemy := spawn_enemy(game, "bomber", 100.0)
+	enemy.distance = game.paths[0].curve.get_closest_offset(game.paths[0].to_local(shot.global_position))
+	await wait_frames(90)
+	check(game.effects.get_child_count() == 0 and enemy.hp == enemy.max_hp, "보관함 유닛은 공격 안 함")
+
+	# 격자에 놓으면 싸우고, 다시 넣으면 멈춘다
+	grid.pick_unit(zone_cell, zone_unit.global_position)
+	grid.drop_unit_at(Vector2i(0, 2))
+	check(not zone_unit.is_benched, "격자에 놓으면 보관 해제")
+	check(zone_problem(game, zone_unit) == "", "격자에 놓으면 불꽃 표시")
+	grid.pick_unit(Vector2i(0, 2), zone_unit.global_position)
+	grid.drop_unit_at(zone_cell)
+	check(zone_unit.is_benched and not zone_unit._zone.visible, "보관함에 넣으면 불꽃 숨김")
+	await end_game(game)
+
+func test_bench_full_then_freed() -> void:
+	var game := await start_game()
+	var grid: GridManager = game.grid
+	GameState.add_gold(1000)
+	for i in GridManager.BENCH_SIZE:
+		check(game.draw_unit(), "보관함에 뽑기 %d" % i)
+	check(grid.find_bench_slot() == GridManager.NO_CELL, "보관함 가득 참")
+	var gold := GameState.gold
+	check(not game.draw_unit(), "가득 차면 뽑기 불가")
+	check(GameState.gold == gold, "가득 차면 골드 유지")
+	var first_slot: Vector2i = grid.get_bench_cells()[0]
+	grid.pick_unit(first_slot, grid.grid_status[first_slot].global_position)
+	grid.drop_unit_at(Vector2i(0, 2))
+	check(game.draw_unit(), "한 칸 비우면 다시 뽑기 가능")
+	check(grid.grid_status.has(first_slot), "빈 칸부터 채움")
+	await end_game(game)
+
+func test_bench_tooltip_and_panel() -> void:
+	var game := await start_game()
+	var grid: GridManager = game.grid
+	var hud: CanvasLayer = game.hud
+	game.draw_unit()
+	var cell: Vector2i = grid.get_bench_cells()[0]
+	var unit: UnitBase = grid.grid_status[cell]
+	grid._pointer = grid.cell_center(cell)
+	await wait_frames(3)
+	check(hud.unit_tooltip.visible and hud.unit_tooltip_label.text.contains("보관 중"), "보관함 유닛 설명")
+	check(Rect2(hud.TOOLTIP_AREA).encloses(hud.unit_tooltip.get_global_rect()), "보관함 설명이 화면 안")
+
+	game.select_unit(unit)
+	await wait_frames(3)
+	check(hud.unit_panel.visible and hud.upgrade_button.is_visible_in_tree(), "선택하면 강화 창 표시")
+	check(hud.unit_panel.get_global_rect().end.y <= 640.0, "강화 창이 하단 바 위에 표시")
+	check(not hud.unit_panel.get_global_rect().has_point(unit.global_position), "강화 창이 행성을 가리지 않음")
+	game.upgrade_unit(unit, 0.0)
+	check(unit.stars == 2, "보관함에서도 강화 가능")
+
+	# 맨 윗줄 유닛은 강화 창이 아래로 내려온다
+	var top: UnitBase = game.spawn_unit(unit.data, grid.find_spawn_cell(Vector2(640, 96)))
+	game.select_unit(top)
+	await wait_frames(3)
+	check(hud.unit_panel.get_global_rect().position.y >= 64.0, "강화 창이 상단 바에 걸리지 않음")
+	game.select_unit(null)
+	check(not hud.unit_panel.visible, "선택 해제하면 강화 창 숨김")
+	await end_game(game)
+
+func grade_unit_reveal(game: Node2D, grade: UnitData.Grade) -> UnitBase:
+	var slot: Vector2i = game.grid.find_bench_slot()
+	var unit: UnitBase = game.spawn_unit(Catalog.units_of_grade(grade)[0], slot)
+	game._start_reveal(unit)
+	return unit
+
+func test_reveal_stage() -> void:
+	var game := await start_game()
+	var reveal: GachaReveal = game.hud.gacha_reveal
+	game.instant_reveal = false
+	var unit := grade_unit_reveal(game, UnitData.Grade.A)
+	check(reveal.is_playing(), "뽑기 연출 시작")
+	check(not unit.visible, "연출 중 보관함 유닛 숨김")
+	check(reveal.name_label.text.contains(unit.data.id) and reveal.name_label.text.contains("A등급"), "연출에 등급과 이름")
+	await wait_frames(30)
+	check(reveal.planet.position == GachaReveal.STAGE_CENTER, "행성이 화면 가운데")
+	check(reveal.planet.scale.x > 1.5, "행성이 크게 표시")
+	check(reveal.dim.modulate.a > 0.2, "A등급은 화면이 어두워짐")
+	var finished := await wait_until(func(): return not reveal.is_playing(), 60 * 4)
+	check(finished, "연출 종료")
+	check(unit.visible, "연출 후 보관함에 나타남")
+	check(reveal.dim.modulate.a == 0.0, "어두움 해제")
+	check(not reveal.planet.visible, "연출 행성 숨김")
+	check(reveal.mouse_filter == Control.MOUSE_FILTER_IGNORE, "연출은 마우스를 막지 않음")
+	await end_game(game)
+
+func count_fireworks(reveal: GachaReveal) -> int:
+	return reveal.get_children().filter(func(node): return node is Firework).size()
+
+func test_reveal_fireworks_by_grade() -> void:
+	var game := await start_game()
+	var reveal: GachaReveal = game.hud.gacha_reveal
+	game.instant_reveal = false
+	var peaks := {}
+	for grade in [UnitData.Grade.C, UnitData.Grade.B, UnitData.Grade.A, UnitData.Grade.S]:
+		grade_unit_reveal(game, grade)
+		var shells := 0
+		var seen := {}
+		while reveal.is_playing():
+			for node in reveal.get_children():
+				if node is Firework:
+					seen[node] = true
+			shells = seen.size()
+			await get_tree().process_frame
+		peaks[grade] = shells
+		await wait_frames(70)
+		check(count_fireworks(reveal) == 0, "폭죽은 끝나면 사라짐 %s" % UnitData.GRADE_NAMES[grade])
+	check(peaks[UnitData.Grade.C] >= 1, "C등급도 폭죽")
+	check(peaks[UnitData.Grade.C] < peaks[UnitData.Grade.A] and peaks[UnitData.Grade.A] < peaks[UnitData.Grade.S], "등급이 높을수록 폭죽이 많음 %s" % str(peaks))
+	check(peaks[UnitData.Grade.S] == GachaReveal.SHELL_COUNTS[UnitData.Grade.S], "S등급 폭죽 수")
+	await end_game(game)
+
+func test_reveal_waits_for_offer() -> void:
+	var game := await start_game()
+	var augments: AugmentManager = game.augments
+	var reveal: GachaReveal = game.hud.gacha_reveal
+	game.instant_reveal = false
+	GameState.add_gold(1000)
+	augments.draws_until_offer = 1
+	game.draw_unit()
+	check(reveal.is_playing() and not augments.is_busy(), "연출이 끝나기 전에는 증강이 안 나옴")
+	var offered := await wait_until(func(): return augments.is_busy(), 60 * 3)
+	check(offered, "연출이 끝나면 증강")
+	close_offer(game)
+	await end_game(game)
+
+func test_reveal_skip_on_next_draw() -> void:
+	var game := await start_game()
+	var reveal: GachaReveal = game.hud.gacha_reveal
+	game.instant_reveal = false
+	GameState.add_gold(1000)
+	game.draw_unit()
+	var first: UnitBase = game.grid.grid_status[game.grid.get_bench_cells()[0]]
+	game.draw_unit()
+	check(first.visible, "다음 뽑기를 누르면 앞 유닛이 바로 나타남")
+	check(reveal.is_playing(), "새 연출 시작")
+	reveal.skip()
+	check(not reveal.is_playing(), "연출 건너뛰기")
+	await end_game(game)
+
+func test_bgm_playlist() -> void:
+	var game := await start_game()
+	var tracks: Array = game.BATTLE_TRACKS
+	check(tracks.size() >= 6, "전투곡 6곡 이상")
+	var heard: Array[String] = []
+	for i in tracks.size():
+		heard.append(Sound.current_bgm)
+		Sound.next_in_playlist()
+	var unique := {}
+	for name in heard:
+		unique[name] = true
+	check(unique.size() == tracks.size(), "재생 목록을 돌면 모든 곡이 나옴")
+	check(Sound.current_bgm == heard[0], "끝나면 처음부터 다시")
+	game.wave_manager.wave = 9
+	game.wave_manager.start_next_wave()
+	check(Sound.current_bgm == "boss", "보스전은 보스곡")
+	game.wave_manager.state = WaveManager.State.PREP
+	var before_boss_next: String = tracks[(tracks.find(heard[0]) + 1) % tracks.size()]
+	game._on_wave_cleared(9)
+	check(Sound.current_bgm == before_boss_next, "보스전 뒤에는 이어서 다음 곡")
+	await end_game(game)
 
 func test_lobby_detail() -> void:
 	var setup: Control = load("res://scenes/lobby/playsetup.tscn").instantiate()
@@ -1573,7 +1847,7 @@ func test_held_unit_does_not_attack() -> void:
 
 # 장판 유닛이 놓인 동안에는 언제나 화면 안 경로 위에 불꽃이 재생되어야 한다.
 func zone_problem(game: Node2D, unit: UnitBase) -> String:
-	if unit.data.attack_type != UnitData.AttackType.ZONE or unit.is_held:
+	if unit.data.attack_type != UnitData.AttackType.ZONE or unit.is_held or unit.is_benched:
 		return ""
 	var zone: ZoneField = unit._zone
 	if zone == null or not is_instance_valid(zone):

@@ -90,6 +90,12 @@ def build_sfx():
         tone(roll, i * 0.045, 0.05, freq, "square", 0.22)
     tone(roll, 0.27, 0.22, 1568, "sine", 0.3)
     save("sfx/gacha", roll)
+    crackle = []
+    tone(crackle, 0.0, 0.1, 500, "sine", 0.3, end_freq=120)
+    noise(crackle, 0.03, 0.3, 0.3, seed=8, step=2)
+    for i in range(8):
+        noise(crackle, 0.1 + i * 0.03, 0.02, 0.18, seed=30 + i)
+    save("sfx/firework", crackle)
     save("sfx/reveal_c", arpeggio([523, 659], 0.05))
     save("sfx/reveal_b", arpeggio([523, 659, 784], 0.06))
     save("sfx/reveal_a", arpeggio([523, 659, 784, 1047], 0.07, "pulse", 0.35))
@@ -696,8 +702,79 @@ def track_final_boss():
     track.finish("final_boss", duck_depth=0.5)
 
 
+def track_drift():
+    """표류: 전투 사이 숨 고르는 곡. 느슨한 베이스와 종소리 선율."""
+    track = Track(112, 24)
+    chords = (["Gm7", "Cm7", "Ebmaj7", "D7"] * 6)
+    beat_pattern(track, 24, kick=(0, 1.75, 2.5), snare=(1, 3), hat=(0.5, 1.5, 2.25, 2.5, 3.5), intro_bars=2)
+    for index, chord in enumerate(chords):
+        start = index * 4
+        root = chord_notes(chord, 2)[0]
+        track.pad(start, 4.2, chord_notes(chord, 3), 0.08, (600.0, 1200.0), 0.5)
+        for position, length, shift in ((0, 0.7, 0), (0.75, 0.2, 12), (1.75, 0.7, 0), (2.5, 0.45, 7), (3, 0.9, 0)):
+            track.bass(start + position, length, root - 12 + shift, 0.3, 620.0)
+        arpeggio_bar(track, start, chord, [0, 2, 3, 2, 1, 3, 2, 3], 0.5, 0.06, 5, 3000.0)
+    lead = [("G5", 1), ("Bb5", 0.5), ("C6", 0.5), ("D6", 2), ("C6", 1), ("Bb5", 1), ("G5", 2),
+            ("Eb6", 1.5), ("D6", 0.5), ("Bb5", 2), ("A5", 1), ("F#5", 1), ("D5", 2),
+            ("G5", 1), ("D6", 1), ("C6", 0.5), ("Bb5", 0.5), ("A5", 1), ("Bb5", 1), ("C6", 1), ("Eb6", 2),
+            ("G6", 1), ("F6", 0.5), ("Eb6", 0.5), ("D6", 2), ("A5", 1), ("C6", 1), ("D6", 2)]
+    track.melody(16, lead, volume=0.1, kind="soft", cutoff=3000.0, send=0.6)
+    track.melody(48, lead, 1, volume=0.08, kind="soft", cutoff=3400.0, send=0.7)
+    track.gacha_motif(14, "Gm7", 0.11, 0.25)
+    track.gacha_motif(78, "Gm7", 0.11, 0.25)
+    track.finish("battle_drift", delay_beats=0.75, duck_depth=0.4)
+
+
+def track_storm():
+    """폭풍: 끊어 치는 브레이크비트 위로 함포가 오간다."""
+    track = Track(136, 24)
+    chords = (["Bm", "G", "D", "A"] * 6)
+    beat_pattern(track, 24, kick=(0, 1.75, 2.5), snare=(1, 3, 3.75), hat=(0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5), intro_bars=2)
+    for index, chord in enumerate(chords):
+        start = index * 4
+        root = chord_notes(chord, 2)[0]
+        track.pad(start, 4.2, chord_notes(chord, 4), 0.07, (800.0, 1500.0), 0.35)
+        for position in (0, 0.75, 1.5, 2.25, 3, 3.5):
+            track.bass(start + position, 0.5, root - 12, 0.26, 640.0)
+        arpeggio_bar(track, start, chord, [0, 1, 2, 3, 2, 1, 0, 1, 2, 1, 2, 3, 2, 1, 2, 1], 0.25, 0.07, 4, 3200.0)
+    lead = [("F#5", 0.75), ("B5", 0.75), ("D6", 0.5), ("C#6", 1), ("A5", 1), ("B5", 0.75), ("G5", 0.75), ("E5", 0.5), ("F#5", 2),
+            ("A5", 0.75), ("D6", 0.75), ("F#6", 0.5), ("E6", 1), ("D6", 1), ("C#6", 1), ("A5", 1), ("E6", 2)]
+    for start_bar in (8, 12, 16, 20):
+        track.melody(start_bar * 4, lead, 1 if start_bar >= 16 else 0, volume=0.12, kind="saw", cutoff=3000.0)
+    track.gacha_motif(30, "Bm", 0.11, 0.25)
+    track.riser(28, 4)
+    track.riser(60, 4)
+    for bar in (3, 9, 15, 21):
+        track.laser(bar * 4 + 1.5, 0.05, -0.6)
+        track.laser(bar * 4 + 2, 0.05, 0.6)
+        track.laser(bar * 4 + 3.5, 0.05, 0.2)
+    track.finish("battle_storm", delay_beats=0.75, duck_depth=0.5)
+
+
+def track_nova():
+    """초신성: 장조로 올라가는 희망의 곡. S등급을 뽑았을 때의 기분."""
+    track = Track(120, 24)
+    chords = (["E", "B", "C#m", "A"] * 6)
+    beat_pattern(track, 24, kick=(0, 1, 2, 3), snare=(1, 3), hat=(0.5, 1.5, 2.5, 3.5), intro_bars=2)
+    for index, chord in enumerate(chords):
+        start = index * 4
+        root = chord_notes(chord, 2)[0]
+        track.pad(start, 4.2, chord_notes(chord, 4), 0.085, (900.0, 1800.0), 0.45)
+        for step in range(8):
+            track.bass(start + step / 2.0, 0.42, root - 12 + (7 if step % 4 == 2 else 0), 0.26, 680.0)
+        arpeggio_bar(track, start, chord, [0, 1, 2, 1, 3, 2, 1, 2], 0.5, 0.075, 5, 3600.0)
+    lead = [("B5", 1), ("G#5", 0.5), ("B5", 0.5), ("E6", 2), ("D#6", 1), ("B5", 1), ("F#5", 2),
+            ("G#5", 1), ("C#6", 1), ("E6", 1), ("C#6", 1), ("A5", 1), ("B5", 1), ("C#6", 2)]
+    for start_bar in (4, 8, 12, 16, 20):
+        track.melody(start_bar * 4, lead, 1 if start_bar >= 12 else 0, volume=0.12, cutoff=3400.0)
+    track.gacha_motif(0, "E", 0.13, 0.5)
+    track.gacha_motif(62, "Eadd9", 0.13, 0.25)
+    track.finish("battle_nova", duck_depth=0.5)
+
+
 TRACKS = {"title": track_title, "lobby": track_lobby, "battle_nautolan": track_nautolan, "battle_klaed": track_klaed,
-          "battle_nairan": track_nairan, "boss": track_boss, "final_boss": track_final_boss}
+          "battle_nairan": track_nairan, "battle_drift": track_drift, "battle_storm": track_storm, "battle_nova": track_nova,
+          "boss": track_boss, "final_boss": track_final_boss}
 
 
 def run_track(name):

@@ -24,6 +24,13 @@ class BuffZone:
 @export var click_slop: float = 8.0 # 이 거리 안에서 놓으면 드래그가 아니라 클릭으로 본다 (px)
 
 const NO_CELL := Vector2i(-1, -1)
+const BENCH_SIZE := 8 # 보관함 칸 수
+const BENCH_FIRST_COLUMN := 6
+const BENCH_ROW := 9 # 격자 바로 아래, 하단 바 자리
+const BENCH_BAR_HEIGHT := 80.0
+const BENCH_BACK_COLOR := Color(0.03, 0.04, 0.1, 0.8)
+const BENCH_SLOT_COLOR := Color(1, 1, 1, 0.05)
+const BENCH_SLOT_BORDER_COLOR := Color(1, 1, 1, 0.16)
 const MAX_ZONE_STACK := 2 # 같은 능력치 구역은 이 수까지만 겹쳐 적용된다
 const ZONE_FILL_ALPHA := 0.08
 const ZONE_HIGHLIGHT_ALPHA := 0.3 # 유닛을 들고 있거나 구역을 놓는 중일 때
@@ -82,6 +89,8 @@ func _ready() -> void:
 	queue_redraw()
 
 func _draw() -> void:
+	_draw_bench()
+
 	# 유닛을 들고 있으면 구역을 밝혀 어디에 놓을지 보여 줍니다 (시너지 하이라이팅)
 	var zone_alpha := ZONE_HIGHLIGHT_ALPHA if dragged_unit else ZONE_FILL_ALPHA
 	for zone in buff_zones:
@@ -107,6 +116,11 @@ func _draw() -> void:
 					_draw_cell(cell, highlight_valid_color)
 				elif can_merge_at(cell):
 					_draw_cell(cell, highlight_merge_color)
+		for cell in get_bench_cells():
+			if is_cell_empty(cell):
+				_draw_cell(cell, highlight_valid_color)
+			elif can_merge_at(cell):
+				_draw_cell(cell, highlight_merge_color)
 		_draw_hovered_cell()
 
 	# 세로선 그리기 (Vertical lines)
@@ -137,16 +151,24 @@ func _draw_cell(cell_pos: Vector2i, color: Color) -> void:
 
 # 마우스가 있는 칸만 또렷하게 표시합니다. 색으로 놓을 수 있는지 알려 줍니다.
 func _draw_hovered_cell() -> void:
-	if not is_cell_in_bounds(_hovered_cell):
+	if not is_cell_usable(_hovered_cell):
 		return
 	var hue := highlight_invalid_color
-	if is_cell_empty(_hovered_cell):
+	if is_cell_empty(_hovered_cell) or _is_swap_target(_hovered_cell):
 		hue = highlight_valid_color
 	elif can_merge_at(_hovered_cell):
 		hue = highlight_merge_color
 	var area := _cell_area(_hovered_cell)
 	draw_rect(area, Color(hue, HOVER_FILL_ALPHA))
 	draw_rect(area, Color(hue, HOVER_BORDER_ALPHA), false, HOVER_BORDER_WIDTH)
+
+# 보관함은 하단 바 가운데에 비어 있는 자리에 격자가 직접 그립니다. HUD는 유닛보다 위에 있어 유닛을 가리기 때문입니다.
+func _draw_bench() -> void:
+	var left_top := Vector2(BENCH_FIRST_COLUMN, BENCH_ROW) * Vector2(tile_size)
+	draw_rect(Rect2(left_top, Vector2(BENCH_SIZE * tile_size.x, BENCH_BAR_HEIGHT)), BENCH_BACK_COLOR)
+	for cell in get_bench_cells():
+		draw_rect(_cell_area(cell), BENCH_SLOT_COLOR)
+		draw_rect(_cell_area(cell), BENCH_SLOT_BORDER_COLOR, false, 1.0)
 
 func _cell_area(cell_pos: Vector2i) -> Rect2:
 	return Rect2(Vector2(cell_pos * tile_size), Vector2(tile_size)).grow(-CELL_INSET)
@@ -167,10 +189,30 @@ func get_world_rect() -> Rect2:
 func is_cell_in_bounds(cell_pos: Vector2i) -> bool:
 	return cell_pos.x >= 0 and cell_pos.y >= 0 and cell_pos.x < grid_size.x and cell_pos.y < grid_size.y
 
+func is_bench_cell(cell_pos: Vector2i) -> bool:
+	return cell_pos.y == BENCH_ROW and cell_pos.x >= BENCH_FIRST_COLUMN and cell_pos.x < BENCH_FIRST_COLUMN + BENCH_SIZE
+
+# 유닛을 놓을 수 있는 자리인지 봅니다. 전투 격자와 보관함이 해당합니다.
+func is_cell_usable(cell_pos: Vector2i) -> bool:
+	return is_cell_in_bounds(cell_pos) or is_bench_cell(cell_pos)
+
+func get_bench_cells() -> Array[Vector2i]:
+	var cells: Array[Vector2i] = []
+	for i in BENCH_SIZE:
+		cells.append(Vector2i(BENCH_FIRST_COLUMN + i, BENCH_ROW))
+	return cells
+
+# 보관함의 첫 빈 칸. 가득 찼으면 NO_CELL.
+func find_bench_slot() -> Vector2i:
+	for cell in get_bench_cells():
+		if is_cell_empty(cell):
+			return cell
+	return NO_CELL
+
 # (유틸리티) 특정 격자 좌표가 비어있는지 확인.
 # 그리드 영역 안이고, 경로가 아니며, 유닛이 없는 칸인지 리턴합니다.
 func is_cell_empty(cell_pos: Vector2i) -> bool:
-	if not is_cell_in_bounds(cell_pos):
+	if not is_cell_usable(cell_pos):
 		return false
 	return not blocked_cells.has(cell_pos) and not grid_status.has(cell_pos)
 
@@ -180,6 +222,10 @@ func can_merge_at(cell_pos: Vector2i) -> bool:
 
 func _is_merge_target(cell_pos: Vector2i) -> bool:
 	return dragged_unit != null and grid_status.has(cell_pos) and dragged_unit.can_merge_with(grid_status[cell_pos])
+
+# 같은 유닛이 아니면 자리를 바꿉니다.
+func _is_swap_target(cell_pos: Vector2i) -> bool:
+	return dragged_unit != null and grid_status.has(cell_pos) and not _is_merge_target(cell_pos)
 
 # 경로가 지나는 칸을 배치 금지로 등록합니다.
 func block_path(path: Path2D) -> void:
@@ -392,14 +438,22 @@ func drop_unit_at(target_grid_pos: Vector2i) -> void:
 	if _is_merge_target(target_grid_pos):
 		merge_unaffordable.emit(dragged_unit.data.merge_cost())
 
-	# 겹침/비정상이면 원래 있던 자리로 복귀
+	# 다른 유닛 위에 놓으면 자리를 바꾸고, 그 밖에 놓을 수 없는 곳이면 원래 자리로 복귀
 	var final_cell = target_grid_pos if is_cell_empty(target_grid_pos) else original_grid_pos
-	register_unit(final_cell, dragged_unit)
-	_tween_unit(dragged_unit, cell_center(final_cell))
-	dragged_unit.on_placed(cell_center(final_cell))
+	if _is_swap_target(target_grid_pos):
+		var other: UnitBase = grid_status[target_grid_pos]
+		unregister_unit(target_grid_pos)
+		_settle_unit(other, original_grid_pos)
+		final_cell = target_grid_pos
+	_settle_unit(dragged_unit, final_cell)
 
 	dragged_unit.z_index = 0
 	dragged_unit = null # 손에서 놓음
+
+func _settle_unit(unit: UnitBase, cell_pos: Vector2i) -> void:
+	register_unit(cell_pos, unit)
+	_tween_unit(unit, cell_center(cell_pos))
+	unit.on_placed(cell_center(cell_pos))
 
 # 부드러운 스냅 애니메이션 서브루틴
 func _tween_unit(unit: Node2D, target_pos: Vector2) -> void:

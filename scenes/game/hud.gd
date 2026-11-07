@@ -13,6 +13,7 @@ const SPEEDS: Array[float] = [1.0, 2.0, 3.0]
 const RESULT_FADE_TIME := 0.5
 const TOOLTIP_GAP := 40.0 # 유닛 중심에서 설명 창까지의 거리 (px)
 const TOOLTIP_AREA := Rect2(8, 68, 1264, 568) # 설명 창이 들어갈 영역
+const UNIT_PANEL_GAP := 38.0 # 선택한 유닛 중심에서 강화 창까지의 거리 (px)
 const BOSS_COLOR := Color(1, 0.4, 0.3)
 const SUCCESS_COLOR := Color(1.0, 0.85, 0.35)
 const FAILURE_COLOR := Color(0.6, 0.65, 0.8)
@@ -34,8 +35,10 @@ var _message_tween: Tween = null
 @onready var status_label: Label = $TopBar/StatusLabel
 @onready var wave_button: Button = $BottomBar/WaveButton
 @onready var gacha_button: Button = $BottomBar/GachaButton
-@onready var unit_info_label: Label = $BottomBar/UnitInfoLabel
-@onready var upgrade_button: Button = $BottomBar/UpgradeButton
+@onready var unit_panel: PanelContainer = $UnitPanel
+@onready var unit_info_label: Label = $UnitPanel/Box/UnitInfoLabel
+@onready var upgrade_button: Button = $UnitPanel/Box/UpgradeButton
+@onready var gacha_reveal: GachaReveal = $GachaReveal
 @onready var message_label: Label = $MessageLabel
 @onready var flash: ColorRect = $Flash
 @onready var odds_panel: ColorRect = $OddsPanel
@@ -64,7 +67,7 @@ func setup(wave_manager: WaveManager, augments: AugmentManager, ultimates: Ultim
 	Sound.bind_buttons(self)
 	pause_menu.title_pressed.connect(title_requested.emit)
 	pause_menu.visibility_changed.connect(unit_tooltip.hide)
-	gacha_button.tooltip_text = "골드 %d로 행성 1개를 뽑습니다.\n뽑기 %d회마다 증강 카드가 나옵니다." % [
+	gacha_button.tooltip_text = "골드 %d로 행성 1개를 뽑아 보관함에 넣습니다.\n뽑기 %d회마다 증강 카드가 나옵니다." % [
 		GameState.GACHA_COST, AugmentManager.DRAWS_PER_OFFER,
 	]
 	upgrade_button.tooltip_text = "선택한 행성을 강화합니다. 공격력이 2성 %d%%, 3성 %d%%가 됩니다.\n실패해도 골드는 돌아오지 않습니다." % [
@@ -87,6 +90,7 @@ func _process(_delta: float) -> void:
 	gacha_button.text = "GACHA %dG\n증강까지 %d회" % [GameState.GACHA_COST, _augments.draws_until_offer]
 	_refresh_ultimate_button()
 	_refresh_unit_tooltip()
+	_place_unit_panel()
 	match _wave_manager.state:
 		WaveManager.State.WAITING:
 			status_label.text = "준비되면 WAVE START"
@@ -104,6 +108,7 @@ func _process(_delta: float) -> void:
 # 선택된 유닛 정보와 강화 버튼을 표시한다. null이면 숨긴다.
 func show_unit(unit: UnitBase) -> void:
 	_selected_unit = unit
+	unit_panel.visible = unit != null
 	unit_info_label.visible = unit != null
 	upgrade_button.visible = unit != null
 	_refresh_upgrade_button()
@@ -149,7 +154,9 @@ func _build_unit_tooltip(unit: UnitBase) -> String:
 	var bonuses := _zone_bonus_texts(unit)
 	if not bonuses.is_empty():
 		lines.append("구역 효과: " + ", ".join(bonuses))
-	if not unit.reaches_path():
+	if unit.is_benched:
+		lines.append("보관 중: 격자에 놓아야 공격합니다")
+	elif not unit.reaches_path():
 		lines.append("사거리 밖: 가장 가까운 길에 장판을 깝니다" if is_zone else "사거리 밖: 길에 닿지 않아 공격하지 못합니다")
 	lines.append("")
 	lines.append(data.description)
@@ -186,6 +193,18 @@ func show_placement_hint(augment: AugmentData) -> void:
 func hide_augment_ui() -> void:
 	augment_panel.hide()
 	placement_label.hide()
+
+# 선택한 유닛 위쪽에, 공간이 없으면 아래쪽에 강화 창을 둔다.
+func _place_unit_panel() -> void:
+	if _selected_unit == null or not is_instance_valid(_selected_unit):
+		return
+	var center := _selected_unit.global_position
+	var size := unit_panel.size
+	var spot := center + Vector2(-size.x / 2.0, -UNIT_PANEL_GAP - size.y)
+	if spot.y < TOOLTIP_AREA.position.y:
+		spot.y = center.y + UNIT_PANEL_GAP
+	spot.x = clampf(spot.x, TOOLTIP_AREA.position.x, TOOLTIP_AREA.end.x - size.x)
+	unit_panel.position = spot
 
 func show_merge_unaffordable(cost: int) -> void:
 	show_message("조합 골드 부족 (%dG)" % cost, FAILURE_COLOR)
@@ -266,6 +285,7 @@ func _build_odds_text() -> String:
 			costs.append("%s %dG" % [UnitData.GRADE_NAMES[grade], UnitData.MERGE_COST[grade]])
 	lines.append("조합 비용: " + " / ".join(costs))
 	lines.append("")
+	lines.append("보관함의 행성은 격자에 놓아야 공격한다")
 	lines.append("증강: 뽑기 %d회마다, 보스 처치마다" % AugmentManager.DRAWS_PER_OFFER)
 	lines.append("같은 능력치 구역은 %d개까지 겹쳐 적용" % GridManager.MAX_ZONE_STACK)
 	return "\n".join(lines)

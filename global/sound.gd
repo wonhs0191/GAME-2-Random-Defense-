@@ -10,7 +10,7 @@ const PLAYER_COUNT := 16
 const BGM_FADE_TIME := 1.2
 
 # 자주 나는 소리는 간격을 둔다 (밀리초). 한꺼번에 울리면 소리가 뭉개진다.
-const MIN_REPEAT_MS := {"shot": 70, "enemy_die": 50}
+const MIN_REPEAT_MS := {"shot": 70, "enemy_die": 50, "firework": 60}
 
 var current_bgm: String = ""
 var last_sfx: String = ""
@@ -20,6 +20,8 @@ var _players: Array[AudioStreamPlayer] = []
 var _bgm_players: Array[AudioStreamPlayer] = []
 var _active_bgm: int = 0
 var _fade_tween: Tween = null
+var _playlist: Array = []
+var _playlist_index: int = -1
 var _next_player: int = 0
 var _last_played_ms: Dictionary = {}
 
@@ -59,7 +61,30 @@ func play(sfx_name: String) -> void:
 	player.stream = _get_stream(SFX_PATH % sfx_name)
 	player.play()
 
+# 한 곡을 반복한다.
 func play_bgm(bgm_name: String) -> void:
+	_playlist = []
+	_switch_bgm(bgm_name)
+
+# 곡이 끝날 때마다 다음 곡으로 넘어간다. 보스전 뒤에 다시 부르면 이어서 다음 곡부터 나온다.
+func play_playlist(bgm_names: Array) -> void:
+	if _playlist == bgm_names:
+		return
+	_playlist = bgm_names
+	next_in_playlist()
+
+func next_in_playlist() -> void:
+	_playlist_index = (_playlist_index + 1) % _playlist.size()
+	_switch_bgm(_playlist[_playlist_index])
+
+func _process(_delta: float) -> void:
+	if _playlist.is_empty():
+		return
+	var player := _bgm_players[_active_bgm]
+	if player.playing and player.get_playback_position() >= player.stream.get_length() - BGM_FADE_TIME:
+		next_in_playlist()
+
+func _switch_bgm(bgm_name: String) -> void:
 	if bgm_name == current_bgm:
 		return
 	current_bgm = bgm_name
@@ -76,6 +101,7 @@ func play_bgm(bgm_name: String) -> void:
 
 func stop_bgm() -> void:
 	current_bgm = ""
+	_playlist = []
 	_fade(null, _bgm_players[_active_bgm])
 
 func _fade(fading_in: AudioStreamPlayer, fading_out: AudioStreamPlayer) -> void:
