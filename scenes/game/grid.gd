@@ -163,6 +163,10 @@ func world_to_grid(world_pos: Vector2) -> Vector2i:
 func cell_center(cell_pos: Vector2i) -> Vector2:
 	return to_global(Vector2(cell_pos) * Vector2(tile_size) + Vector2(tile_size) / 2.0)
 
+# 격자가 차지하는 화면 영역.
+func get_world_rect() -> Rect2:
+	return Rect2(global_position, Vector2(grid_size * tile_size))
+
 func is_cell_in_bounds(cell_pos: Vector2i) -> bool:
 	return cell_pos.x >= 0 and cell_pos.y >= 0 and cell_pos.x < grid_size.x and cell_pos.y < grid_size.y
 

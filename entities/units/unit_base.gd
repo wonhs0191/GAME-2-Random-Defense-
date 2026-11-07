@@ -32,7 +32,6 @@ var _game: Node2D
 var _frame_time: float = 0.0
 var _cooldown: float = 0.0
 var _zone: ZoneField = null
-var _zone_in_range: bool = false
 var _placed_position: Vector2 = Vector2.INF
 
 @onready var sprite: Sprite2D = $Sprite
@@ -97,6 +96,15 @@ func get_attack_interval() -> float:
 func get_attack_range(at: Vector2 = global_position) -> float:
 	return data.attack_range * (1.0 + _zone_bonus(at, AugmentData.Stat.RANGE))
 
+# 사거리 안에 적이 지나는 길이 있는지 본다.
+func reaches_path() -> bool:
+	var attack_range := get_attack_range()
+	for path: Path2D in _game.paths:
+		var nearest := path.to_global(path.curve.get_closest_point(path.to_local(global_position)))
+		if nearest.distance_to(global_position) <= attack_range:
+			return true
+	return false
+
 # 현재 칸의 구역 효과.
 func get_zone_bonus(stat: AugmentData.Stat) -> float:
 	return _zone_bonus(global_position, stat)
@@ -139,7 +147,7 @@ func on_placed(world_position: Vector2) -> void:
 		# 제자리에 다시 놓으면 장판 위치를 유지한다
 		if world_position != _placed_position:
 			_place_zone(world_position)
-		_zone.visible = _zone_in_range
+		_zone.show()
 	_placed_position = world_position
 
 # 사거리 안의 적 중 가장 앞서 간 적을 쏜다.
@@ -164,7 +172,7 @@ func _find_target(attack_range: float) -> EnemyBase:
 
 # 장판 안의 모든 적에게 피해를 준다.
 func _burn_zone() -> bool:
-	if _zone == null or not _zone.visible:
+	if not _zone.visible:
 		return false
 	var hit := false
 	for enemy: EnemyBase in get_tree().get_nodes_in_group("enemy"):
@@ -174,23 +182,28 @@ func _burn_zone() -> bool:
 	return hit
 
 # 사거리 안의 경로 위 임의의 지점에 장판을 깐다. 어디에 깔릴지는 운이다.
+# 경로는 화면 밖에서 시작하므로 격자 안쪽만 본다. 사거리에 경로가 없으면 가장 가까운 지점에 깐다.
 func _place_zone(from: Vector2) -> void:
 	var candidates: Array[Vector2] = []
+	var nearest := Vector2.INF
 	var attack_range := get_attack_range(from)
+	var play_area: Rect2 = _game.grid.get_world_rect()
 	for path: Path2D in _game.paths:
 		var length := path.curve.get_baked_length()
 		var offset := 0.0
 		while offset <= length:
 			var point := path.to_global(path.curve.sample_baked(offset))
+			offset += ZONE_SAMPLE_STEP
+			if not play_area.has_point(point):
+				continue
 			if point.distance_to(from) <= attack_range:
 				candidates.append(point)
-			offset += ZONE_SAMPLE_STEP
+			if point.distance_squared_to(from) < nearest.distance_squared_to(from):
+				nearest = point
 
 	if _zone == null:
 		_zone = ZONE_SCENE.instantiate()
 		_game.zones.add_child(_zone)
 		_zone.setup(data.get_effect_frames(), data.zone_radius)
 
-	_zone_in_range = not candidates.is_empty()
-	if _zone_in_range:
-		_zone.global_position = candidates.pick_random()
+	_zone.global_position = nearest if candidates.is_empty() else candidates.pick_random()

@@ -149,6 +149,8 @@ func _build_unit_tooltip(unit: UnitBase) -> String:
 	var bonuses := _zone_bonus_texts(unit)
 	if not bonuses.is_empty():
 		lines.append("구역 효과: " + ", ".join(bonuses))
+	if not unit.reaches_path():
+		lines.append("사거리 밖: 가장 가까운 길에 장판을 깝니다" if is_zone else "사거리 밖: 길에 닿지 않아 공격하지 못합니다")
 	lines.append("")
 	lines.append(data.description)
 	lines.append("")

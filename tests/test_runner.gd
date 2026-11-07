@@ -86,6 +86,10 @@ func _run_all() -> void:
 	await test_large_ships_spawn_apart()
 	await test_held_unit_does_not_attack()
 	await test_zone_stays_when_dropped_in_place()
+	await test_zone_shown_on_every_cell()
+	await test_zone_on_range_boundary()
+	await test_zone_far_from_path()
+	await test_zone_survives_random_play()
 	await test_game_over()
 	await test_clear()
 
@@ -1541,6 +1545,143 @@ func test_held_unit_does_not_attack() -> void:
 	game.grid.drop_unit_at(cell)
 	var fired := await wait_until(func(): return game.effects.get_child_count() > 0, 60 * 10)
 	check(fired, "내려놓으면 공격 재개")
+	await end_game(game)
+
+# 장판 유닛이 놓인 동안에는 언제나 화면 안 경로 위에 불꽃이 재생되어야 한다.
+func zone_problem(game: Node2D, unit: UnitBase) -> String:
+	if unit.data.attack_type != UnitData.AttackType.ZONE or unit.is_held:
+		return ""
+	var zone: ZoneField = unit._zone
+	if zone == null or not is_instance_valid(zone):
+		return "장판 없음"
+	if not zone.visible:
+		return "장판 숨김"
+	if not zone.is_playing() or zone.sprite_frames == null:
+		return "애니메이션 멈춤"
+	if not Rect2(0, 64, 1280, 576).has_point(zone.global_position):
+		return "화면 밖 %s" % zone.global_position
+	var on_path := false
+	for path: Path2D in game.paths:
+		var nearest := path.to_global(path.curve.get_closest_point(path.to_local(zone.global_position)))
+		on_path = on_path or nearest.distance_to(zone.global_position) < 2.0
+	return "" if on_path else "경로 밖 %s" % zone.global_position
+
+func test_zone_shown_on_every_cell() -> void:
+	for difficulty in GameSetting.DIFFICULTIES:
+		var game := await start_game(difficulty)
+		var grid: GridManager = game.grid
+		var data := first_unit(UnitData.AttackType.ZONE)
+		var problems := {}
+		for x in grid.grid_size.x:
+			for y in grid.grid_size.y:
+				var cell := Vector2i(x, y)
+				if not grid.is_cell_empty(cell):
+					continue
+				# 위치가 랜덤이므로 칸마다 여러 번 놓아 본다
+				for attempt in 6:
+					var unit: UnitBase = game.spawn_unit(data, cell)
+					var problem := zone_problem(game, unit)
+					if problem != "":
+						problems[cell] = problem
+					grid.unregister_unit(cell)
+					unit.free()
+		check(problems.is_empty(), "모든 칸에서 불꽃 표시 %s %s" % [difficulty, str(problems.values().slice(0, 3))])
+		await end_game(game)
+
+# 실제 플레이처럼 뽑기, 이동, 조합, 강화, 증강, 일시 정지를 섞어도 불꽃이 사라지면 안 된다.
+func test_zone_survives_random_play() -> void:
+	var game := await start_game("Normal")
+	var grid: GridManager = game.grid
+	GameState.add_gold(100000)
+	var zone_units := Catalog.units.filter(func(u): return u.attack_type == UnitData.AttackType.ZONE)
+	var problems := {}
+	for step in 1500:
+		var cells: Array = grid.grid_status.keys()
+		match randi() % 7:
+			0, 1:
+				var spawn_cell := grid.find_spawn_cell(Vector2(640, 360))
+				if spawn_cell != GridManager.NO_CELL:
+					game.spawn_unit(zone_units.pick_random(), spawn_cell)
+			2:
+				if not cells.is_empty():
+					var cell: Vector2i = cells.pick_random()
+					grid.pick_unit(cell, grid.cell_center(cell))
+					grid.drop_unit_at(Vector2i(randi() % grid.grid_size.x, randi() % grid.grid_size.y))
+			3:
+				if not cells.is_empty():
+					var cell: Vector2i = cells.pick_random()
+					grid.pick_unit(cell, grid.cell_center(cell))
+					grid.drop_unit_at(cell)
+			4:
+				if not cells.is_empty():
+					game.upgrade_unit(grid.grid_status[cells.pick_random()])
+			5:
+				if not cells.is_empty():
+					var cell: Vector2i = cells.pick_random()
+					grid.pick_unit(cell, grid.cell_center(cell))
+					game.augments.request_offer()
+					game.augments.choose(0)
+					grid.place_zone_at(Vector2i(randi() % grid.grid_size.x, randi() % grid.grid_size.y))
+			6:
+				game.hud.pause_menu.open()
+				await wait_frames(1)
+				game.hud.pause_menu.close()
+		await wait_frames(1)
+		for unit: UnitBase in grid.grid_status.values():
+			var problem := zone_problem(game, unit)
+			if problem != "":
+				problems[unit.data.id] = problem
+	check(problems.is_empty(), "무작위 조작 후에도 불꽃 유지 %s" % str(problems.values().slice(0, 3)))
+	await end_game(game)
+
+# 길까지 거리가 사거리와 정확히 같은 칸. 경로를 띄엄띄엄 재면 후보가 비어 불꽃이 사라졌었다.
+func test_zone_on_range_boundary() -> void:
+	var game := await start_game("Normal")
+	var grid: GridManager = game.grid
+	var data: UnitData = Catalog.units_of_grade(UnitData.Grade.C)[0]
+	var boundary := Vector2i(0, 4) # 왼쪽 세로 경로(x=224)까지 정확히 192px
+	check(grid.is_cell_empty(boundary), "경계 칸은 빈 칸")
+	check(data.attack_range == grid.cell_center(boundary).distance_to(Vector2(224, grid.cell_center(boundary).y)), "경계 칸 거리 = 사거리")
+	var unit: UnitBase = game.spawn_unit(data, boundary)
+	check(unit.reaches_path(), "경계 칸은 길에 닿음")
+	check(zone_problem(game, unit) == "", "경계 칸에서도 불꽃 표시")
+	await end_game(game)
+
+func test_zone_far_from_path() -> void:
+	var game := await start_game("Normal")
+	var grid: GridManager = game.grid
+	var hud: CanvasLayer = game.hud
+	# 지금 유닛은 사거리가 길어 대부분의 칸에서 길에 닿으므로 사거리를 줄인 복사본으로 확인한다
+	var zone_data: UnitData = first_unit(UnitData.AttackType.ZONE).duplicate()
+	var shot_data: UnitData = first_unit(UnitData.AttackType.SHOT).duplicate()
+	zone_data.attack_range = 100.0
+	shot_data.attack_range = 100.0
+	var far_cell := GridManager.NO_CELL
+	for x in grid.grid_size.x:
+		for y in grid.grid_size.y:
+			var probe: UnitBase = null
+			if grid.is_cell_empty(Vector2i(x, y)) and far_cell == GridManager.NO_CELL:
+				probe = game.spawn_unit(zone_data, Vector2i(x, y))
+				if not probe.reaches_path():
+					far_cell = Vector2i(x, y)
+				grid.unregister_unit(Vector2i(x, y))
+				probe.free()
+	check(far_cell != GridManager.NO_CELL, "길에 닿지 않는 칸이 있는 맵")
+	var unit: UnitBase = game.spawn_unit(zone_data, far_cell)
+	check(zone_problem(game, unit) == "", "사거리 밖이어도 불꽃 표시")
+	var enemy := spawn_enemy(game, "bomber", 100.0)
+	enemy.distance = game.paths[0].curve.get_closest_offset(game.paths[0].to_local(unit._zone.global_position))
+	await wait_frames(40)
+	check(enemy.hp < enemy.max_hp, "사거리 밖 장판도 피해를 줌")
+	grid._pointer = grid.cell_center(far_cell)
+	await wait_frames(2)
+	check(hud.unit_tooltip_label.text.contains("가장 가까운 길"), "사거리 밖 장판 안내")
+	grid.unregister_unit(far_cell)
+	unit.free()
+	var shot: UnitBase = game.spawn_unit(shot_data, far_cell)
+	await wait_frames(2)
+	check(not shot.reaches_path(), "투사체도 사거리 밖")
+	check(hud.unit_tooltip_label.text.contains("공격하지 못합니다"), "사거리 밖 투사체 안내")
 	await end_game(game)
 
 func test_zone_stays_when_dropped_in_place() -> void:
