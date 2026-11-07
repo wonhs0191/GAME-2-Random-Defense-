@@ -5,6 +5,7 @@ extends Node
 
 const UNIT_DIR := "res://data/units"
 const ENEMY_DIR := "res://data/enemies"
+const AUGMENT_DIR := "res://data/augments"
 
 # 뽑기 등급 확률 (%)
 const GRADE_ODDS := {
@@ -16,12 +17,15 @@ const GRADE_ODDS := {
 
 var units: Array[UnitData] = []
 var enemies: Dictionary = {} # id -> EnemyData
+var augments: Array[AugmentData] = []
 
 func _ready() -> void:
 	for resource in _load_dir(UNIT_DIR):
 		units.append(resource)
 	for resource in _load_dir(ENEMY_DIR):
 		enemies[resource.id] = resource
+	for resource in _load_dir(AUGMENT_DIR):
+		augments.append(resource)
 
 func _load_dir(path: String) -> Array[Resource]:
 	var resources: Array[Resource] = []

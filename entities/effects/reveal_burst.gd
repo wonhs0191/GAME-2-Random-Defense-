@@ -18,7 +18,7 @@ func setup(grade: UnitData.Grade) -> void:
 	_radius = RADIUS_BY_GRADE[grade]
 
 func _ready() -> void:
-	var tween := create_tween()
+	var tween := create_tween().set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 	tween.tween_method(_set_progress, 0.0, 1.0, DURATION).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	tween.finished.connect(queue_free)
 

@@ -5,6 +5,7 @@ extends Node
 
 const GAME_SCENE := preload("res://scenes/game/game_play.tscn")
 const ENEMY_SCENE := preload("res://entities/enemies/enemy.tscn")
+const OFFERS_OFF := 1000000
 
 var _checks: int = 0
 var _failures: int = 0
@@ -32,6 +33,17 @@ func _run_all() -> void:
 	await test_select_unit()
 	await test_reveal()
 	await test_odds_panel()
+	test_augment_data()
+	await test_offer_after_five_draws()
+	await test_pause_during_offer()
+	await test_offer_cancels_drag()
+	await test_offer_after_boss()
+	await test_queued_offers()
+	await test_zone_bonus()
+	await test_zone_stack_limit()
+	await test_zone_rect_stays_inside()
+	await test_zone_applies_in_combat()
+	await test_grab_outline()
 	await test_enemy_follows_path()
 	await test_shot_kills_enemy()
 	await test_zone_burns_enemy()
@@ -75,6 +87,8 @@ func start_game(difficulty: String = "Easy") -> Node2D:
 	var game: Node2D = GAME_SCENE.instantiate()
 	add_child(game)
 	await get_tree().process_frame
+	# 뽑기 횟수를 세는 테스트만 켠다. 나머지는 패널로 멈추면 안 된다
+	game.augments.draws_until_offer = OFFERS_OFF
 	return game
 
 func end_game(game: Node2D) -> void:
@@ -493,6 +507,220 @@ func test_odds_panel() -> void:
 	check(text.contains("C 10G / B 40G / A 160G"), "확률표 조합 비용 표시")
 	hud._on_odds_close_button_pressed()
 	check(not hud.odds_panel.visible, "확률표 닫기")
+	await end_game(game)
+
+func test_augment_data() -> void:
+	check(Catalog.augments.size() == 6, "증강 6종 로드")
+	var stats := {}
+	for augment in Catalog.augments:
+		stats[augment.stat] = true
+		check(augment.value > 0.0, "증강 수치 " + augment.id)
+		check(augment.get_description().contains("%d%%" % roundi(augment.value * 100.0)), "증강 설명 " + augment.id)
+	check(stats.size() == AugmentData.STAT_NAMES.size(), "공격력, 공속, 사거리 증강이 모두 있음")
+
+# 카드를 고르고 구역을 놓아 패널을 닫는다.
+func close_offer(game: Node2D, cell: Vector2i = Vector2i(3, 3)) -> void:
+	game.augments.choose(0)
+	game.grid.place_zone_at(cell)
+
+func test_offer_after_five_draws() -> void:
+	var game := await start_game()
+	var augments: AugmentManager = game.augments
+	var hud: CanvasLayer = game.hud
+	GameState.add_gold(1000)
+	augments.draws_until_offer = AugmentManager.DRAWS_PER_OFFER
+	for i in AugmentManager.DRAWS_PER_OFFER - 1:
+		game.draw_unit()
+	check(not augments.is_busy(), "뽑기 4회까지는 증강 없음")
+	await wait_frames(1)
+	check(hud.gacha_button.text.contains("증강까지 1회"), "남은 뽑기 표시")
+
+	game.draw_unit()
+	check(augments.is_busy(), "뽑기 5회째 증강 제시")
+	check(get_tree().paused, "패널 표시 중 게임 정지")
+	check(hud.augment_panel.visible, "증강 패널 표시")
+	check(augments.cards.size() == AugmentManager.CARD_COUNT, "카드 3장")
+	var unique := {}
+	for card in augments.cards:
+		unique[card.id] = true
+	check(unique.size() == AugmentManager.CARD_COUNT, "카드가 서로 다름")
+	check(hud.augment_cards[0].text.contains(augments.cards[0].get_title()), "카드에 증강 이름 표시")
+
+	var gold := GameState.gold
+	var unit_count: int = game.units.get_child_count()
+	check(not game.draw_unit(), "패널 표시 중 뽑기 불가")
+	check(GameState.gold == gold and game.units.get_child_count() == unit_count, "패널 표시 중 뽑기 무효")
+
+	var chosen: AugmentData = augments.cards[1]
+	hud._on_augment_card_pressed(1)
+	check(augments.placing == chosen, "카드 선택")
+	check(not hud.augment_panel.visible, "카드 선택 후 패널 숨김")
+	check(hud.placement_label.visible, "구역 배치 안내 표시")
+	check(get_tree().paused, "구역 배치 중에도 정지")
+	check(game.grid.is_placing_zone(), "구역 배치 시작")
+	check(game.grid.process_mode == Node.PROCESS_MODE_ALWAYS, "정지 중에도 격자 입력 처리")
+
+	game.grid._pointer = game.grid.cell_center(Vector2i(10, 4))
+	var press := InputEventMouseButton.new()
+	press.button_index = MOUSE_BUTTON_LEFT
+	press.pressed = true
+	game.grid._unhandled_input(press)
+	check(game.grid.buff_zones.size() == 1, "클릭으로 구역 배치")
+	check(game.grid.buff_zones[0].stat == chosen.stat, "고른 증강의 구역")
+	check(game.grid.buff_zones[0].rect.has_point(Vector2i(10, 4)), "클릭한 칸이 구역 안")
+	check(not get_tree().paused, "구역 배치 후 재개")
+	check(not augments.is_busy(), "증강 처리 종료")
+	check(not hud.placement_label.visible, "배치 안내 숨김")
+	check(game.grid.process_mode == Node.PROCESS_MODE_INHERIT, "격자 처리 모드 복구")
+	check(augments.draws_until_offer == AugmentManager.DRAWS_PER_OFFER, "뽑기 횟수 다시 계산")
+	await end_game(game)
+
+func test_pause_during_offer() -> void:
+	var game := await start_game()
+	var manager: WaveManager = game.wave_manager
+	var unit: UnitBase = game.spawn_unit(first_unit(UnitData.AttackType.SHOT), Vector2i(0, 2))
+	var enemy := spawn_enemy(game, "bomber", 100.0)
+	manager.state = WaveManager.State.PREP
+	manager.prep_left = 10.0
+	await wait_frames(30)
+
+	game.augments.request_offer()
+	await wait_frames(1)
+	var enemy_distance := enemy.distance
+	var prep_left := manager.prep_left
+	var unit_cooldown := unit._cooldown
+	var effect_count: int = game.effects.get_child_count()
+	await wait_frames(60)
+	check(enemy.distance == enemy_distance, "정지 중 적 이동 없음")
+	check(manager.prep_left == prep_left, "정지 중 웨이브 시간 멈춤")
+	check(unit._cooldown == unit_cooldown, "정지 중 유닛 공격 없음")
+	check(game.effects.get_child_count() == effect_count, "정지 중 발사 없음")
+
+	close_offer(game)
+	await wait_frames(30)
+	check(enemy.distance > enemy_distance, "재개 후 적 이동")
+	check(manager.prep_left < prep_left, "재개 후 웨이브 시간 진행")
+	await end_game(game)
+
+func test_offer_cancels_drag() -> void:
+	var game := await start_game()
+	var grid: GridManager = game.grid
+	var cell := Vector2i(0, 2)
+	var unit: UnitBase = game.spawn_unit(Catalog.units[0], cell)
+	grid.pick_unit(cell, unit.global_position)
+	game.augments.request_offer()
+	check(grid.dragged_unit == null, "패널이 열리면 드래그 취소")
+	check(grid.grid_status.get(cell) == unit, "드래그 취소 시 원위치")
+	check(not grid.show_grid, "드래그 취소 시 격자 숨김")
+	check(not unit.is_held, "드래그 취소 후 유닛 활성")
+	close_offer(game)
+	await end_game(game)
+
+func test_offer_after_boss() -> void:
+	var game := await start_game()
+	var manager: WaveManager = game.wave_manager
+	game._on_wave_cleared(9)
+	check(not game.augments.is_busy(), "일반 웨이브 클리어는 증강 없음")
+	game._on_wave_cleared(10)
+	check(game.augments.is_busy(), "보스 처치 후 증강")
+	close_offer(game)
+	game._on_wave_cleared(manager.total_waves)
+	check(not game.augments.is_busy(), "마지막 보스 뒤에는 증강 없음")
+	await end_game(game)
+
+func test_queued_offers() -> void:
+	var game := await start_game()
+	var augments: AugmentManager = game.augments
+	augments.request_offer()
+	augments.request_offer()
+	check(augments.pending_offers == 1, "진행 중이면 다음 증강 대기")
+	close_offer(game)
+	check(get_tree().paused, "대기 증강이 있으면 정지 유지")
+	check(game.hud.augment_panel.visible, "대기 증강 패널 표시")
+	check(not game.hud.placement_label.visible, "대기 증강 표시 때 안내 숨김")
+	close_offer(game, Vector2i(10, 4))
+	check(not get_tree().paused, "대기 증강까지 끝나면 재개")
+	check(game.grid.buff_zones.size() == 2, "증강 2개 모두 적용")
+	await end_game(game)
+
+func test_zone_bonus() -> void:
+	var game := await start_game()
+	var grid: GridManager = game.grid
+	var data := first_unit(UnitData.AttackType.SHOT)
+	var inside: UnitBase = game.spawn_unit(data, Vector2i(0, 2))
+	var outside: UnitBase = game.spawn_unit(data, Vector2i(19, 7))
+	await wait_frames(1)
+	var base_damage := outside.get_damage()
+	var base_interval := outside.get_attack_interval()
+	var base_range := outside.get_attack_range()
+	var rect := Rect2i(0, 1, 3, 3)
+	grid.add_buff_zone(rect, AugmentData.Stat.DAMAGE, 0.4)
+	grid.add_buff_zone(rect, AugmentData.Stat.ATTACK_SPEED, 0.25)
+	grid.add_buff_zone(rect, AugmentData.Stat.RANGE, 0.5)
+	check(is_equal_approx(inside.get_damage(), base_damage * 1.4), "구역 안 공격력 증가")
+	check(is_equal_approx(inside.get_attack_interval(), base_interval / 1.25), "구역 안 공격 간격 감소")
+	check(is_equal_approx(inside.get_attack_range(), base_range * 1.5), "구역 안 사거리 증가")
+	check(outside.get_damage() == base_damage, "구역 밖 공격력 유지")
+	check(outside.get_attack_interval() == base_interval, "구역 밖 공격 간격 유지")
+	check(outside.get_attack_range() == base_range, "구역 밖 사거리 유지")
+
+	# 구역 밖으로 옮기면 효과가 사라지고, 다시 넣으면 돌아온다
+	var target := Vector2i(5, 7)
+	check(grid.is_cell_empty(target) and not rect.has_point(target), "구역 밖 빈 칸")
+	grid.pick_unit(Vector2i(0, 2), inside.global_position)
+	grid.drop_unit_at(target)
+	inside.global_position = grid.cell_center(target)
+	check(inside.get_damage() == base_damage, "구역 밖으로 옮기면 효과 없음")
+	check(is_equal_approx(inside.get_attack_range(grid.cell_center(Vector2i(0, 2))), base_range * 1.5), "놓을 칸 기준 사거리 계산")
+	await end_game(game)
+
+func test_zone_stack_limit() -> void:
+	var game := await start_game()
+	var grid: GridManager = game.grid
+	var rect := Rect2i(0, 0, 3, 3)
+	var cell := Vector2i(1, 1)
+	grid.add_buff_zone(rect, AugmentData.Stat.DAMAGE, 0.1)
+	grid.add_buff_zone(rect, AugmentData.Stat.DAMAGE, 0.2)
+	check(is_equal_approx(grid.zone_bonus(cell, AugmentData.Stat.DAMAGE), 0.3), "구역 2개는 합산")
+	grid.add_buff_zone(rect, AugmentData.Stat.DAMAGE, 0.4)
+	check(is_equal_approx(grid.zone_bonus(cell, AugmentData.Stat.DAMAGE), 0.6), "3번째부터는 큰 값 2개만")
+	check(grid.zone_bonus(cell, AugmentData.Stat.RANGE) == 0.0, "다른 능력치에는 영향 없음")
+	check(grid.zone_bonus(Vector2i(4, 4), AugmentData.Stat.DAMAGE) == 0.0, "구역 밖 칸은 효과 없음")
+	await end_game(game)
+
+func test_zone_rect_stays_inside() -> void:
+	var game := await start_game()
+	var grid: GridManager = game.grid
+	var bounds := Rect2i(Vector2i.ZERO, grid.grid_size)
+	var size := Vector2i(5, 5)
+	check(grid.zone_rect_at(Vector2i(10, 4), size) == Rect2i(8, 2, 5, 5), "구역 중심이 클릭한 칸")
+	for cell in [Vector2i(0, 0), Vector2i(19, 8), Vector2i(0, 8), Vector2i(19, 0), Vector2i(-3, 20)]:
+		check(bounds.encloses(grid.zone_rect_at(cell, size)), "구역이 격자 안 %s" % cell)
+	await end_game(game)
+
+func test_zone_applies_in_combat() -> void:
+	var game := await start_game()
+	var cell := Vector2i(0, 2)
+	var unit: UnitBase = game.spawn_unit(first_unit(UnitData.AttackType.SHOT), cell)
+	game.grid.add_buff_zone(Rect2i(cell, Vector2i.ONE), AugmentData.Stat.DAMAGE, 0.5)
+	spawn_enemy(game, "bomber", 100.0)
+	var fired := await wait_until(func(): return game.effects.get_child_count() > 0, 60 * 10)
+	check(fired, "구역 안 유닛 발사")
+	if fired:
+		var projectile: Projectile = game.effects.get_child(0)
+		check(is_equal_approx(projectile.damage, unit.data.damage * 1.5), "투사체에 구역 공격력 적용")
+	await end_game(game)
+
+func test_grab_outline() -> void:
+	var game := await start_game()
+	var grid: GridManager = game.grid
+	var cell := Vector2i(0, 2)
+	var unit: UnitBase = game.spawn_unit(Catalog.units_of_grade(UnitData.Grade.C)[0], cell)
+	check(unit.sprite.material == null, "평소에는 외곽선 없음")
+	grid.pick_unit(cell, unit.global_position)
+	check(unit.sprite.material != null, "집으면 외곽선")
+	grid.drop_unit_at(cell)
+	check(unit.sprite.material == null, "놓으면 외곽선 제거")
 	await end_game(game)
 
 func test_enemy_follows_path() -> void:

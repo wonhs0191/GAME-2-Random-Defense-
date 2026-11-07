@@ -8,7 +8,8 @@ const GACHA_BUTTON := Vector2(1136, 680)
 const WAVE_BUTTON := Vector2(144, 680)
 const UPGRADE_BUTTON := Vector2(758, 680)
 const ODDS_BUTTON := Vector2(942, 680)
-const ODDS_CLOSE_BUTTON := Vector2(640, 568)
+const ODDS_CLOSE_BUTTON := Vector2(640, 598)
+const AUGMENT_CARD_2 := Vector2(640, 340)
 const SYNTHETIC_DEVICE := 100
 
 # 실제 마우스가 창 위에서 움직이면 합성 입력과 섞여 드래그 위치가 튄다.
@@ -21,7 +22,9 @@ class RealMouseFilter extends Node:
 var _failures: int = 0
 
 func _ready() -> void:
-	get_tree().root.add_child.call_deferred(RealMouseFilter.new())
+	var mouse_filter := RealMouseFilter.new()
+	mouse_filter.process_mode = Node.PROCESS_MODE_ALWAYS
+	get_tree().root.add_child.call_deferred(mouse_filter)
 	await wait_frames(2)
 
 	GameSetting.selected_difficulty = "Easy"
@@ -87,6 +90,17 @@ func _ready() -> void:
 	check(merged != null and merged.data.grade == UnitData.Grade.B, "드래그로 조합")
 	check(not grid.grid_status.has(from_cell), "조합 후 원래 칸 비움")
 	check(game.selected_unit == null, "조합 드래그는 선택이 아님")
+
+	# 증강: 카드 클릭, 구역 배치 클릭
+	game.augments.request_offer()
+	await wait_frames(2)
+	await click(AUGMENT_CARD_2)
+	check(game.augments.placing != null, "증강 카드 클릭으로 선택")
+	var zone_cell := Vector2i(4, 4)
+	await click(grid.cell_center(zone_cell))
+	check(grid.buff_zones.size() == 1, "클릭으로 구역 배치")
+	check(grid.buff_zones[0].rect.has_point(zone_cell), "클릭한 곳에 구역")
+	check(not get_tree().paused, "구역 배치 후 재개")
 
 	await click(WAVE_BUTTON)
 	check(game.wave_manager.wave == 1, "WAVE START 클릭으로 시작")

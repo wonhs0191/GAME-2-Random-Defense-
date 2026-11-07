@@ -5,6 +5,7 @@ extends CanvasLayer
 signal wave_start_pressed
 signal gacha_pressed
 signal upgrade_pressed
+signal augment_chosen(index: int)
 
 const TITLE_SCENE := "res://scenes/title/title_screen.tscn"
 const BOSS_COLOR := Color(1, 0.4, 0.3)
@@ -16,6 +17,7 @@ const FLASH_ALPHA := 0.6
 const FLASH_TIME := 0.5
 
 var _wave_manager: WaveManager = null
+var _augments: AugmentManager = null
 var _selected_unit: UnitBase = null
 var _message_tween: Tween = null
 
@@ -31,15 +33,18 @@ var _message_tween: Tween = null
 @onready var flash: ColorRect = $Flash
 @onready var odds_panel: ColorRect = $OddsPanel
 @onready var odds_label: Label = $OddsPanel/OddsLabel
+@onready var placement_label: Label = $PlacementLabel
+@onready var augment_panel: ColorRect = $AugmentPanel
+@onready var augment_cards: Array[Button] = [$AugmentPanel/Card1, $AugmentPanel/Card2, $AugmentPanel/Card3]
 @onready var result_panel: ColorRect = $ResultPanel
 @onready var result_label: Label = $ResultPanel/ResultLabel
 
-func setup(wave_manager: WaveManager) -> void:
+func setup(wave_manager: WaveManager, augments: AugmentManager) -> void:
 	_wave_manager = wave_manager
+	_augments = augments
 	GameState.gold_changed.connect(_on_gold_changed)
 	GameState.lives_changed.connect(_on_lives_changed)
 	GameState.game_ended.connect(_on_game_ended)
-	gacha_button.text = "GACHA %dG" % GameState.GACHA_COST
 	odds_label.text = _build_odds_text()
 	show_unit(null)
 	_on_gold_changed(GameState.gold)
@@ -55,6 +60,7 @@ func _process(_delta: float) -> void:
 	wave_label.text = "BOSS " + wave_text if boss_fight else wave_text
 	wave_label.modulate = BOSS_COLOR if boss_fight else Color.WHITE
 	wave_button.disabled = not _wave_manager.can_start_wave()
+	gacha_button.text = "GACHA %dG\n증강까지 %d회" % [GameState.GACHA_COST, _augments.draws_until_offer]
 	match _wave_manager.state:
 		WaveManager.State.WAITING:
 			status_label.text = "준비되면 WAVE START"
@@ -78,9 +84,26 @@ func show_unit(unit: UnitBase) -> void:
 	if unit == null:
 		return
 	var data := unit.data
-	unit_info_label.text = "%s등급 %s  %d성\n공격력 %.1f  사거리 %d" % [
-		data.get_grade_name(), data.id, unit.stars, unit.get_damage(), data.attack_range,
+	unit_info_label.text = "%s등급 %s  %d성\n공격력 %.1f  간격 %.2f초  사거리 %d" % [
+		data.get_grade_name(), data.id, unit.stars, unit.get_damage(), unit.get_attack_interval(), unit.get_attack_range(),
 	]
+
+func show_augment_cards(cards: Array[AugmentData]) -> void:
+	placement_label.hide()
+	for i in cards.size():
+		var card := augment_cards[i]
+		card.text = "%s\n\n%s" % [cards[i].get_title(), cards[i].get_description()]
+		card.get_node("Strip").color = cards[i].get_color()
+	augment_panel.show()
+
+func show_placement_hint(augment: AugmentData) -> void:
+	augment_panel.hide()
+	placement_label.text = "%s을 놓을 곳을 클릭하세요" % augment.get_title()
+	placement_label.show()
+
+func hide_augment_ui() -> void:
+	augment_panel.hide()
+	placement_label.hide()
 
 func show_merge_unaffordable(cost: int) -> void:
 	show_message("조합 골드 부족 (%dG)" % cost, FAILURE_COLOR)
@@ -98,14 +121,14 @@ func show_reveal(data: UnitData) -> void:
 	show_message("%s등급 등장!  %s" % [data.get_grade_name(), data.id], UnitData.GRADE_COLORS[data.grade])
 	if data.grade == UnitData.Grade.S:
 		flash.modulate.a = FLASH_ALPHA
-		create_tween().tween_property(flash, "modulate:a", 0.0, FLASH_TIME)
+		create_tween().set_pause_mode(Tween.TWEEN_PAUSE_PROCESS).tween_property(flash, "modulate:a", 0.0, FLASH_TIME)
 
 func show_message(text: String, color: Color) -> void:
 	message_label.text = text
 	message_label.modulate = color
 	if _message_tween:
 		_message_tween.kill()
-	_message_tween = create_tween()
+	_message_tween = create_tween().set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 	_message_tween.tween_interval(MESSAGE_TIME)
 	_message_tween.tween_property(message_label, "modulate:a", 0.0, MESSAGE_FADE_TIME)
 
@@ -140,6 +163,9 @@ func _build_odds_text() -> String:
 		if UnitData.MERGE_COST[grade] > 0:
 			costs.append("%s %dG" % [UnitData.GRADE_NAMES[grade], UnitData.MERGE_COST[grade]])
 	lines.append("조합 비용: " + " / ".join(costs))
+	lines.append("")
+	lines.append("증강: 뽑기 %d회마다, 보스 처치마다" % AugmentManager.DRAWS_PER_OFFER)
+	lines.append("같은 능력치 구역은 %d개까지 겹쳐 적용" % GridManager.MAX_ZONE_STACK)
 	return "\n".join(lines)
 
 func _on_gold_changed(gold: int) -> void:
@@ -162,6 +188,9 @@ func _on_gacha_button_pressed() -> void:
 
 func _on_upgrade_button_pressed() -> void:
 	upgrade_pressed.emit()
+
+func _on_augment_card_pressed(index: int) -> void:
+	augment_chosen.emit(index)
 
 func _on_odds_button_pressed() -> void:
 	odds_panel.visible = not odds_panel.visible

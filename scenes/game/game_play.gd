@@ -26,6 +26,7 @@ var selected_unit: UnitBase = null
 @onready var enemies: Node2D = $Enemies
 @onready var effects: Node2D = $Effects
 @onready var wave_manager: WaveManager = $WaveManager
+@onready var augments: AugmentManager = $AugmentManager
 @onready var hud: CanvasLayer = $HUD
 
 func _ready():
@@ -44,13 +45,18 @@ func _ready():
 	wave_manager.all_waves_cleared.connect(GameState.end_game.bind(true))
 	GameState.game_ended.connect(_on_game_ended)
 
-	hud.setup(wave_manager)
+	augments.setup(grid)
+	hud.setup(wave_manager, augments)
 	hud.wave_start_pressed.connect(wave_manager.start_next_wave)
 	hud.gacha_pressed.connect(draw_unit)
 	hud.upgrade_pressed.connect(_on_upgrade_pressed)
 	grid.merge_requested.connect(merge_units)
 	grid.merge_unaffordable.connect(hud.show_merge_unaffordable)
 	grid.unit_clicked.connect(select_unit)
+	hud.augment_chosen.connect(augments.choose)
+	augments.offered.connect(hud.show_augment_cards)
+	augments.placement_started.connect(hud.show_placement_hint)
+	augments.closed.connect(_on_augments_closed)
 
 # 난이도에 따라 맵을 인스턴스화하고 경로 목록을 돌려준다
 func _load_map() -> Array[Path2D]:
@@ -80,6 +86,8 @@ func _show_paths() -> void:
 
 # 골드를 내고 화면 중앙 가까운 빈 칸에 유닛을 뽑는다. 뽑았으면 true.
 func draw_unit() -> bool:
+	if augments.is_busy():
+		return false
 	# 화면(Viewport)의 정중앙 기준으로 가까운 빈 칸을 찾는다
 	var target_cell := grid.find_spawn_cell(get_viewport_rect().size / 2)
 	if target_cell == GridManager.NO_CELL:
@@ -87,6 +95,7 @@ func draw_unit() -> bool:
 	if not GameState.spend_gold(GameState.GACHA_COST):
 		return false
 	_reveal(spawn_unit(Catalog.pick_random_unit(), target_cell))
+	augments.on_unit_drawn()
 	return true
 
 func spawn_unit(unit_data: UnitData, cell: Vector2i) -> UnitBase:
@@ -140,6 +149,12 @@ func _on_upgrade_pressed() -> void:
 
 func _on_wave_cleared(wave: int) -> void:
 	GameState.add_gold(WAVE_REWARD_BASE + wave * WAVE_REWARD_STEP)
+	if wave_manager.is_boss_wave(wave) and not wave_manager.is_final_wave(wave):
+		augments.request_offer()
+
+func _on_augments_closed() -> void:
+	hud.hide_augment_ui()
+	hud.show_unit(selected_unit)
 
 func _on_game_ended(_cleared: bool) -> void:
 	get_tree().paused = true

@@ -32,6 +32,8 @@ func _play(difficulty: String) -> void:
 	var lives_last := GameState.lives
 	manager.start_next_wave()
 	while not GameState.is_over:
+		if game.augments.is_busy():
+			_take_augment(game)
 		var saving := false
 		if _is_crowded(game.grid):
 			saving = _merge_duplicates(game, coverage)
@@ -59,6 +61,39 @@ func _play(difficulty: String) -> void:
 	get_tree().paused = false
 	game.queue_free()
 	await get_tree().process_frame
+
+# 유닛을 가장 많이 강화할 수 있는 카드와 위치를 고른다. 사람이 하듯 유닛을 옮기지는 않는다.
+func _take_augment(game: Node2D) -> void:
+	var grid: GridManager = game.grid
+	var best_card := 0
+	var best_cell := Vector2i.ZERO
+	var best_gain := -1.0
+	for card in game.augments.cards.size():
+		var augment: AugmentData = game.augments.cards[card]
+		for x in grid.grid_size.x:
+			for y in grid.grid_size.y:
+				var cell := Vector2i(x, y)
+				var gain := _zone_gain(grid, grid.zone_rect_at(cell, augment.zone_size), augment)
+				if gain > best_gain:
+					best_gain = gain
+					best_card = card
+					best_cell = cell
+	game.augments.choose(best_card)
+	grid.place_zone_at(best_cell)
+
+func _zone_gain(grid: GridManager, rect: Rect2i, augment: AugmentData) -> float:
+	var gain := 0.0
+	for x in range(rect.position.x, rect.end.x):
+		for y in range(rect.position.y, rect.end.y):
+			var cell := Vector2i(x, y)
+			if not grid.grid_status.has(cell):
+				continue
+			var unit: UnitBase = grid.grid_status[cell]
+			var stacked := grid.zone_bonus(cell, augment.stat)
+			# 이미 강한 구역일수록 효과가 덜하다고 보고, 사거리는 간접 효과라 낮게 친다
+			var weight := 0.5 if augment.stat == AugmentData.Stat.RANGE else 1.0
+			gain += unit.get_damage() * augment.value * weight / (1.0 + stacked)
+	return gain
 
 func _is_crowded(grid: GridManager) -> bool:
 	return grid.grid_size.x * grid.grid_size.y - grid.blocked_cells.size() - grid.grid_status.size() <= CROWDED_FREE_CELLS

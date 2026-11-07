@@ -16,6 +16,7 @@ func _ready() -> void:
 	var game: Node2D = GAME_SCENE.instantiate()
 	add_child(game)
 	await wait_frames(10)
+	game.augments.draws_until_offer = 1000000 # 찍는 도중 패널이 열리지 않게 한다
 
 	GameState.add_gold(300)
 	for i in 14:
@@ -67,9 +68,35 @@ func _ready() -> void:
 	await wait_frames(8)
 	await shot("06_reveal.png")
 
+	# 증강 카드
+	await wait_frames(120)
+	game.select_unit(null)
+	game.augments.request_offer()
+	await wait_frames(4)
+	await shot("07_cards.png")
+
+	# 구역 배치 미리보기
+	game.hud._on_augment_card_pressed(0)
+	grid._pointer = Vector2(640, 360)
+	await wait_frames(4)
+	await shot("08_placement.png")
+	grid.place_zone_at(grid.world_to_grid(Vector2(640, 360)))
+
+	# 겹친 구역과 시너지 하이라이팅, 그랩 아웃라인
+	grid.add_buff_zone(Rect2i(8, 1, 5, 5), AugmentData.Stat.ATTACK_SPEED, 0.15)
+	grid.add_buff_zone(Rect2i(10, 3, 3, 3), AugmentData.Stat.RANGE, 0.3)
+	await wait_frames(4)
+	await shot("09_zones.png")
+	var held_cell: Vector2i = grid.grid_status.keys()[0]
+	grid.pick_unit(held_cell, grid.cell_center(held_cell))
+	grid.set_process(false)
+	await wait_frames(4)
+	await shot("10_synergy.png")
+	grid.drop_unit_at(held_cell)
+
 	GameState.lose_lives(GameState.lives)
 	await wait_frames(4)
-	await shot("07_gameover.png")
+	await shot("11_gameover.png")
 
 	get_tree().quit()
 

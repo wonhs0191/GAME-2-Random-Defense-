@@ -7,6 +7,7 @@ class_name UnitBase
 
 const PROJECTILE_SCENE := preload("res://entities/projectiles/projectile.tscn")
 const ZONE_SCENE := preload("res://entities/projectiles/zone_field.tscn")
+const GRAB_OUTLINE := preload("res://entities/units/grab_outline.tres")
 
 const RESCAN_INTERVAL := 0.1 # 공격 대상이 없을 때 다시 찾는 간격 (초)
 const ZONE_SAMPLE_STEP := 16.0 # 장판 위치 후보를 경로에서 뽑는 간격 (px)
@@ -19,6 +20,7 @@ const STAR_OFFSET := 24.0 # 별 표시 위치 (유닛 중심 아래, px)
 const STAR_COLOR := Color(1.0, 0.85, 0.35)
 const STAR_OUTLINE_COLOR := Color(0.1, 0.08, 0.2)
 const POP_DURATION := 0.3
+const OUTLINE_SCREEN_WIDTH := 2.0 # 집어 든 유닛의 외곽선 두께 (px)
 
 var data: UnitData
 var is_held: bool = false # 드래그 중에는 공격하지 않는다
@@ -75,10 +77,21 @@ func _process(delta: float) -> void:
 	if _cooldown > 0.0 or is_held:
 		return
 	var attacked := _shoot() if data.attack_type == UnitData.AttackType.SHOT else _burn_zone()
-	_cooldown = data.attack_interval if attacked else RESCAN_INTERVAL
+	_cooldown = get_attack_interval() if attacked else RESCAN_INTERVAL
 
 func get_damage() -> float:
-	return data.damage * UnitData.STAR_DAMAGE[stars - 1]
+	return data.damage * UnitData.STAR_DAMAGE[stars - 1] * (1.0 + _zone_bonus(global_position, AugmentData.Stat.DAMAGE))
+
+func get_attack_interval() -> float:
+	return data.attack_interval / (1.0 + _zone_bonus(global_position, AugmentData.Stat.ATTACK_SPEED))
+
+# 놓을 위치에 따라 구역 효과가 달라지므로 위치를 받는다.
+func get_attack_range(at: Vector2 = global_position) -> float:
+	return data.attack_range * (1.0 + _zone_bonus(at, AugmentData.Stat.RANGE))
+
+func _zone_bonus(at: Vector2, stat: AugmentData.Stat) -> float:
+	var grid: GridManager = _game.grid
+	return grid.zone_bonus(grid.world_to_grid(at), stat)
 
 func can_upgrade() -> bool:
 	return stars < UnitData.MAX_STARS
@@ -94,18 +107,22 @@ func can_merge_with(other: UnitBase) -> bool:
 # 뽑히거나 합쳐져 나올 때 튀어나오는 연출.
 func pop_in() -> void:
 	scale = Vector2.ZERO
-	var tween := create_tween()
+	# 다섯 번째 뽑기는 바로 증강 패널이 열려 멈추므로 멈춘 동안에도 재생한다
+	var tween := create_tween().set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 	tween.tween_property(self, "scale", Vector2.ONE, POP_DURATION).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
 # GridManager가 유닛을 집을 때 호출한다.
 func on_picked() -> void:
 	is_held = true
+	GRAB_OUTLINE.set_shader_parameter("width", OUTLINE_SCREEN_WIDTH / sprite.scale.x)
+	sprite.material = GRAB_OUTLINE
 	if _zone:
 		_zone.hide()
 
 # GridManager가 유닛을 칸에 놓을 때 호출한다.
 func on_placed(world_position: Vector2) -> void:
 	is_held = false
+	sprite.material = null
 	if data.attack_type == UnitData.AttackType.ZONE:
 		# 제자리에 다시 놓으면 장판 위치를 유지한다
 		if world_position != _placed_position:
@@ -115,7 +132,7 @@ func on_placed(world_position: Vector2) -> void:
 
 # 사거리 안의 적 중 가장 앞서 간 적을 쏜다.
 func _shoot() -> bool:
-	var target := _find_target()
+	var target := _find_target(get_attack_range())
 	if target == null:
 		return false
 	var projectile: Projectile = PROJECTILE_SCENE.instantiate()
@@ -123,10 +140,10 @@ func _shoot() -> bool:
 	projectile.launch(data.get_effect_frames(), global_position, target, get_damage())
 	return true
 
-func _find_target() -> EnemyBase:
+func _find_target(attack_range: float) -> EnemyBase:
 	var best: EnemyBase = null
 	for enemy: EnemyBase in get_tree().get_nodes_in_group("enemy"):
-		if global_position.distance_to(enemy.global_position) > data.attack_range:
+		if global_position.distance_to(enemy.global_position) > attack_range:
 			continue
 		if best == null or enemy.distance > best.distance:
 			best = enemy
@@ -146,12 +163,13 @@ func _burn_zone() -> bool:
 # 사거리 안의 경로 위 임의의 지점에 장판을 깐다. 어디에 깔릴지는 운이다.
 func _place_zone(from: Vector2) -> void:
 	var candidates: Array[Vector2] = []
+	var attack_range := get_attack_range(from)
 	for path: Path2D in _game.paths:
 		var length := path.curve.get_baked_length()
 		var offset := 0.0
 		while offset <= length:
 			var point := path.to_global(path.curve.sample_baked(offset))
-			if point.distance_to(from) <= data.attack_range:
+			if point.distance_to(from) <= attack_range:
 				candidates.append(point)
 			offset += ZONE_SAMPLE_STEP
 

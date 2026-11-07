@@ -46,8 +46,8 @@
 | 조합 | 조합대 없이 드래그로 합침 [Notion]. 같은 ID 2개 + 골드(C 10, B 40, A 160) → 상위 등급 랜덤 1개, 1성 [제안] |
 | 강화 | 1~3성 [Notion]. 유닛 클릭 후 하단 버튼. 성공 70%, 40%, 실패 시 골드만 소모 [제안] |
 | 공격 타입 | SHOT = 투사체, ZONE = 경로 위 지속 장판 [Notion: 테란 드라이 → ZONE, 앳모스피어 → SHOT] |
-| 증강 | 3택 카드 패널, 공속·공격력·범위, 패널 표시 중 게임 정지 [Notion] |
-| 시너지 ZONE | 증강 선택 시 격자에 버프 구역 지정, 구역 안 유닛 강화 [Notion]. 크기·중첩 규칙 [제안] |
+| 증강 | 3택 카드 패널, 공속·공격력·범위, 패널 표시 중 게임 정지 [Notion]. 뽑기 5회마다 + 보스 처치 시 |
+| 시너지 ZONE | 증강 선택 시 격자에 버프 구역 지정, 구역 안 유닛 강화 [Notion]. 3x3 또는 5x5, 옮길 수 없음, 같은 능력치는 큰 값 2개까지 합산 [제안] |
 | 필살기 | 쿨타임 전역 스킬, 일정 라운드마다 교체 선택 [Notion, 검토 상태] |
 | 편의 | 배속, HUD, 확률표 [Notion] |
 
@@ -69,11 +69,14 @@ ID 규칙: `PRD-등급-타입-번호` (예: `PRD-C-FR-01`). 공식 명칭은 ID,
 ```
 data/units/*.tres            UnitData: 유닛 1종 = tres 1개
 data/enemies/*.tres          EnemyData
+data/augments/*.tres         AugmentData
 entities/units/unit.tscn     유닛 공용 씬 (UnitBase)
 entities/enemies/enemy.tscn  적 공용 씬 (EnemyBase)
 entities/projectiles/        투사체, ZONE 장판
+entities/effects/            등장 연출
+entities/augments/           AugmentData 정의
 global/                      GameSetting(선택값), GameState(런타임 상태), Catalog(데이터 로더)
-scenes/game/                 game_play, grid, wave_manager, hud, maps(경로만)
+scenes/game/                 game_play, grid, wave_manager, augment_manager, hud, maps(경로만)
 tests/                       헤드리스 테스트
 ```
 

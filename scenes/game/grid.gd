@@ -4,6 +4,13 @@ class_name GridManager
 signal merge_requested(moved: UnitBase, target: UnitBase)
 signal merge_unaffordable(cost: int)
 signal unit_clicked(unit: UnitBase) # 빈 곳을 누르면 null
+signal zone_placed(rect: Rect2i)
+
+# 증강으로 놓은 버프 구역
+class BuffZone:
+	var rect: Rect2i
+	var stat: AugmentData.Stat
+	var value: float
 
 @export var tile_size: Vector2i = Vector2i(64, 64) # 기본 그리드 칸 크기 (필요시 인스펙터에서 수정)
 @export var grid_size: Vector2i = Vector2i(20, 9) # 화면에 그릴 그리드의 가로세로 칸 수
@@ -16,6 +23,12 @@ signal unit_clicked(unit: UnitBase) # 빈 곳을 누르면 null
 @export var click_slop: float = 8.0 # 이 거리 안에서 놓으면 드래그가 아니라 클릭으로 본다 (px)
 
 const NO_CELL := Vector2i(-1, -1)
+const MAX_ZONE_STACK := 2 # 같은 능력치 구역은 이 수까지만 겹쳐 적용된다
+const ZONE_FILL_ALPHA := 0.08
+const ZONE_HIGHLIGHT_ALPHA := 0.3 # 유닛을 들고 있거나 구역을 놓는 중일 때
+const ZONE_BORDER_ALPHA := 0.8
+const ZONE_BORDER_WIDTH := 2.0
+const ZONE_BORDER_GAP := 3.0 # 능력치가 다른 구역의 테두리가 겹치지 않도록 띄우는 간격
 
 # 드래그 앤 드롭 시에만 보이도록 합니다.
 var show_grid: bool = false:
@@ -36,6 +49,8 @@ var grid_status: Dictionary = {}
 # 적 경로가 지나가는 칸. 유닛을 놓을 수 없습니다.
 var blocked_cells: Dictionary = {}
 
+var buff_zones: Array[BuffZone] = []
+
 # ======== 드래그 앤 드롭 중앙 제어 변수 ========
 var dragged_unit: UnitBase = null
 var drag_offset: Vector2 = Vector2.ZERO
@@ -43,6 +58,11 @@ var original_grid_pos: Vector2i
 @export var snap_duration: float = 0.15 # 유닛 이동 애니메이션 속도
 
 var _press_position: Vector2 = Vector2.ZERO
+
+# 구역 배치 중일 때의 크기와 색. 배치 중이 아니면 크기가 0입니다.
+var _placement_size: Vector2i = Vector2i.ZERO
+var _placement_color: Color = Color.WHITE
+var _placement_rect: Rect2i = Rect2i()
 
 # 드래그 중 마우스가 위치한 셀 (하이라이트 렌더링용)
 var _hovered_cell: Vector2i = NO_CELL
@@ -56,8 +76,15 @@ func _ready() -> void:
 	queue_redraw()
 
 func _draw() -> void:
+	# 유닛을 들고 있으면 구역을 밝혀 어디에 놓을지 보여 줍니다 (시너지 하이라이팅)
+	var zone_alpha := ZONE_HIGHLIGHT_ALPHA if dragged_unit else ZONE_FILL_ALPHA
+	for zone in buff_zones:
+		_draw_zone(zone.rect, AugmentData.STAT_COLORS[zone.stat], zone_alpha, ZONE_BORDER_GAP * zone.stat)
+	if is_placing_zone():
+		_draw_zone(_placement_rect, _placement_color, ZONE_HIGHLIGHT_ALPHA, 0.0)
+
 	if selected_unit:
-		draw_arc(to_local(selected_unit.global_position), selected_unit.data.attack_range, 0.0, TAU, 64, range_color, 1.5)
+		draw_arc(to_local(selected_unit.global_position), selected_unit.get_attack_range(), 0.0, TAU, 64, range_color, 1.5)
 
 	if not show_grid:
 		return
@@ -92,7 +119,13 @@ func _draw() -> void:
 
 	# 놓을 위치 기준 사거리 표시
 	if dragged_unit and _hovered_cell != NO_CELL:
-		draw_arc(to_local(cell_center(_hovered_cell)), dragged_unit.data.attack_range, 0.0, TAU, 64, range_color, 1.5)
+		var hovered_center := cell_center(_hovered_cell)
+		draw_arc(to_local(hovered_center), dragged_unit.get_attack_range(hovered_center), 0.0, TAU, 64, range_color, 1.5)
+
+func _draw_zone(rect: Rect2i, color: Color, fill_alpha: float, inset: float) -> void:
+	var area := Rect2(Vector2(rect.position * tile_size), Vector2(rect.size * tile_size))
+	draw_rect(area, Color(color, fill_alpha))
+	draw_rect(area.grow(-inset - ZONE_BORDER_WIDTH), Color(color, ZONE_BORDER_ALPHA), false, ZONE_BORDER_WIDTH)
 
 # (내부) 크리스탈/보석 스타일 셀 렌더링
 # 셀을 중앙 기준 4개 삼각형으로 분할 → 중앙이 가장 밝고 가장자리로 갈수록 어두워짐
@@ -156,6 +189,55 @@ func block_path(path: Path2D) -> void:
 			blocked_cells[cell] = true
 		offset += step
 
+# =========================================================================
+# 버프 구역 (증강)
+# =========================================================================
+
+func add_buff_zone(rect: Rect2i, stat: AugmentData.Stat, value: float) -> void:
+	var zone := BuffZone.new()
+	zone.rect = rect
+	zone.stat = stat
+	zone.value = value
+	buff_zones.append(zone)
+	queue_redraw()
+
+# 이 칸의 능력치 증가율. 겹친 구역은 효과가 큰 순으로 MAX_ZONE_STACK개까지 합산합니다.
+func zone_bonus(cell_pos: Vector2i, stat: AugmentData.Stat) -> float:
+	var values: Array[float] = []
+	for zone in buff_zones:
+		if zone.stat == stat and zone.rect.has_point(cell_pos):
+			values.append(zone.value)
+	values.sort()
+	var total := 0.0
+	for value in values.slice(-MAX_ZONE_STACK):
+		total += value
+	return total
+
+func is_placing_zone() -> bool:
+	return _placement_size != Vector2i.ZERO
+
+# 마우스 위치에 구역 미리보기를 띄웁니다. 게임이 멈춘 상태에서 호출됩니다.
+func begin_zone_placement(zone_size: Vector2i, color: Color) -> void:
+	_placement_size = zone_size
+	_placement_color = color
+	process_mode = Node.PROCESS_MODE_ALWAYS
+	_update_placement_preview()
+
+# cell을 중심으로 구역을 놓습니다. 격자 밖으로 나가면 안쪽으로 밀어 넣습니다.
+func place_zone_at(cell_pos: Vector2i) -> void:
+	var rect := zone_rect_at(cell_pos, _placement_size)
+	_placement_size = Vector2i.ZERO
+	process_mode = Node.PROCESS_MODE_INHERIT
+	queue_redraw()
+	zone_placed.emit(rect)
+
+func zone_rect_at(cell_pos: Vector2i, zone_size: Vector2i) -> Rect2i:
+	return Rect2i((cell_pos - zone_size / 2).clamp(Vector2i.ZERO, grid_size - zone_size), zone_size)
+
+func _update_placement_preview() -> void:
+	_placement_rect = zone_rect_at(world_to_grid(_pointer), _placement_size)
+	queue_redraw()
+
 # 유닛을 특정 격자 좌표에 점유/등록 시킵니다.
 func register_unit(cell_pos: Vector2i, unit: UnitBase) -> void:
 	if not is_cell_empty(cell_pos):
@@ -208,6 +290,10 @@ func get_closest_empty_cell(start_cell: Vector2i) -> Vector2i:
 # =========================================================================
 
 func _process(_delta: float) -> void:
+	if is_placing_zone():
+		_update_placement_preview()
+		return
+
 	if not dragged_unit:
 		return
 
@@ -231,7 +317,10 @@ func _input(event: InputEvent) -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
-		if not _try_pick_unit():
+		if is_placing_zone():
+			place_zone_at(world_to_grid(_pointer))
+			get_viewport().set_input_as_handled()
+		elif not _try_pick_unit():
 			unit_clicked.emit(null)
 
 # 마우스 위치에 있는 유닛을 찾아 집어 듭니다. 집었으면 true.
@@ -271,6 +360,11 @@ func _drop_unit() -> void:
 	if clicked:
 		unit_clicked.emit(unit)
 
+# 드래그 중이면 유닛을 원래 자리로 돌려놓습니다.
+func cancel_drag() -> void:
+	if dragged_unit:
+		drop_unit_at(original_grid_pos)
+
 func drop_unit_at(target_grid_pos: Vector2i) -> void:
 	show_grid = false
 	_hovered_cell = NO_CELL # 하이라이트 초기화
@@ -295,7 +389,7 @@ func drop_unit_at(target_grid_pos: Vector2i) -> void:
 
 # 부드러운 스냅 애니메이션 서브루틴
 func _tween_unit(unit: Node2D, target_pos: Vector2) -> void:
-	var tween = create_tween()
+	var tween = create_tween().set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 	tween.tween_property(unit, "global_position", target_pos, snap_duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 
 # =========================================================================
