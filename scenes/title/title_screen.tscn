@@ -1,6 +1,7 @@
-[gd_scene load_steps=16 format=3 uid="uid://co1p62exjtuqb"]
+[gd_scene load_steps=17 format=3 uid="uid://co1p62exjtuqb"]
 
 [ext_resource type="PackedScene" path="res://scenes/common/setting_panel.tscn" id="setting_panel"]
+[ext_resource type="PackedScene" path="res://scenes/title/codex_panel.tscn" id="codex_panel"]
 [ext_resource type="Script" path="res://scenes/title/title_screen.gd" id="1_noj3s"]
 [ext_resource type="Texture2D" uid="uid://c4eq0rx6tud5x" path="res://scenes/title/title_screen_background.png" id="1_qeulw"]
 [ext_resource type="PackedScene" uid="uid://m34ipr7mtbcr" path="res://scenes/title/unit/planet.tscn" id="3_0urkd"]
@@ -154,9 +155,9 @@ offset_bottom = 40.0
 tooltip_text = "난이도와 테마를 고르러 갑니다."
 layout_mode = 0
 offset_left = 750.0
-offset_top = 350.0
+offset_top = 320.0
 offset_right = 1150.0
-offset_bottom = 400.0
+offset_bottom = 370.0
 theme_override_font_sizes/font_size = 35
 theme_override_styles/normal = SubResource("StyleBoxFlat_bc57t")
 theme_override_styles/hover = SubResource("StyleBoxFlat_y18e7")
@@ -164,13 +165,27 @@ theme_override_styles/pressed = SubResource("StyleBoxFlat_54dje")
 theme_override_styles/focus = SubResource("StyleBoxFlat_1ofsv")
 text = "S T A R T"
 
+[node name="codex_button" type="Button" parent="Buttons"]
+tooltip_text = "지금까지 발견한 행성을 봅니다."
+layout_mode = 0
+offset_left = 750.0
+offset_top = 400.0
+offset_right = 1150.0
+offset_bottom = 450.0
+theme_override_font_sizes/font_size = 35
+theme_override_styles/normal = SubResource("StyleBoxFlat_bc57t")
+theme_override_styles/hover = SubResource("StyleBoxFlat_y18e7")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_54dje")
+theme_override_styles/focus = SubResource("StyleBoxFlat_1ofsv")
+text = "도  감"
+
 [node name="setting_button" type="Button" parent="Buttons"]
 tooltip_text = "음량과 화면을 설정합니다."
 layout_mode = 0
 offset_left = 750.0
-offset_top = 450.0
+offset_top = 480.0
 offset_right = 1150.0
-offset_bottom = 500.0
+offset_bottom = 530.0
 theme_override_font_sizes/font_size = 35
 theme_override_styles/normal = SubResource("StyleBoxFlat_bc57t")
 theme_override_styles/hover = SubResource("StyleBoxFlat_y18e7")
@@ -182,9 +197,9 @@ text = "S E T T I N G"
 tooltip_text = "게임을 끝냅니다."
 layout_mode = 0
 offset_left = 750.0
-offset_top = 550.0
+offset_top = 560.0
 offset_right = 1150.0
-offset_bottom = 600.0
+offset_bottom = 610.0
 theme_override_font_sizes/font_size = 35
 theme_override_styles/normal = SubResource("StyleBoxFlat_bc57t")
 theme_override_styles/hover = SubResource("StyleBoxFlat_y18e7")
@@ -197,6 +212,9 @@ layer = 10
 
 [node name="SettingPanel" parent="SettingLayer" instance=ExtResource("setting_panel")]
 
+[node name="CodexPanel" parent="SettingLayer" instance=ExtResource("codex_panel")]
+
 [connection signal="pressed" from="Buttons/start_button" to="." method="_on_start_button_pressed"]
+[connection signal="pressed" from="Buttons/codex_button" to="." method="_on_codex_button_pressed"]
 [connection signal="pressed" from="Buttons/setting_button" to="." method="_on_setting_button_pressed"]
 [connection signal="pressed" from="Buttons/quit_button" to="." method="_on_quit_button_pressed"]

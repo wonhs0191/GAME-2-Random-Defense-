@@ -18,5 +18,21 @@ func _ready() -> void:
 				await get_tree().process_frame
 			await RenderingServer.frame_post_draw
 			get_viewport().get_texture().get_image().save_png(out_dir.path_join("setting.png"))
+			setting_panel.close()
+		var codex_panel: Node = scene.find_child("CodexPanel", true, false)
+		if codex_panel:
+			for unit in Catalog.units:
+				if unit.id.ends_with("1"):
+					Codex.discover(unit.id)
+			codex_panel.open()
+			for i in 5:
+				await get_tree().process_frame
+			await RenderingServer.frame_post_draw
+			get_viewport().get_texture().get_image().save_png(out_dir.path_join("codex.png"))
+			codex_panel.select(Catalog.units_of_grade(UnitData.Grade.C)[1])
+			for i in 5:
+				await get_tree().process_frame
+			await RenderingServer.frame_post_draw
+			get_viewport().get_texture().get_image().save_png(out_dir.path_join("codex_locked.png"))
 		scene.free()
 	get_tree().quit()

@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="UnitData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://entities/units/unit_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "PRD-A-FR-06"
+description = "파쇄 행성. 쪼개진 지각 틈으로 핵 에너지가 넓게 새어 나오는 광역형."
+alias = "Broken Core"
+grade = 2
+attack_type = 1
+sheet_path = "res://entities/units/generated/PRD-A-FR-06.png"
+sheet_columns = 10
+sheet_rows = 6
+effect_dir = "res://entities/units/generated/effects/zone_ember"
+effect_frame_count = 30
+damage = 26.4
+attack_interval = 0.5
+attack_range = 216.0
+zone_radius = 96.0

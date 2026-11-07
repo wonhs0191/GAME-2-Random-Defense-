@@ -16,10 +16,14 @@ const SHOTS := {
 	"shot_amber": ["a8641f", "edc97a", "fff4d0"], "shot_violet": ["7a2be2", "e070d8", "fff0ff"],
 	"shot_teal": ["1f8ac0", "70e0d0", "f0fff8"], "shot_ember": ["d0502a", "ffb040", "fff8e0"],
 	"shot_jade": ["20a8a0", "80f0d0", "f0fff4"],
+	"shot_rose": ["c01a4a", "ff7a9a", "fff0f4"], "shot_lime": ["3ab060", "b0f080", "f8fff0"],
+	"shot_ice": ["3a6ad0", "90d8ff", "f0fcff"], "shot_nova": ["e0501a", "ffd060", "fffdf0"],
 }
 const ZONES := {
 	"zone_lava": ["ff5a1f", "ffd23f"], "zone_violet": ["c02cff", "ff9cf0"], "zone_lilac": ["9060b8", "f8e0ff"],
 	"zone_flare": ["e0551a", "fff4c9"], "zone_abyss": ["8a2be2", "ffe0ff"],
+	"zone_prism": ["3a6ad0", "c0f0ff"], "zone_rose": ["d03a90", "ffd0e8"], "zone_ember": ["a07058", "ffb040"],
+	"zone_nebula": ["a02ac0", "ffc0d8"], "zone_sun": ["ffb030", "fffdf0"],
 }
 
 func _init() -> void:

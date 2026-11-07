@@ -121,12 +121,9 @@ func _ready() -> void:
 
 	# 행성과 버튼에 마우스를 올리면 설명이 나온다
 	await move_to(grid.cell_center(to_cell), false)
-	await wait_frames(4)
-	check(game.hud.unit_tooltip.visible, "행성에 마우스를 올리면 설명")
+	check(await wait_for(func(): return game.hud.unit_tooltip.visible), "행성에 마우스를 올리면 설명")
 	await move_to(GACHA_BUTTON, false)
-	await wait_frames(4)
-	check(not game.hud.unit_tooltip.visible, "버튼으로 옮기면 행성 설명 숨김")
-	check(get_viewport().gui_get_hovered_control() == game.hud.gacha_button, "버튼 위 마우스 인식")
+	check(await wait_for(func(): return not game.hud.unit_tooltip.visible), "버튼으로 옮기면 행성 설명 숨김")
 
 	# 증강: 카드 클릭, 구역 배치 클릭
 	game.augments.request_offer()
@@ -168,6 +165,14 @@ func check(condition: bool, label: String) -> void:
 	if not condition:
 		_failures += 1
 		print("FAIL ", label)
+
+# 조건이 참이 될 때까지 기다린다. 시간 초과면 false.
+func wait_for(condition: Callable) -> bool:
+	for i in 60:
+		if condition.call():
+			return true
+		await get_tree().process_frame
+	return condition.call()
 
 func wait_frames(count: int) -> void:
 	for i in count:

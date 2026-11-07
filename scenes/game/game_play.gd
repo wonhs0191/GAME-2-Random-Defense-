@@ -136,11 +136,12 @@ func spawn_unit(unit_data: UnitData, cell: Vector2i) -> UnitBase:
 # 뽑기 연출을 시작한다. 연출이 끝나면 유닛이 보관함에 나타나고 뽑기 횟수를 센다.
 func _start_reveal(unit: UnitBase) -> void:
 	Sound.play("reveal_" + unit.data.get_grade_name().to_lower())
+	var is_new := Codex.discover(unit.data.id)
 	if instant_reveal:
 		_on_reveal_finished(unit)
 		return
 	unit.hide()
-	hud.gacha_reveal.play(unit)
+	hud.gacha_reveal.play(unit, is_new)
 
 func _on_reveal_finished(unit: UnitBase) -> void:
 	if is_instance_valid(unit):
@@ -157,6 +158,7 @@ func _pop_unit(unit: UnitBase) -> void:
 
 # 조합으로 나온 유닛의 등장.
 func _reveal(unit: UnitBase) -> void:
+	Codex.discover(unit.data.id)
 	_pop_unit(unit)
 	hud.show_reveal(unit.data)
 	Sound.play("reveal_" + unit.data.get_grade_name().to_lower())

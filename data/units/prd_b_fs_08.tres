@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="UnitData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://entities/units/unit_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "PRD-B-FS-08"
+description = "독성 행성. 비취색 독기를 잇달아 뿜는 연사형."
+alias = "Jade Miasma"
+grade = 1
+attack_type = 0
+sheet_path = "res://entities/units/generated/PRD-B-FS-08.png"
+sheet_columns = 10
+sheet_rows = 6
+effect_dir = "res://entities/units/PRD-C-FS/07/MG6"
+effect_frame_count = 30
+damage = 14.0
+attack_interval = 0.45
+attack_range = 176.0
+zone_radius = 56.0

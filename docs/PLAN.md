@@ -21,7 +21,7 @@
 | 1 | GroMoon 미푸시 작업(UNIT-005, MAP-005) | 푸시 없음을 확인. Notion에 남은 내용으로 재구현 |
 | 2 | 엔진 | Godot 4.7.2 (이전 4.2) |
 | 3 | 증강 빈도 | 뽑기 5회마다 1번 + 보스 클리어 시 (Notion 원안은 뽑을 때마다) |
-| 4 | 유닛 구성 | C 12 + B 5 + A 6 + S 6 = 29종 (Notion 원안 C3 변경) |
+| 4 | 유닛 구성 | C 20 + B 16 + A 14 + S 10 = 60종 (Notion 원안 20종, 2026-11-07 사용자 요청으로 확장) |
 | 5 | 부족 에셋 | 효과음 직접 합성, 행성은 deep-fold 생성기, BGM은 CC0. 외부 다운로드는 건별 승인. M5~M7은 다운로드 없이 진행해 B~S 행성, A·S 이펙트, BGM까지 로컬 생성 |
 | 6 | 완성 범위 | 한국어 Windows 빌드까지. Steam 등록·사업자·스토어 페이지는 사용자 몫 |
 
@@ -51,15 +51,16 @@
 | 증강 | 3택 카드 패널, 공속·공격력·범위, 패널 표시 중 게임 정지 [Notion]. 뽑기 5회마다 + 보스 처치 시 |
 | 시너지 ZONE | 증강 선택 시 격자에 버프 구역 지정, 구역 안 유닛 강화 [Notion]. 3x3 또는 5x5, 옮길 수 없음, 같은 능력치는 큰 값 2개까지 합산 [제안] |
 | 편의 | 배속, HUD, 확률표 [Notion] |
+| 도감 | 타이틀 메뉴. 뽑기나 조합으로 얻은 행성만 공개되고 나머지는 실루엣. 발견 기록은 `user://codex.cfg` [제안] |
 
 ### 유닛 표
 
 | 등급 | 종류 | 행성 타입 [Notion] | 이펙트 [Notion] |
 |---|---|---|---|
-| C | 12 | 테란 드라이(FR=ZONE), 노 앳모스피어(FS=SHOT) | 유닛 폴더에 있음 |
-| B | 5 | 구름 계열(가스 자이언트, 테란 웻, 아이슬란드) | 재활용 |
-| A | 6 | 스타, 라바, 토성 | Magic Shot 4 |
-| S | 6 | 갤럭시, 블랙홀 | Magic Shot 3 / Portal |
+| C | 20 | 테란 드라이(FR=ZONE), 노 앳모스피어(FS=SHOT) | 유닛 폴더에 있음 |
+| B | 16 | 가스 자이언트, 테란 웻, 아이슬란드, 해양, 독성, 폭풍 | C 이펙트 재활용 |
+| A | 14 | 스타, 쌍성, 라바, 토성형, 수정, 파쇄 | 로컬 생성 |
+| S | 10 | 갤럭시, 블랙홀, 성운, 다이슨 구체, 펄서 | 로컬 생성 |
 
 ID 규칙: `PRD-등급-타입-번호` (예: `PRD-C-FR-01`). 공식 명칭은 ID, 별칭은 부가 정보 [Notion].
 
@@ -78,6 +79,7 @@ entities/effects/            등장 연출
 entities/augments/           AugmentData 정의
 global/                      GameSetting(선택값), GameState(런타임 상태), Catalog(데이터 로더)
 scenes/game/                 game_play, grid, wave_manager, augment_manager, hud, maps(경로만)
+entities/units/thumbnails/   도감 썸네일 (tools/generate_thumbnails.gd로 생성)
 tests/                       헤드리스 테스트
 ```
 

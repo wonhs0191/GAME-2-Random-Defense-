@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="UnitData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://entities/units/unit_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "PRD-A-FS-07"
+description = "수정 행성. 거대한 결정 창을 던지는 중포형."
+alias = "Emerald Spire"
+grade = 2
+attack_type = 0
+sheet_path = "res://entities/units/generated/PRD-A-FS-07.png"
+sheet_columns = 10
+sheet_rows = 6
+effect_dir = "res://entities/units/generated/effects/shot_lime"
+effect_frame_count = 16
+damage = 88.2
+attack_interval = 1.0
+attack_range = 240.0
+zone_radius = 56.0
