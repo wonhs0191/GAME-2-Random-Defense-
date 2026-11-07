@@ -5,6 +5,7 @@
 [resource]
 script = ExtResource("1")
 id = "PRD-C-FR-03"
+description = "테란 드라이. 갈라진 대륙판 사이로 코어의 열이 흘러나온다."
 grade = 0
 attack_type = 1
 sheet_path = "res://entities/units/PRD-C-FR/03/PRD-C-FR-03.png"

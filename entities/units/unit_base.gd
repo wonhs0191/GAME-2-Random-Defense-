@@ -13,10 +13,12 @@ const RESCAN_INTERVAL := 0.1 # 공격 대상이 없을 때 다시 찾는 간격 
 const ZONE_SAMPLE_STEP := 16.0 # 장판 위치 후보를 경로에서 뽑는 간격 (px)
 const SPRITE_SIZES := [50.0, 52.0, 56.0, 60.0] # 등급별 행성 크기 (px)
 const RING_RADIUS := 30.0
-const STAR_RADIUS := 5.0
-const STAR_OUTLINE := 2.0
-const STAR_SPACING := 13.0
-const STAR_OFFSET := 24.0 # 별 표시 위치 (유닛 중심 아래, px)
+const STAR_RADIUS := 7.0
+const STAR_INNER_RATIO := 0.45 # 별의 안쪽 꼭짓점 반지름 비율
+const STAR_TIPS := 5
+const STAR_OUTLINE := 2.5
+const STAR_SPACING := 15.0
+const STAR_OFFSET := 23.0 # 별 표시 위치 (유닛 중심 아래, px)
 const STAR_COLOR := Color(1.0, 0.85, 0.35)
 const STAR_OUTLINE_COLOR := Color(0.1, 0.08, 0.2)
 const POP_DURATION := 0.3
@@ -64,10 +66,15 @@ func _draw() -> void:
 		_draw_star(center, STAR_RADIUS, STAR_COLOR)
 
 func _draw_star(center: Vector2, radius: float, color: Color) -> void:
-	draw_colored_polygon(PackedVector2Array([
-		center + Vector2(0, -radius), center + Vector2(radius, 0),
-		center + Vector2(0, radius), center + Vector2(-radius, 0),
-	]), color)
+	draw_colored_polygon(star_points(center, radius), color)
+
+# 위쪽 꼭짓점부터 바깥과 안쪽을 번갈아 찍은 별 모양.
+static func star_points(center: Vector2, radius: float) -> PackedVector2Array:
+	var points := PackedVector2Array()
+	for i in STAR_TIPS * 2:
+		var length := radius if i % 2 == 0 else radius * STAR_INNER_RATIO
+		points.append(center + Vector2.from_angle(-PI / 2.0 + PI * i / STAR_TIPS) * length)
+	return points
 
 func _process(delta: float) -> void:
 	_frame_time += delta
@@ -89,6 +96,10 @@ func get_attack_interval() -> float:
 # 놓을 위치에 따라 구역 효과가 달라지므로 위치를 받는다.
 func get_attack_range(at: Vector2 = global_position) -> float:
 	return data.attack_range * (1.0 + _zone_bonus(at, AugmentData.Stat.RANGE))
+
+# 현재 칸의 구역 효과.
+func get_zone_bonus(stat: AugmentData.Stat) -> float:
+	return _zone_bonus(global_position, stat)
 
 func _zone_bonus(at: Vector2, stat: AugmentData.Stat) -> float:
 	var grid: GridManager = _game.grid

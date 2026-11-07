@@ -5,6 +5,7 @@
 [resource]
 script = ExtResource("1")
 id = "PRD-C-FR-01"
+description = "테란 드라이. 메마른 지각의 틈으로 불안정한 에너지가 새어 나와 항로 위에 장판을 깐다."
 grade = 0
 attack_type = 1
 sheet_path = "res://entities/units/PRD-C-FR/01/PRD-C-FR-01.png"

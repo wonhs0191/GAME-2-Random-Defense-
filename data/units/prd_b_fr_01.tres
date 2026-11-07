@@ -5,6 +5,7 @@
 [resource]
 script = ExtResource("1")
 id = "PRD-B-FR-01"
+description = "아이슬란드. 얼음 대륙이 갈라지며 냉기를 항로로 쏟아낸다. 표준형."
 alias = "Frost Mantle"
 grade = 1
 attack_type = 1

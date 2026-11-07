@@ -29,6 +29,7 @@ theme_override_font_sizes/font_size = 24
 text = "배경음"
 
 [node name="BgmSlider" type="HSlider" parent="."]
+tooltip_text = "배경음 크기를 조절합니다."
 layout_mode = 0
 offset_left = 560.0
 offset_top = 240.0
@@ -48,6 +49,7 @@ theme_override_font_sizes/font_size = 24
 text = "효과음"
 
 [node name="SfxSlider" type="HSlider" parent="."]
+tooltip_text = "효과음 크기를 조절합니다."
 layout_mode = 0
 offset_left = 560.0
 offset_top = 310.0
@@ -58,6 +60,7 @@ step = 0.05
 focus_mode = 0
 
 [node name="FullscreenCheck" type="CheckButton" parent="."]
+tooltip_text = "전체 화면과 창 모드를 바꿉니다."
 layout_mode = 0
 offset_left = 380.0
 offset_top = 380.0
@@ -68,6 +71,7 @@ theme_override_font_sizes/font_size = 24
 text = "전체 화면"
 
 [node name="CloseButton" type="Button" parent="."]
+tooltip_text = "설정을 저장하고 닫습니다."
 layout_mode = 0
 offset_left = 540.0
 offset_top = 480.0

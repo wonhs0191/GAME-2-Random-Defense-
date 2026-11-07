@@ -5,6 +5,7 @@
 [resource]
 script = ExtResource("1")
 id = "PRD-B-FR-02"
+description = "테란 웻. 바다와 구름이 넓게 퍼져 장판이 크다. 위력은 낮은 광역형."
 alias = "Verdant Tide"
 grade = 1
 attack_type = 1

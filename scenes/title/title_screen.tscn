@@ -151,6 +151,7 @@ offset_right = 40.0
 offset_bottom = 40.0
 
 [node name="start_button" type="Button" parent="Buttons"]
+tooltip_text = "난이도와 테마를 고르러 갑니다."
 layout_mode = 0
 offset_left = 750.0
 offset_top = 350.0
@@ -164,6 +165,7 @@ theme_override_styles/focus = SubResource("StyleBoxFlat_1ofsv")
 text = "S T A R T"
 
 [node name="setting_button" type="Button" parent="Buttons"]
+tooltip_text = "음량과 화면을 설정합니다."
 layout_mode = 0
 offset_left = 750.0
 offset_top = 450.0
@@ -177,6 +179,7 @@ theme_override_styles/focus = SubResource("StyleBoxFlat_2134j")
 text = "S E T T I N G"
 
 [node name="quit_button" type="Button" parent="Buttons"]
+tooltip_text = "게임을 끝냅니다."
 layout_mode = 0
 offset_left = 750.0
 offset_top = 550.0

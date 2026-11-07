@@ -5,6 +5,7 @@
 [resource]
 script = ExtResource("1")
 id = "PRD-A-FR-01"
+description = "라바. 지각이 무너져 용암이 항로까지 흘러내린다. 표준형."
 alias = "Cinder Heart"
 grade = 2
 attack_type = 1

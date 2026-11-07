@@ -5,6 +5,7 @@
 [resource]
 script = ExtResource("1")
 id = "PRD-B-FS-01"
+description = "가스 자이언트. 호박색 폭풍의 눈에서 번개를 쏘는 표준형."
 alias = "Amber Storm"
 grade = 1
 attack_type = 0

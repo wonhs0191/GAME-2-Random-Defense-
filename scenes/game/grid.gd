@@ -4,6 +4,7 @@ class_name GridManager
 signal merge_requested(moved: UnitBase, target: UnitBase)
 signal merge_unaffordable(cost: int)
 signal unit_clicked(unit: UnitBase) # 빈 곳을 누르면 null
+signal unit_hovered(unit: UnitBase) # 마우스가 유닛에서 벗어나면 null
 signal zone_placed(rect: Rect2i)
 
 # 증강으로 놓은 버프 구역
@@ -58,6 +59,7 @@ var original_grid_pos: Vector2i
 @export var snap_duration: float = 0.15 # 유닛 이동 애니메이션 속도
 
 var _press_position: Vector2 = Vector2.ZERO
+var _hover_unit: UnitBase = null
 
 # 구역 배치 중일 때의 크기와 색. 배치 중이 아니면 크기가 0입니다.
 var _placement_size: Vector2i = Vector2i.ZERO
@@ -290,6 +292,8 @@ func get_closest_empty_cell(start_cell: Vector2i) -> Vector2i:
 # =========================================================================
 
 func _process(_delta: float) -> void:
+	_update_hover()
+
 	if is_placing_zone():
 		_update_placement_preview()
 		return
@@ -310,6 +314,15 @@ func _process(_delta: float) -> void:
 	if new_hovered != _hovered_cell:
 		_hovered_cell = new_hovered
 		queue_redraw()
+
+# 집고 있거나 구역을 놓는 중에는 설명을 띄우지 않습니다.
+func _update_hover() -> void:
+	var unit: UnitBase = null
+	if not dragged_unit and not is_placing_zone():
+		unit = grid_status.get(world_to_grid(_pointer))
+	if unit != _hover_unit:
+		_hover_unit = unit
+		unit_hovered.emit(unit)
 
 func _input(event: InputEvent) -> void:
 	if event is InputEventMouse:

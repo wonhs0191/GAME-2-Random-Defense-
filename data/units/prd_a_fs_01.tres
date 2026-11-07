@@ -5,6 +5,7 @@
 [resource]
 script = ExtResource("1")
 id = "PRD-A-FS-01"
+description = "스타. 전투 병기로 개조된 항성. 태양풍을 쏘는 표준형."
 alias = "Solar Crown"
 grade = 2
 attack_type = 0

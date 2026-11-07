@@ -5,6 +5,7 @@
 [resource]
 script = ExtResource("1")
 id = "PRD-B-FS-03"
+description = "테란 웻. 산호 대륙의 공명으로 멀리 있는 적을 맞히는 저격형."
 alias = "Reef Core"
 grade = 1
 attack_type = 0

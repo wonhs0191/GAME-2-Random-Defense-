@@ -5,6 +5,7 @@
 [resource]
 script = ExtResource("1")
 id = "PRD-A-FR-03"
+description = "토성형. 고리에서 떨어지는 파편이 쉴 새 없이 내리꽂히는 연타형."
 alias = "Halo Drift"
 grade = 2
 attack_type = 1

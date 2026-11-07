@@ -7,6 +7,7 @@ const BGM_PATH := "res://assets/audio/bgm/%s.wav"
 const BGM_BUS := "BGM"
 const SFX_BUS := "SFX"
 const PLAYER_COUNT := 16
+const BGM_FADE_TIME := 1.2
 
 # 자주 나는 소리는 간격을 둔다 (밀리초). 한꺼번에 울리면 소리가 뭉개진다.
 const MIN_REPEAT_MS := {"shot": 70, "enemy_die": 50}
@@ -16,7 +17,9 @@ var last_sfx: String = ""
 
 var _streams: Dictionary = {}
 var _players: Array[AudioStreamPlayer] = []
-var _bgm_player: AudioStreamPlayer
+var _bgm_players: Array[AudioStreamPlayer] = []
+var _active_bgm: int = 0
+var _fade_tween: Tween = null
 var _next_player: int = 0
 var _last_played_ms: Dictionary = {}
 
@@ -24,9 +27,11 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS # 일시 정지 메뉴에서도 소리가 나야 한다
 	_add_bus(BGM_BUS)
 	_add_bus(SFX_BUS)
-	_bgm_player = AudioStreamPlayer.new()
-	_bgm_player.bus = BGM_BUS
-	add_child(_bgm_player)
+	for i in 2: # 곡이 바뀔 때 겹쳐서 넘긴다
+		var bgm_player := AudioStreamPlayer.new()
+		bgm_player.bus = BGM_BUS
+		add_child(bgm_player)
+		_bgm_players.append(bgm_player)
 	for i in PLAYER_COUNT:
 		var player := AudioStreamPlayer.new()
 		player.bus = SFX_BUS
@@ -61,12 +66,26 @@ func play_bgm(bgm_name: String) -> void:
 	var stream := _get_stream(BGM_PATH % bgm_name)
 	stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
 	stream.loop_end = int(stream.get_length() * stream.mix_rate)
-	_bgm_player.stream = stream
-	_bgm_player.play()
+	var fading_out := _bgm_players[_active_bgm]
+	_active_bgm = 1 - _active_bgm
+	var fading_in := _bgm_players[_active_bgm]
+	fading_in.stream = stream
+	fading_in.volume_linear = 0.0
+	fading_in.play()
+	_fade(fading_in, fading_out)
 
 func stop_bgm() -> void:
 	current_bgm = ""
-	_bgm_player.stop()
+	_fade(null, _bgm_players[_active_bgm])
+
+func _fade(fading_in: AudioStreamPlayer, fading_out: AudioStreamPlayer) -> void:
+	if _fade_tween:
+		_fade_tween.kill()
+	_fade_tween = create_tween().set_parallel()
+	if fading_in:
+		_fade_tween.tween_property(fading_in, "volume_linear", 1.0, BGM_FADE_TIME)
+	_fade_tween.tween_property(fading_out, "volume_linear", 0.0, BGM_FADE_TIME)
+	_fade_tween.chain().tween_callback(fading_out.stop)
 
 # 아래 모든 버튼에 클릭 소리를 붙인다. 씬이 겹쳐 있어도 한 번만 붙는다.
 func bind_buttons(root: Node) -> void:

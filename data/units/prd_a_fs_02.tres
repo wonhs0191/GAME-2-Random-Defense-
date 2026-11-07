@@ -5,6 +5,7 @@
 [resource]
 script = ExtResource("1")
 id = "PRD-A-FS-02"
+description = "스타. 푸른 초거성이 짧은 플레어를 연속으로 뿜는 연사형."
 alias = "Cold Sirius"
 grade = 2
 attack_type = 0

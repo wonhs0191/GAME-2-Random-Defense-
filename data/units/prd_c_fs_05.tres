@@ -5,6 +5,7 @@
 [resource]
 script = ExtResource("1")
 id = "PRD-C-FS-05"
+description = "노 앳모스피어. 표면을 깎아낸 잔해가 고리처럼 맴돌다 발사된다."
 grade = 0
 attack_type = 0
 sheet_path = "res://entities/units/PRD-C-FS/05/PRD-C-FS-05.png"

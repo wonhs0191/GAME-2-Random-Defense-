@@ -69,8 +69,9 @@ func _ready():
 	grid.merge_requested.connect(merge_units)
 	grid.merge_unaffordable.connect(hud.show_merge_unaffordable)
 	grid.unit_clicked.connect(select_unit)
+	grid.unit_hovered.connect(hud.show_unit_tooltip)
 	hud.title_requested.connect(_on_title_requested)
-	Sound.play_bgm("battle")
+	Sound.play_bgm(_battle_bgm(1))
 	hud.augment_chosen.connect(augments.choose)
 	hud.ultimate_pressed.connect(ultimates.use)
 	ultimates.used.connect(hud.show_ultimate)
@@ -174,7 +175,10 @@ func _on_upgrade_pressed() -> void:
 func _on_wave_started(wave: int) -> void:
 	var boss_wave := wave_manager.is_boss_wave(wave)
 	Sound.play("boss_warning" if boss_wave else "wave_start")
-	Sound.play_bgm("boss" if boss_wave else "battle")
+	if boss_wave:
+		Sound.play_bgm("final_boss" if wave_manager.is_final_wave(wave) else "boss")
+	else:
+		Sound.play_bgm(_battle_bgm(wave))
 	var faction := wave_manager.faction_for_wave(wave)
 	if boss_wave:
 		hud.show_boss_warning(wave_manager.is_final_wave(wave))
@@ -215,11 +219,15 @@ func _on_title_requested() -> void:
 	get_tree().paused = false
 	get_tree().change_scene_to_file(TITLE_SCENE)
 
+# 세력마다 전투곡이 다르다.
+func _battle_bgm(wave: int) -> String:
+	return "battle_" + wave_manager.faction_for_wave(wave)
+
 func _on_wave_cleared(wave: int) -> void:
 	GameState.add_gold(WAVE_REWARD_BASE + wave * WAVE_REWARD_STEP)
-	Sound.play_bgm("battle")
 	if wave_manager.is_final_wave(wave):
 		return
+	Sound.play_bgm(_battle_bgm(wave + 1))
 	if wave_manager.is_boss_wave(wave):
 		augments.request_offer()
 	if wave % UltimateManager.SWAP_INTERVAL == 0:

@@ -5,6 +5,7 @@
 [resource]
 script = ExtResource("1")
 id = "PRD-A-FR-02"
+description = "라바. 보랏빛 마그마가 넓은 장판을 만드는 광역형."
 alias = "Umbral Forge"
 grade = 2
 attack_type = 1

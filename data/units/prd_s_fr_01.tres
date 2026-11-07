@@ -5,6 +5,7 @@
 [resource]
 script = ExtResource("1")
 id = "PRD-S-FR-01"
+description = "블랙홀. 사건의 지평선 근처에 닿은 함선은 돌아오지 못한다. 표준형."
 alias = "Event Horizon"
 grade = 3
 attack_type = 1

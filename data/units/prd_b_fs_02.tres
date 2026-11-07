@@ -5,6 +5,7 @@
 [resource]
 script = ExtResource("1")
 id = "PRD-B-FS-02"
+description = "가스 자이언트. 빠른 대기 순환으로 약한 번개를 연속으로 쏘는 연사형."
 alias = "Indigo Veil"
 grade = 1
 attack_type = 0

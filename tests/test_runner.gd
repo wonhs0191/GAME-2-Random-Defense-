@@ -63,6 +63,11 @@ func _run_all() -> void:
 	await test_wave_banners()
 	await test_result_text()
 	await test_lobby_detail()
+	test_star_shape()
+	await test_all_buttons_have_tooltips()
+	await test_dynamic_tooltips()
+	await test_planet_tooltip()
+	await test_planet_tooltip_position()
 	await test_enemy_follows_path()
 	await test_shot_kills_enemy()
 	await test_zone_burns_enemy()
@@ -165,6 +170,7 @@ func test_unit_data() -> void:
 		var is_zone := unit.attack_type == UnitData.AttackType.ZONE
 		check(unit.id.contains("-FR-") == is_zone, "FR은 ZONE, FS는 SHOT " + unit.id)
 		check(unit.grade == UnitData.Grade.C or unit.alias != "", "상위 등급 별칭 " + unit.id)
+		check(unit.description != "", "행성 설명 " + unit.id)
 		total_dps[unit.grade] += unit.damage / unit.attack_interval
 	check(ids.size() == Catalog.units.size(), "유닛 ID 중복 없음")
 	for grade in [UnitData.Grade.C, UnitData.Grade.B, UnitData.Grade.A]:
@@ -895,7 +901,7 @@ func test_sound_files() -> void:
 			"upgrade_success", "upgrade_fail", "shot", "enemy_die", "life_lost", "boss_warning",
 			"wave_start", "ultimate", "augment", "zone_place", "gameover", "clear"]:
 		check(ResourceLoader.exists(Sound.SFX_PATH % sfx_name), "효과음 파일 " + sfx_name)
-	for bgm_name in ["title", "battle", "boss"]:
+	for bgm_name in ["title", "lobby", "battle_nautolan", "battle_klaed", "battle_nairan", "boss", "final_boss"]:
 		check(ResourceLoader.exists(Sound.BGM_PATH % bgm_name), "BGM 파일 " + bgm_name)
 
 func test_settings_saved() -> void:
@@ -1001,7 +1007,7 @@ func test_battle_feedback() -> void:
 
 func test_game_sounds() -> void:
 	var game := await start_game()
-	check(Sound.current_bgm == "battle", "전투 BGM")
+	check(Sound.current_bgm == "battle_nautolan", "첫 세력 전투 BGM")
 	game.draw_unit()
 	check(Sound.last_sfx.begins_with("reveal_"), "뽑기 등장 소리")
 	var manager: WaveManager = game.wave_manager
@@ -1009,8 +1015,19 @@ func test_game_sounds() -> void:
 	manager.start_next_wave()
 	check(Sound.current_bgm == "boss", "보스 BGM")
 	check(Sound.last_sfx == "boss_warning", "보스 경고음")
-	game._on_wave_cleared(9)
-	check(Sound.current_bgm == "battle", "보스 후 전투 BGM")
+	game._on_wave_cleared(10)
+	game.augments.choose(0)
+	game.grid.place_zone_at(Vector2i(3, 3))
+	game.augments.choose(0)
+	check(Sound.current_bgm == "battle_klaed", "보스 뒤 다음 세력 전투 BGM")
+	manager.state = WaveManager.State.WAITING
+	manager.wave = 20
+	manager.start_next_wave()
+	check(Sound.current_bgm == "battle_nairan", "세력이 바뀌면 전투 BGM도 바뀜")
+	manager.state = WaveManager.State.WAITING
+	manager.wave = manager.total_waves - 1
+	manager.start_next_wave()
+	check(Sound.current_bgm == "final_boss", "최종 보스 BGM")
 	GameState.lose_lives(GameState.lives)
 	await wait_frames(1)
 	check(Sound.last_sfx == "gameover", "게임오버 소리")
@@ -1062,6 +1079,135 @@ func test_lobby_detail() -> void:
 	check(setup.difficulty_detail.text.contains("두 갈래"), "난이도 세계관 표시")
 	setup.queue_free()
 	await get_tree().process_frame
+
+func test_star_shape() -> void:
+	var points := UnitBase.star_points(Vector2.ZERO, 10.0)
+	check(points.size() == 10, "별은 꼭짓점 10개")
+	check(points[0].is_equal_approx(Vector2(0, -10)), "별 첫 꼭짓점은 위쪽")
+	var alternating := true
+	for i in points.size():
+		var expected := 10.0 if i % 2 == 0 else 10.0 * UnitBase.STAR_INNER_RATIO
+		alternating = alternating and is_equal_approx(points[i].length(), expected)
+	check(alternating, "바깥과 안쪽 꼭짓점이 번갈아 나옴")
+
+func check_tooltips(root: Node, label: String) -> void:
+	for control: Control in root.find_children("*", "BaseButton", true, false):
+		check(control.tooltip_text != "", "%s 툴팁 %s" % [label, control.name])
+
+func test_all_buttons_have_tooltips() -> void:
+	var game := await start_game()
+	game.augments.request_offer()
+	await wait_frames(1)
+	check_tooltips(game.hud, "전투")
+	game.augments.choose(0)
+	game.grid.place_zone_at(Vector2i(3, 3))
+	for path in ["TopBar/GoldLabel", "TopBar/LivesLabel", "TopBar/WaveLabel"]:
+		var label: Label = game.hud.get_node(path)
+		check(label.tooltip_text != "" and label.mouse_filter == Control.MOUSE_FILTER_STOP, "상단 정보 툴팁 " + path)
+	await end_game(game)
+
+	var title: Node = load("res://scenes/title/title_screen.tscn").instantiate()
+	add_child(title)
+	await wait_frames(2)
+	check_tooltips(title, "타이틀")
+	title.queue_free()
+
+	var setup: Control = load("res://scenes/lobby/playsetup.tscn").instantiate()
+	add_child(setup)
+	await wait_frames(2)
+	check_tooltips(setup, "로비")
+	setup.queue_free()
+	await wait_frames(1)
+
+func test_dynamic_tooltips() -> void:
+	var game := await start_game()
+	var hud: CanvasLayer = game.hud
+	game.ultimates.equip(ultimate_of(UltimateData.Kind.FREEZE))
+	await wait_frames(2)
+	check(hud.ultimate_button.tooltip_text == ultimate_of(UltimateData.Kind.FREEZE).get_description(), "필살기 툴팁은 현재 필살기")
+	game.ultimates.equip(ultimate_of(UltimateData.Kind.METEOR))
+	await wait_frames(2)
+	check(hud.ultimate_button.tooltip_text == ultimate_of(UltimateData.Kind.METEOR).get_description(), "필살기를 바꾸면 툴팁도 바뀜")
+	check(hud.gacha_button.tooltip_text.contains("%dG" % GameState.GACHA_COST) or hud.gacha_button.tooltip_text.contains(str(GameState.GACHA_COST)), "뽑기 비용 표시")
+	check(hud.upgrade_button.tooltip_text.contains("160%") and hud.upgrade_button.tooltip_text.contains("250%"), "강화 배율 표시")
+	await end_game(game)
+
+func test_planet_tooltip() -> void:
+	var game := await start_game()
+	var grid: GridManager = game.grid
+	var hud: CanvasLayer = game.hud
+	var cell := Vector2i(5, 5)
+	var unit: UnitBase = game.spawn_unit(Catalog.units_of_grade(UnitData.Grade.A)[0], cell)
+	await wait_frames(2)
+	check(not hud.unit_tooltip.visible, "마우스가 없으면 설명 없음")
+
+	grid._pointer = grid.cell_center(cell)
+	await wait_frames(2)
+	check(hud.unit_tooltip.visible, "행성 위에 마우스를 올리면 설명")
+	var text: String = hud.unit_tooltip_label.text
+	check(text.contains(unit.data.id) and text.contains(unit.data.alias), "설명에 이름")
+	check(text.contains("A등급") and text.contains("1성"), "설명에 등급과 별")
+	check(text.contains(unit.data.description), "설명에 행성 소개")
+	check(text.contains("조합 %dG" % unit.data.merge_cost()), "설명에 조합 안내")
+
+	grid.add_buff_zone(Rect2i(cell, Vector2i.ONE), AugmentData.Stat.DAMAGE, 0.4)
+	await wait_frames(2)
+	check(hud.unit_tooltip_label.text.contains("공격력 +40%"), "설명에 구역 효과")
+	check(hud.unit_tooltip_label.text.contains("%.1f" % unit.get_damage()), "설명에 구역 반영 공격력")
+
+	# 드래그와 구역 배치 중에는 숨긴다
+	grid.pick_unit(cell, unit.global_position)
+	grid.set_process(true)
+	game.grid.dragged_unit = unit
+	grid._update_hover()
+	check(not hud.unit_tooltip.visible, "드래그 중 설명 숨김")
+	grid.drop_unit_at(cell)
+	grid._update_hover()
+	check(hud.unit_tooltip.visible, "놓으면 다시 설명")
+
+	game.augments.request_offer()
+	check(not hud.unit_tooltip.visible, "증강 패널이 열리면 설명 숨김")
+	game.augments.choose(0)
+	grid._update_hover()
+	check(not hud.unit_tooltip.visible, "구역 배치 중 설명 숨김")
+	grid.place_zone_at(Vector2i(3, 3))
+	await wait_frames(2)
+	check(hud.unit_tooltip.visible, "증강 후 설명 복귀")
+
+	game.hud._on_pause_button_pressed()
+	check(not hud.unit_tooltip.visible, "일시 정지에서 설명 숨김")
+	hud.pause_menu.close()
+	await wait_frames(2)
+	check(hud.unit_tooltip.visible, "재개하면 설명 복귀")
+
+	grid._pointer = Vector2(5, 5)
+	await wait_frames(2)
+	check(not hud.unit_tooltip.visible, "행성에서 벗어나면 설명 숨김")
+
+	# 합쳐서 사라진 행성의 설명이 남지 않아야 한다
+	var top: UnitData = Catalog.units_of_grade(UnitData.Grade.S)[0]
+	var top_cell := grid.find_spawn_cell(Vector2(640, 360))
+	game.spawn_unit(top, top_cell)
+	grid._pointer = grid.cell_center(top_cell)
+	await wait_frames(2)
+	check(not hud.unit_tooltip_label.text.contains("조합"), "S등급은 조합 안내 없음")
+	await end_game(game)
+
+func test_planet_tooltip_position() -> void:
+	var game := await start_game()
+	var grid: GridManager = game.grid
+	var hud: CanvasLayer = game.hud
+	var area: Rect2 = hud.TOOLTIP_AREA
+	for cell in [Vector2i(0, 0), Vector2i(19, 0), Vector2i(0, 8), Vector2i(19, 8)]:
+		if not grid.is_cell_empty(cell):
+			cell = grid.get_closest_empty_cell(cell)
+		game.spawn_unit(Catalog.units_of_grade(UnitData.Grade.S)[0], cell)
+		grid._pointer = grid.cell_center(cell)
+		await wait_frames(3)
+		var box: Rect2 = hud.unit_tooltip.get_global_rect()
+		check(hud.unit_tooltip.visible and area.encloses(box), "설명이 화면 안 %s" % cell)
+		check(not box.has_point(grid.cell_center(cell)), "설명이 행성을 가리지 않음 %s" % cell)
+	await end_game(game)
 
 func test_enemy_follows_path() -> void:
 	var game := await start_game()

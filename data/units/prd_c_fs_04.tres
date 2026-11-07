@@ -5,6 +5,7 @@
 [resource]
 script = ExtResource("1")
 id = "PRD-C-FS-04"
+description = "노 앳모스피어. 자전이 불규칙해 조준도 조금씩 어긋난다."
 grade = 0
 attack_type = 0
 sheet_path = "res://entities/units/PRD-C-FS/04/PRD-C-FS-04.png"

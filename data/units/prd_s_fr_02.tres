@@ -5,6 +5,7 @@
 [resource]
 script = ExtResource("1")
 id = "PRD-S-FR-02"
+description = "블랙홀. 공허가 꽃처럼 번져 넓은 영역을 삼키는 광역형."
 alias = "Null Bloom"
 grade = 3
 attack_type = 1

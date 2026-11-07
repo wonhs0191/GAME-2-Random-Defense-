@@ -38,6 +38,26 @@ func _ready() -> void:
 
 	grid.drop_unit_at(cell)
 
+	# 버튼 설명
+	var hover := InputEventMouseMotion.new()
+	hover.position = Vector2(272, 680)
+	hover.global_position = hover.position
+	Input.parse_input_event(hover)
+	await wait_frames(40)
+	await shot("02_button_tooltip.png")
+
+	# 별 표시와 행성 설명
+	var starred: UnitBase = grid.grid_status[cell]
+	starred.add_star()
+	starred.add_star()
+	grid.set_process(true)
+	grid._pointer = starred.global_position
+	await wait_frames(6)
+	await shot("02_tooltip.png")
+	grid._pointer = Vector2.ZERO
+	await wait_frames(2)
+	grid.set_process(false)
+
 	# 조합 하이라이트: 같은 유닛을 하나 더 놓고 집어 든다
 	var unit: UnitBase = grid.grid_status[cell]
 	var twin_cell := grid.find_spawn_cell(unit.global_position)
@@ -51,7 +71,6 @@ func _ready() -> void:
 	grid.set_process(true)
 
 	# 선택 패널
-	unit.add_star()
 	game.select_unit(unit)
 	await wait_frames(4)
 	await shot("04_selected.png")

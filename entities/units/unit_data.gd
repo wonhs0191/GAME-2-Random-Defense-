@@ -8,6 +8,7 @@ enum Grade { C, B, A, S }
 enum AttackType { SHOT, ZONE }
 
 const GRADE_NAMES := ["C", "B", "A", "S"]
+const ATTACK_TYPE_NAMES := ["투사체", "장판"]
 const GRADE_COLORS := [
 	Color(0.75, 0.75, 0.75), Color(0.35, 0.7, 1.0), Color(0.8, 0.45, 1.0), Color(1.0, 0.8, 0.25),
 ]
@@ -21,6 +22,7 @@ const UPGRADE_BASE_COST := [30, 60, 120, 240] # 등급별 강화 비용. 현재 
 
 @export var id: String = ""
 @export var alias: String = "" # 부가 정보. 공식 명칭은 id다
+@export_multiline var description: String = ""
 @export var grade: Grade = Grade.C
 @export var attack_type: AttackType = AttackType.SHOT
 

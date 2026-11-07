@@ -1,8 +1,20 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://scenes/game/hud.gd" id="1"]
 [ext_resource type="Script" path="res://scenes/game/pause_menu.gd" id="2"]
 [ext_resource type="PackedScene" path="res://scenes/common/setting_panel.tscn" id="3"]
+
+[sub_resource type="StyleBoxFlat" id="tooltip_panel"]
+bg_color = Color(0.05, 0.06, 0.14, 0.96)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.45, 0.5, 0.7, 1)
+content_margin_left = 12.0
+content_margin_top = 10.0
+content_margin_right = 12.0
+content_margin_bottom = 10.0
 
 [sub_resource type="StyleBoxFlat" id="card_normal"]
 bg_color = Color(0.08, 0.1, 0.2, 1)
@@ -30,6 +42,8 @@ color = Color(0.03, 0.04, 0.1, 0.8)
 
 [node name="GoldLabel" type="Label" parent="TopBar"]
 layout_mode = 0
+mouse_filter = 0
+tooltip_text = "행성 뽑기, 강화, 조합에 쓰는 재화입니다.\n적을 처치하고 웨이브를 넘기면 얻습니다."
 offset_left = 24.0
 offset_top = 14.0
 offset_right = 224.0
@@ -40,6 +54,8 @@ text = "GOLD 0"
 
 [node name="LivesLabel" type="Label" parent="TopBar"]
 layout_mode = 0
+mouse_filter = 0
+tooltip_text = "적이 경로 끝에 닿으면 줄어듭니다. 0이 되면 패배합니다.\n최종 기함이 닿으면 라이프와 상관없이 패배합니다."
 offset_left = 240.0
 offset_top = 14.0
 offset_right = 440.0
@@ -50,6 +66,8 @@ text = "LIFE 0"
 
 [node name="WaveLabel" type="Label" parent="TopBar"]
 layout_mode = 0
+mouse_filter = 0
+tooltip_text = "현재 웨이브입니다. 10웨이브마다 기함이 나타납니다."
 offset_left = 520.0
 offset_top = 14.0
 offset_right = 760.0
@@ -69,6 +87,7 @@ text = "전투 중"
 horizontal_alignment = 2
 
 [node name="SpeedButton" type="Button" parent="TopBar"]
+tooltip_text = "게임 속도를 1배, 2배, 3배로 바꿉니다."
 layout_mode = 0
 offset_left = 1128.0
 offset_top = 10.0
@@ -79,6 +98,7 @@ theme_override_font_sizes/font_size = 20
 text = "x1"
 
 [node name="PauseButton" type="Button" parent="TopBar"]
+tooltip_text = "일시 정지합니다. Esc 키로도 할 수 있습니다."
 layout_mode = 0
 offset_left = 1200.0
 offset_top = 10.0
@@ -95,6 +115,7 @@ offset_bottom = 720.0
 color = Color(0.03, 0.04, 0.1, 0.8)
 
 [node name="WaveButton" type="Button" parent="BottomBar"]
+tooltip_text = "다음 웨이브를 바로 시작합니다.\n누르지 않아도 준비 시간이 끝나면 자동으로 시작합니다."
 layout_mode = 0
 offset_left = 24.0
 offset_top = 8.0
@@ -147,6 +168,7 @@ theme_override_font_sizes/font_size = 20
 text = "강화"
 
 [node name="OddsButton" type="Button" parent="BottomBar"]
+tooltip_text = "뽑기, 강화, 조합 확률과 규칙을 봅니다."
 layout_mode = 0
 offset_left = 880.0
 offset_top = 8.0
@@ -155,6 +177,19 @@ offset_bottom = 72.0
 focus_mode = 0
 theme_override_font_sizes/font_size = 22
 text = "확률표"
+
+[node name="UnitTooltip" type="PanelContainer" parent="."]
+visible = false
+offset_right = 360.0
+offset_bottom = 120.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("tooltip_panel")
+
+[node name="Label" type="Label" parent="UnitTooltip"]
+custom_minimum_size = Vector2(336, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+autowrap_mode = 3
 
 [node name="MessageLabel" type="Label" parent="."]
 modulate = Color(1, 1, 1, 0)
@@ -187,6 +222,7 @@ offset_bottom = 496.0
 theme_override_font_sizes/font_size = 22
 
 [node name="OddsCloseButton" type="Button" parent="OddsPanel"]
+tooltip_text = "확률표를 닫습니다."
 layout_mode = 0
 offset_left = 160.0
 offset_top = 504.0
@@ -298,6 +334,7 @@ text = "일시 정지"
 horizontal_alignment = 1
 
 [node name="ResumeButton" type="Button" parent="PauseMenu"]
+tooltip_text = "게임으로 돌아갑니다."
 layout_mode = 0
 offset_left = 520.0
 offset_top = 270.0
@@ -308,6 +345,7 @@ theme_override_font_sizes/font_size = 25
 text = "계속하기"
 
 [node name="SettingButton" type="Button" parent="PauseMenu"]
+tooltip_text = "음량과 화면을 설정합니다."
 layout_mode = 0
 offset_left = 520.0
 offset_top = 354.0
@@ -318,6 +356,7 @@ theme_override_font_sizes/font_size = 25
 text = "설정"
 
 [node name="TitleButton" type="Button" parent="PauseMenu"]
+tooltip_text = "이번 판을 끝내고 타이틀로 돌아갑니다."
 layout_mode = 0
 offset_left = 520.0
 offset_top = 438.0
@@ -355,6 +394,7 @@ theme_override_font_sizes/font_size = 24
 horizontal_alignment = 1
 
 [node name="RetryButton" type="Button" parent="ResultPanel"]
+tooltip_text = "같은 난이도로 처음부터 다시 합니다."
 layout_mode = 0
 offset_left = 400.0
 offset_top = 380.0
@@ -365,6 +405,7 @@ theme_override_font_sizes/font_size = 25
 text = "다시하기"
 
 [node name="TitleButton" type="Button" parent="ResultPanel"]
+tooltip_text = "이번 판을 끝내고 타이틀로 돌아갑니다."
 layout_mode = 0
 offset_left = 660.0
 offset_top = 380.0

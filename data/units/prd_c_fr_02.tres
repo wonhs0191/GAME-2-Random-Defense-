@@ -5,6 +5,7 @@
 [resource]
 script = ExtResource("1")
 id = "PRD-C-FR-02"
+description = "테란 드라이. 붉은 사막의 열기가 항로를 달군다."
 grade = 0
 attack_type = 1
 sheet_path = "res://entities/units/PRD-C-FR/02/PRD-C-FR-02.png"

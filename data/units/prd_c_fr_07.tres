@@ -5,6 +5,7 @@
 [resource]
 script = ExtResource("1")
 id = "PRD-C-FR-07"
+description = "테란 드라이. 표면 온도를 예측할 수 없어 코드로만 분류된다."
 grade = 0
 attack_type = 1
 sheet_path = "res://entities/units/PRD-C-FR/07/PRD-C-FR-07.png"

@@ -5,6 +5,7 @@
 [resource]
 script = ExtResource("1")
 id = "PRD-A-FS-03"
+description = "토성형. 고리를 가속기로 쓰는 장거리 저격형."
 alias = "Saturn Lance"
 grade = 2
 attack_type = 0

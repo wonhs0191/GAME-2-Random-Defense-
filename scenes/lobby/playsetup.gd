@@ -12,6 +12,8 @@ const DIFFICULTY_LORE := {
 	"Extreme": "특이점 구역. 항로가 네 갈래로 얽혀 있다.",
 }
 
+const THEME_NAMES := ["OIL6", "BORKFEST", "AMMO-8", "SUBMERGED CHIMERA", "FUNKYFUTURE8", "WINTER WONDERLAND"]
+
 @onready var difficulty_detail: Label = $DifficultyDetail
 
 # 맵 선언(경로) 		#TODO : 경로 변경 시 수정 필요
@@ -27,7 +29,17 @@ func _ready():
 	background.texture = GameSetting.selected_theme_texture
 	theme_detail.text = ""
 	Sound.bind_buttons(self)
-	Sound.play_bgm("title")
+	start_button.tooltip_text = "고른 난이도와 테마로 시작합니다."
+	for i in THEME_NAMES.size():
+		get_node("Theme/GridContainer/Theme%d" % (i + 1)).tooltip_text = "배경 테마: " + THEME_NAMES[i]
+	var degree_index := 1
+	for difficulty_name in GameSetting.DIFFICULTIES:
+		var difficulty: Dictionary = GameSetting.DIFFICULTIES[difficulty_name]
+		get_node("Difficulty/HBoxContainer/Degree%d" % degree_index).tooltip_text = "%s\n%d 웨이브, 라이프 %d" % [
+			DIFFICULTY_LORE[difficulty_name], difficulty["waves"], difficulty["lives"],
+		]
+		degree_index += 1
+	Sound.play_bgm("lobby")
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):

@@ -5,6 +5,7 @@
 [resource]
 script = ExtResource("1")
 id = "PRD-S-FS-04"
+description = "블랙홀. 종결 개체. 빛을 삼켰다가 한 줄기로 되돌려 쏜다."
 alias = "Eclipse Prime"
 grade = 3
 attack_type = 0

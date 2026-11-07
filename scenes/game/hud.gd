@@ -11,6 +11,8 @@ signal title_requested
 
 const SPEEDS: Array[float] = [1.0, 2.0, 3.0]
 const RESULT_FADE_TIME := 0.5
+const TOOLTIP_GAP := 40.0 # 유닛 중심에서 설명 창까지의 거리 (px)
+const TOOLTIP_AREA := Rect2(8, 68, 1264, 568) # 설명 창이 들어갈 영역
 const BOSS_COLOR := Color(1, 0.4, 0.3)
 const SUCCESS_COLOR := Color(1.0, 0.85, 0.35)
 const FAILURE_COLOR := Color(0.6, 0.65, 0.8)
@@ -23,6 +25,7 @@ var _wave_manager: WaveManager = null
 var _augments: AugmentManager = null
 var _ultimates: UltimateManager = null
 var _selected_unit: UnitBase = null
+var _tooltip_unit: UnitBase = null
 var _message_tween: Tween = null
 
 @onready var gold_label: Label = $TopBar/GoldLabel
@@ -37,6 +40,8 @@ var _message_tween: Tween = null
 @onready var flash: ColorRect = $Flash
 @onready var odds_panel: ColorRect = $OddsPanel
 @onready var odds_label: Label = $OddsPanel/OddsLabel
+@onready var unit_tooltip: PanelContainer = $UnitTooltip
+@onready var unit_tooltip_label: Label = $UnitTooltip/Label
 @onready var placement_label: Label = $PlacementLabel
 @onready var ultimate_button: Button = $BottomBar/UltimateButton
 @onready var augment_panel: ColorRect = $AugmentPanel
@@ -58,6 +63,13 @@ func setup(wave_manager: WaveManager, augments: AugmentManager, ultimates: Ultim
 	odds_label.text = _build_odds_text()
 	Sound.bind_buttons(self)
 	pause_menu.title_pressed.connect(title_requested.emit)
+	pause_menu.visibility_changed.connect(unit_tooltip.hide)
+	gacha_button.tooltip_text = "골드 %d로 행성 1개를 뽑습니다.\n뽑기 %d회마다 증강 카드가 나옵니다." % [
+		GameState.GACHA_COST, AugmentManager.DRAWS_PER_OFFER,
+	]
+	upgrade_button.tooltip_text = "선택한 행성을 강화합니다. 공격력이 2성 %d%%, 3성 %d%%가 됩니다.\n실패해도 골드는 돌아오지 않습니다." % [
+		roundi(UnitData.STAR_DAMAGE[1] * 100.0), roundi(UnitData.STAR_DAMAGE[2] * 100.0),
+	]
 	show_unit(null)
 	_on_gold_changed(GameState.gold)
 	_on_lives_changed(GameState.lives)
@@ -74,6 +86,7 @@ func _process(_delta: float) -> void:
 	wave_button.disabled = not _wave_manager.can_start_wave()
 	gacha_button.text = "GACHA %dG\n증강까지 %d회" % [GameState.GACHA_COST, _augments.draws_until_offer]
 	_refresh_ultimate_button()
+	_refresh_unit_tooltip()
 	match _wave_manager.state:
 		WaveManager.State.WAITING:
 			status_label.text = "준비되면 WAVE START"
@@ -101,13 +114,66 @@ func show_unit(unit: UnitBase) -> void:
 		data.get_grade_name(), data.id, unit.stars, unit.get_damage(), unit.get_attack_interval(), unit.get_attack_range(),
 	]
 
+# 마우스가 올라간 행성의 설명을 띄운다. null이면 숨긴다.
+func show_unit_tooltip(unit: UnitBase) -> void:
+	_tooltip_unit = unit
+	_refresh_unit_tooltip()
+
+func _refresh_unit_tooltip() -> void:
+	if not is_instance_valid(_tooltip_unit):
+		unit_tooltip.hide()
+		return
+	var text := _build_unit_tooltip(_tooltip_unit)
+	if unit_tooltip_label.text != text:
+		unit_tooltip_label.text = text
+		unit_tooltip.reset_size()
+	unit_tooltip.show()
+	# 평소에는 오른쪽, 공간이 없으면 왼쪽에 띄운다
+	var center := _tooltip_unit.global_position
+	var size := unit_tooltip.size
+	var spot := center + Vector2(TOOLTIP_GAP, -size.y / 2.0)
+	if spot.x + size.x > TOOLTIP_AREA.end.x:
+		spot.x = center.x - TOOLTIP_GAP - size.x
+	spot.y = clampf(spot.y, TOOLTIP_AREA.position.y, TOOLTIP_AREA.end.y - size.y)
+	unit_tooltip.position = spot
+
+func _build_unit_tooltip(unit: UnitBase) -> String:
+	var data := unit.data
+	var is_zone := data.attack_type == UnitData.AttackType.ZONE
+	var lines: Array[String] = [
+		data.get_display_name(),
+		"%s등급  %d성  %s 공격" % [data.get_grade_name(), unit.stars, UnitData.ATTACK_TYPE_NAMES[data.attack_type]],
+		"공격력 %.1f  공격 간격 %.2f초" % [unit.get_damage(), unit.get_attack_interval()],
+		"사거리 %d%s" % [unit.get_attack_range(), "  장판 반경 %d" % data.zone_radius if is_zone else ""],
+	]
+	var bonuses := _zone_bonus_texts(unit)
+	if not bonuses.is_empty():
+		lines.append("구역 효과: " + ", ".join(bonuses))
+	lines.append("")
+	lines.append(data.description)
+	lines.append("")
+	lines.append("클릭: 강화 메뉴")
+	if data.grade < UnitData.Grade.S:
+		lines.append("같은 행성 위로 끌어 놓기: 조합 %dG" % data.merge_cost())
+	return "\n".join(lines)
+
+func _zone_bonus_texts(unit: UnitBase) -> Array[String]:
+	var texts: Array[String] = []
+	for stat in AugmentData.Stat.values():
+		var bonus := unit.get_zone_bonus(stat)
+		if bonus > 0.0:
+			texts.append("%s +%d%%" % [AugmentData.STAT_NAMES[stat], roundi(bonus * 100.0)])
+	return texts
+
 func show_augment_cards(cards: Array[Resource], title: String) -> void:
 	placement_label.hide()
+	unit_tooltip.hide()
 	augment_title.text = title
 	for i in cards.size():
 		var card := augment_cards[i]
 		card.text = "%s\n\n%s" % [cards[i].get_title(), cards[i].get_description()]
 		card.get_node("Strip").color = cards[i].get_color()
+		card.tooltip_text = "이 카드를 고릅니다."
 	augment_panel.show()
 
 func show_placement_hint(augment: AugmentData) -> void:
@@ -163,6 +229,7 @@ func _flash(color: Color) -> void:
 func _refresh_ultimate_button() -> void:
 	var state := "준비" if _ultimates.can_use() else "%d초" % ceili(_ultimates.cooldown_left)
 	ultimate_button.text = "%s\n%s" % [_ultimates.current.get_title(), state]
+	ultimate_button.tooltip_text = _ultimates.current.get_description()
 	ultimate_button.disabled = not _ultimates.can_use()
 
 func _refresh_upgrade_button() -> void:

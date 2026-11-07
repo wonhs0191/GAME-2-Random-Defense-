@@ -97,6 +97,15 @@ func _ready() -> void:
 	check(not grid.grid_status.has(from_cell), "조합 후 원래 칸 비움")
 	check(game.selected_unit == null, "조합 드래그는 선택이 아님")
 
+	# 행성과 버튼에 마우스를 올리면 설명이 나온다
+	await move_to(grid.cell_center(to_cell), false)
+	await wait_frames(4)
+	check(game.hud.unit_tooltip.visible, "행성에 마우스를 올리면 설명")
+	await move_to(GACHA_BUTTON, false)
+	await wait_frames(4)
+	check(not game.hud.unit_tooltip.visible, "버튼으로 옮기면 행성 설명 숨김")
+	check(get_viewport().gui_get_hovered_control() == game.hud.gacha_button, "버튼 위 마우스 인식")
+
 	# 증강: 카드 클릭, 구역 배치 클릭
 	game.augments.request_offer()
 	await wait_frames(2)
