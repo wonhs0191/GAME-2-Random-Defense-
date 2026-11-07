@@ -4,16 +4,32 @@
 
 ## 현재 위치
 
-- **브랜치:** `feature/M1-combat` (`feature/M0-foundation` 위에 분기, 둘 다 미푸시)
-- **진행 중:** M1 완료, 사용자 플레이 확인 대기
-- **다음 할 일:** 사용자 피드백 반영 후 M2 시작
-- **막힌 것:** 재미 판단은 사용자 플레이가 필요함
+- **브랜치:** `feature/M1-combat` (`feature/M0-foundation` 위에 분기, 둘 다 미푸시, `develop` 미병합)
+- **상태:** M1까지 완료. 2026-11-07 작업 중단.
+- **다음 할 일:** 아래 "M2 웨이브" 체크리스트 첫 항목부터.
+- **사용자 플레이:** 아직 안 함. 사용자가 나중에 하기로 했고, 사용자가 시작을 지시하면 M2로 넘어가도 된다. 피드백이 와 있으면 그것부터 반영한다.
+- **막힌 것:** 없음.
 
 ## 재개 방법
 
 1. [PLAN.md](PLAN.md)로 방향 확인, 이 파일의 "현재 위치" 확인.
-2. `git status`, `git log --oneline -10`으로 실제 상태 대조.
-3. 체크리스트의 첫 미완료 항목부터 진행.
+2. `git status`, `git log --oneline -10`으로 실제 상태 대조. `title_screen.tscn` 한 줄 변경만 남아 있으면 정상이다.
+3. `test_runner`를 돌려 통과를 확인한다. `.godot` 캐시가 없으면 먼저 `--import`.
+4. 체크리스트의 첫 미완료 항목부터 진행.
+
+## 주의 사항
+
+- 프로젝트는 Godot 4.7.2다. 4.2.1 에디터로 저장하지 않는다.
+- `scenes/title/title_screen.tscn`의 UID 한 줄 변경은 작업 전부터 있던 것이다. 커밋할 때 뺀다: `git add -A -- . ':!scenes/title/title_screen.tscn'`
+- 커밋 메시지는 `^_^ [M2] 내용` 형식, 끝에 Co-Authored-By 줄.
+- GroMoon 로컬 작업(UNIT-005, MAP-005, UNIT-006 일부)은 원격에 없다. 푸시되면 `grid.gd`에서 충돌하며, 이쪽 구현을 기준으로 정리한다.
+- Notion 태스크 상태는 아직 안 바꿨다. 사용자 허락 후 갱신한다.
+
+## 사용자 플레이 때 확인할 것
+
+1. 드래그 손맛, UNIT-005 드래그 버그 재현 여부.
+2. ZONE 장판 위치가 랜덤인 것이 재미있는지.
+3. 초반 속도와 뽑기 비용. Easy는 후반까지 위협이 약해 지루할 수 있다.
 
 ## 명령
 
@@ -54,9 +70,23 @@ timeout 400 "$GODOT" --headless --path . --fixed-fps 60 res://tests/balance_sim.
 - [x] WaveManager, 웨이브 진행
 - [x] HUD, Gameover, Clear
 - [x] 테스트, 화면 확인, 커밋
-- [ ] 사용자 플레이 확인 (여기서 멈춤)
+- [ ] 사용자 플레이 확인 (사용자가 나중에 진행)
 
-### M2 이후
+### M2 웨이브
+
+- [ ] `feature/M1-combat`에서 `feature/M2-waves` 분기
+- [ ] 세력 전환: `WaveManager.faction`을 전체 웨이브 1/3마다 Nautolan → Klaed → Nairan으로 변경
+- [ ] 보스: 10웨이브마다 `dreadnought` + 보스 체력 배율, 마지막 웨이브는 최종 보스, HUD에 보스 웨이브 표시
+- [ ] 적 겹침 완화 (MAP-001 TODO): 경로별 분산 또는 함선별 속도 차이 확인
+- [ ] Hard, Extreme 맵: `scenes/game/maps/hard.tscn`, `extreme.tscn`은 현재 빈 씬. Path2D 여러 개로 분기 구성, 제어점은 타일 중앙(x = 64c + 32, y = 96 + 64r), `game_play.gd`의 `MAP_SCENES` 교체
+- [ ] 적 크기 확인 (MAP-001 TODO: 조금 더 크게)
+- [ ] 테스트 추가: 세력 전환, 보스 스폰, 다중 경로 스폰과 칸 금지
+- [ ] `balance_sim` 재측정, 결과 기록
+- [ ] 화면 확인, 커밋, 사용자 확인 요청
+
+`WaveManager`는 이미 경로 배열(`_paths`)을 받아 스폰마다 임의 선택하고, `game_play.gd`는 맵의 Path2D를 전부 수집해 칸 금지와 표시를 처리한다. 다중 경로는 맵 씬에 Path2D를 추가하는 것으로 동작해야 한다.
+
+### M3 이후
 
 [PLAN.md](PLAN.md) 5장 참고. 시작할 때 이 목록을 세분화한다.
 
@@ -94,3 +124,4 @@ timeout 400 "$GODOT" --headless --path . --fixed-fps 60 res://tests/balance_sim.
 
   Normal 이상은 조합·강화·증강이 있어야 깰 수 있는 곡선이다. M3~M4 후 다시 맞춘다. 봇이 화면 중앙에 그대로 두면 Normal은 웨이브 4~5에서 진다. 뽑은 유닛이 경로 사거리 밖에 생기기 때문이다.
 - 코드 리뷰 지적 1건 수정: 처치된 적이 같은 프레임에 경로 끝에 닿으면 골드와 라이프가 둘 다 처리되던 문제. 회귀 테스트 추가.
+- 최종 확인: 로직 261건, 마우스 입력 테스트 통과. 사용자 요청으로 M1에서 작업 중단, 다음은 M2.
