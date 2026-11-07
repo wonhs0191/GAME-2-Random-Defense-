@@ -20,6 +20,7 @@ var speed: float = 0.0
 var max_hp: float = 1.0
 var hp: float = 1.0
 var lane: float = 0.0 # 경로 중심에서 벗어난 거리 (px)
+var is_final_boss: bool = false # 경로 끝에 닿으면 라이프와 상관없이 패배한다
 
 var _size_scale: float = 1.0
 var _path_length: float = 0.0
@@ -88,7 +89,7 @@ func _die() -> void:
 
 func _reach_goal() -> void:
 	remove_from_group("enemy")
-	GameState.lose_lives(data.life_damage)
+	GameState.lose_lives(GameState.lives if is_final_boss else data.life_damage)
 	queue_free()
 
 func _move_along_path() -> void:

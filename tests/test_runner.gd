@@ -30,6 +30,8 @@ func _run_all() -> void:
 	test_wave_composition()
 	await test_boss_spawn()
 	await test_final_boss()
+	await test_final_boss_leak_loses()
+	await test_boss_leak_keeps_game_going()
 	await test_boss_hud()
 	await test_maps()
 	await test_multi_path_spawn()
@@ -391,6 +393,34 @@ func test_final_boss() -> void:
 		check(game.hud.status_label.text == "최종 보스 전투", "최종 보스 문구")
 	await end_game(game)
 
+func test_final_boss_leak_loses() -> void:
+	var game := await start_game()
+	var manager: WaveManager = game.wave_manager
+	manager.wave = manager.total_waves
+	manager.state = WaveManager.State.FIGHTING
+	var boss := manager._spawn_enemy(Catalog.get_enemy("nairan", WaveManager.BOSS_SHIP))
+	check(boss.is_final_boss, "마지막 웨이브 보스는 최종 보스")
+	check(GameState.lives >= boss.data.life_damage * 2, "일반 보스 피해보다 라이프가 많은 상태")
+	boss.distance = game.paths[0].curve.get_baked_length() - 0.01
+	await wait_frames(2)
+	check(GameState.is_over, "최종 보스 도달 시 게임 종료")
+	check(GameState.lives == 0, "최종 보스 도달 시 라이프 0")
+	check(game.hud.result_label.text == "GAME OVER", "최종 보스 도달 시 패배")
+	await end_game(game)
+
+func test_boss_leak_keeps_game_going() -> void:
+	var game := await start_game()
+	var manager: WaveManager = game.wave_manager
+	manager.wave = 10
+	var boss := manager._spawn_enemy(Catalog.get_enemy("nautolan", WaveManager.BOSS_SHIP))
+	check(not boss.is_final_boss, "중간 보스는 최종 보스가 아님")
+	var expected_lives := GameState.lives - boss.data.life_damage
+	boss.distance = game.paths[0].curve.get_baked_length() - 0.01
+	await wait_frames(2)
+	check(GameState.lives == expected_lives, "중간 보스는 라이프만 차감")
+	check(not GameState.is_over, "중간 보스 도달로 게임이 끝나지 않음")
+	await end_game(game)
+
 func test_boss_hud() -> void:
 	var game := await start_game()
 	var manager: WaveManager = game.wave_manager
@@ -537,7 +567,12 @@ func test_clear() -> void:
 	var manager: WaveManager = game.wave_manager
 	manager.total_waves = 1
 	manager.start_next_wave()
-	var cleared := await wait_until(func(): return GameState.is_over, 60 * 300)
+	# 최종 보스를 놓치면 패배하므로 나오는 대로 처치한다
+	var kill_all := func():
+		for enemy: EnemyBase in get_tree().get_nodes_in_group("enemy"):
+			enemy.take_damage(enemy.hp)
+		return GameState.is_over
+	var cleared := await wait_until(kill_all, 60 * 60)
 	check(cleared, "마지막 웨이브 후 종료")
 	check(GameState.lives > 0, "라이프가 남은 채 종료")
 	check(game.hud.result_label.text == "CLEAR", "클리어 문구")

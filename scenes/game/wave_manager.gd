@@ -124,8 +124,10 @@ func _spawn_enemy(enemy_data: EnemyData) -> EnemyBase:
 	var enemy: EnemyBase = ENEMY_SCENE.instantiate()
 	var is_boss := enemy_data.ship == BOSS_SHIP
 	var enemy_hp_scale := boss_hp_scale(wave) if is_boss else hp_scale(wave)
-	var size_scale := FINAL_BOSS_SIZE_SCALE if is_boss and is_final_wave(wave) else 1.0
+	var is_final_boss := is_boss and is_final_wave(wave)
+	var size_scale := FINAL_BOSS_SIZE_SCALE if is_final_boss else 1.0
 	enemy.setup(enemy_data, _paths.pick_random(), enemy_hp_scale, _difficulty["speed"], size_scale)
+	enemy.is_final_boss = is_final_boss
 	_enemy_parent.add_child(enemy)
 	return enemy
 
