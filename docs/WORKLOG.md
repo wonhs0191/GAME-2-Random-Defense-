@@ -4,7 +4,7 @@
 
 ## 현재 위치
 
-- **브랜치:** `feature/M8-playtest` (`feature/M7-release` 위에 분기, M1~M8 푸시 완료, `develop` 미병합)
+- **브랜치:** `feature/M8-playtest` (`feature/M7-release` 위에 분기, M1~M8 푸시 완료, `develop` 병합 완료)
 - **상태:** 1차 플레이 피드백 반영 완료. Windows 실행 파일 빌드만 남음.
 - **다음 할 일:** 사용자 플레이 피드백 반영, export 템플릿 다운로드 승인을 받아 Windows 빌드, `docs/LICENSES.md`의 출시 전 확인 항목 처리.
 - **사용자 플레이:** 1차 완료 (2026-11-07). 피드백이 와 있으면 그것부터 반영한다.
